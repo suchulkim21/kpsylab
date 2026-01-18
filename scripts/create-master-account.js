@@ -1,7 +1,7 @@
 /**
  * 마스터 계정 생성 스크립트 (Supabase)
- * 아이디: alyce
- * 비밀번호: gksrnr21@!
+ * 아이디: 마스터
+ * 비밀번호: 한국21@!
  * 
  * 사용법:
  * 1. .env.local에 Supabase 환경 변수 설정
@@ -42,7 +42,7 @@ async function createMasterAccount() {
     const { data: existingUser, error: searchError } = await supabase
       .from('users')
       .select('id, username, email, role')
-      .or('username.eq.alyce,email.eq.alyce@kpsylab.com')
+      .or('username.eq.마스터,email.eq.master@kpsylab.com')
       .single();
 
     if (existingUser) {
@@ -50,9 +50,9 @@ async function createMasterAccount() {
       const { data: updatedUser, error: updateError } = await supabase
         .from('users')
         .update({
-          password_hash: hashPassword('gksrnr21@!'),
+          password_hash: hashPassword('한국21@!'),
           role: 'master',
-          email: 'alyce@kpsylab.com',
+          email: 'master@kpsylab.com',
         })
         .eq('id', existingUser.id)
         .select()
@@ -73,9 +73,9 @@ async function createMasterAccount() {
       const { data: newUser, error: insertError } = await supabase
         .from('users')
         .insert({
-          username: 'alyce',
-          email: 'alyce@kpsylab.com',
-          password_hash: hashPassword('gksrnr21@!'),
+          username: '마스터',
+          email: 'master@kpsylab.com',
+          password_hash: hashPassword('한국21@!'),
           role: 'master',
         })
         .select()
