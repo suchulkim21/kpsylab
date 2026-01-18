@@ -76,9 +76,7 @@ export default function MNPSPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="http://localhost:7777"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/mnps/test"
                 className="group flex items-center justify-center gap-2 px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl transition-all duration-300"
               >
                 <span>MNPS 테스트 시작</span>
@@ -92,7 +90,7 @@ export default function MNPSPage() {
               </Link>
             </div>
             <p className="text-sm text-gray-500 mt-4">
-              * MNPS 서비스는 별도 서버에서 실행됩니다. 서버가 실행 중이지 않으면 접속할 수 없습니다.
+              * 테스트는 KPSY LAB 내부 페이지에서 진행됩니다.
             </p>
           </div>
         </div>
