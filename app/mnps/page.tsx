@@ -75,13 +75,13 @@ export default function MNPSPage() {
               약 15-20분 소요되며, 4가지 다크 테트라드 특성을 분석합니다.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
+              <Link
                 href="/mnps/test"
                 className="group flex items-center justify-center gap-2 px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl transition-all duration-300"
               >
                 <span>MNPS 테스트 시작</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </a>
+              </Link>
               <Link
                 href="/services"
                 className="px-8 py-4 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold rounded-xl transition-colors"
@@ -90,7 +90,7 @@ export default function MNPSPage() {
               </Link>
             </div>
             <p className="text-sm text-gray-500 mt-4">
-              * 테스트는 KPSY LAB 내부 페이지에서 진행됩니다.
+              * 버튼 클릭 시 같은 사이트 내에서 테스트 페이지로 이동합니다.
             </p>
           </div>
         </div>
