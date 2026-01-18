@@ -78,7 +78,7 @@ export default function LoginPage() {
                 className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 required
               />
-              <p className="mt-1 text-xs text-gray-500">마스터 계정은 아이디(alyce)로도 로그인 가능합니다.</p>
+              <p className="mt-1 text-xs text-gray-500">마스터 계정은 이메일로 로그인 가능합니다.</p>
             </div>
 
             <div>

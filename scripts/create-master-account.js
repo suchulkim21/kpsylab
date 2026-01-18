@@ -1,10 +1,12 @@
 /**
  * 마스터 계정 생성 스크립트 (Supabase)
- * 아이디: 마스터
- * 비밀번호: 한국21@!
+ * 아이디: bbm21k@gamil.com
+ * 비밀번호: gksrnr21@!
  * 
  * 사용법:
  * 1. .env.local에 Supabase 환경 변수 설정
+ *    - NEXT_PUBLIC_SUPABASE_URL
+ *    - SUPABASE_SERVICE_ROLE_KEY (필수)
  * 2. node scripts/create-master-account.js
  */
 
@@ -16,16 +18,23 @@ const { createClient } = require('@supabase/supabase-js');
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
+if (!supabaseUrl) {
   console.error('❌ Supabase 환경 변수가 설정되지 않았습니다.');
   console.error('   .env.local 파일에 다음을 추가하세요:');
   console.error('   NEXT_PUBLIC_SUPABASE_URL=your_url');
-  console.error('   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key');
+  console.error('   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key');
   process.exit(1);
 }
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+if (!supabaseServiceRoleKey) {
+  console.error('❌ SUPABASE_SERVICE_ROLE_KEY가 필요합니다.');
+  console.error('   users 테이블은 RLS로 보호되어 있어 anon 키로 쓰기 불가입니다.');
+  process.exit(1);
+}
+
+const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
 // 비밀번호 해싱 (auth.ts와 동일한 방식)
 function hashPassword(password) {
@@ -38,11 +47,28 @@ async function createMasterAccount() {
   try {
     console.log('🔐 마스터 계정 생성 중...\n');
 
+    const masterUsername = 'bbm21k@gamil.com';
+    const masterEmail = 'bbm21k@gamil.com';
+    const masterPassword = 'gksrnr21@!';
+
+    // 기존 마스터 계정 제거 (새 계정 제외)
+    const { error: purgeError } = await supabase
+      .from('users')
+      .delete()
+      .eq('role', 'master')
+      .neq('username', masterUsername)
+      .neq('email', masterEmail);
+
+    if (purgeError) {
+      console.error('❌ 기존 마스터 계정 삭제 실패:', purgeError.message);
+      process.exit(1);
+    }
+
     // 기존 계정 확인
     const { data: existingUser, error: searchError } = await supabase
       .from('users')
       .select('id, username, email, role')
-      .or('username.eq.마스터,email.eq.master@kpsylab.com')
+      .or(`username.eq.${masterUsername},email.eq.${masterEmail}`)
       .single();
 
     if (existingUser) {
@@ -50,9 +76,9 @@ async function createMasterAccount() {
       const { data: updatedUser, error: updateError } = await supabase
         .from('users')
         .update({
-          password_hash: hashPassword('한국21@!'),
+          password_hash: hashPassword(masterPassword),
           role: 'master',
-          email: 'master@kpsylab.com',
+          email: masterEmail,
         })
         .eq('id', existingUser.id)
         .select()
@@ -73,9 +99,9 @@ async function createMasterAccount() {
       const { data: newUser, error: insertError } = await supabase
         .from('users')
         .insert({
-          username: '마스터',
-          email: 'master@kpsylab.com',
-          password_hash: hashPassword('한국21@!'),
+          username: masterUsername,
+          email: masterEmail,
+          password_hash: hashPassword(masterPassword),
           role: 'master',
         })
         .select()
