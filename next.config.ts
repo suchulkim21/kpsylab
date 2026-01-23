@@ -46,6 +46,8 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', '@supabase/supabase-js'],
   },
+  // 외부 패키지 처리 (선택적 의존성)
+  serverExternalPackages: ['@sentry/nextjs'],
   async redirects() {
     return [
       {

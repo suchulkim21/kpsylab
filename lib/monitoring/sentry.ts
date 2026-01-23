@@ -12,8 +12,9 @@ export async function initSentry() {
   }
 
   try {
-    // 동적 import로 Sentry 로드
-    const Sentry = await import('@sentry/nextjs');
+    // 동적 import를 문자열로 처리하여 Turbopack이 빌드 시점에 분석하지 않도록 함
+    const moduleName = '@sentry/nextjs';
+    const Sentry = await import(/* @vite-ignore */ moduleName);
     
     if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
       Sentry.init({
@@ -43,8 +44,12 @@ export async function initSentry() {
 }
 
 export async function captureException(error: Error, context?: Record<string, unknown>) {
+  if (typeof window === 'undefined') return;
+  
   try {
-    const Sentry = await import('@sentry/nextjs');
+    // 동적 import를 문자열로 처리하여 Turbopack이 빌드 시점에 분석하지 않도록 함
+    const moduleName = '@sentry/nextjs';
+    const Sentry = await import(/* @vite-ignore */ moduleName);
     Sentry.captureException(error, {
       contexts: {
         custom: context || {},
@@ -56,8 +61,11 @@ export async function captureException(error: Error, context?: Record<string, un
 }
 
 export async function captureMessage(message: string, level: 'info' | 'warning' | 'error' = 'info') {
+  if (typeof window === 'undefined') return;
+  
   try {
-    const Sentry = await import('@sentry/nextjs');
+    const moduleName = '@sentry/nextjs';
+    const Sentry = await import(/* @vite-ignore */ moduleName);
     Sentry.captureMessage(message, level);
   } catch {
     // Sentry가 없으면 무시
@@ -65,8 +73,11 @@ export async function captureMessage(message: string, level: 'info' | 'warning' 
 }
 
 export async function setUser(user: { id?: string; email?: string; username?: string }) {
+  if (typeof window === 'undefined') return;
+  
   try {
-    const Sentry = await import('@sentry/nextjs');
+    const moduleName = '@sentry/nextjs';
+    const Sentry = await import(/* @vite-ignore */ moduleName);
     Sentry.setUser(user);
   } catch {
     // Sentry가 없으면 무시

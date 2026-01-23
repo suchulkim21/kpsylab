@@ -119,9 +119,11 @@ export async function safeApiCall<T>(
   } catch (error) {
     const appError = handleNetworkError(error);
     
-    // Sentry에 에러 전송 (프로덕션 환경)
+    // Sentry에 에러 전송 (프로덕션 환경, 클라이언트 사이드에서만)
     if (process.env.NODE_ENV === 'production' && typeof window !== 'undefined') {
-      import('@/lib/monitoring/sentry').then(({ captureException }) => {
+      // 동적 import를 문자열로 처리하여 Turbopack이 빌드 시점에 분석하지 않도록 함
+      const sentryModule = '@/lib/monitoring/sentry';
+      import(/* @vite-ignore */ sentryModule).then(({ captureException }) => {
         captureException(appError, {
           apiCall: apiCall.toString(),
         });
