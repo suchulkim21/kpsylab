@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { calculateAnalysis } from '@/app/second-genesis/lib/module2/analysis';
-import { ScenarioOption } from '@second-genesis/types/module2';
+import { calculateAnalysis } from '@/app/growth-roadmap/lib/module2/analysis';
+import { ScenarioOption } from '@growth-roadmap/types/module2';
 
 describe('calculateAnalysis', () => {
   const createOption = (

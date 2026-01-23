@@ -26,8 +26,8 @@
       "@/*": [
         "./*"
       ],
-      "@second-genesis/*": [
-        "./app/second-genesis/*"
+      "@growth-roadmap/*": [
+        "./app/growth-roadmap/*"
       ]
     }
   },

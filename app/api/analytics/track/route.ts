@@ -34,7 +34,7 @@ export async function POST(request: Request) {
 
     // 페이지 조회 기록
     const pageType = pagePath.includes('/blog/') ? 'blog' :
-                     pagePath.includes('/second-genesis') ? 'second-genesis' :
+                     pagePath.includes('/growth-roadmap') ? 'growth-roadmap' :
                      pagePath.includes('/mnps') ? 'mnps' : 'other';
     
     const resourceId = pagePath.includes('/blog/') 

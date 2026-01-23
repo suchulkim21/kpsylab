@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { checkAnswerConsistency } from '@/app/second-genesis/lib/module2/consistencyCheck';
-import { ScenarioOption } from '@second-genesis/types/module2';
+import { checkAnswerConsistency } from '@/app/growth-roadmap/lib/module2/consistencyCheck';
+import { ScenarioOption } from '@growth-roadmap/types/module2';
 
 describe('checkAnswerConsistency', () => {
   const createOption = (

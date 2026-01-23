@@ -4,6 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { ArrowRight, Calendar, User, Eye } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { SkeletonLoader } from "@/components/SkeletonLoader";
+import { safeApiCall, showToast } from "@/lib/utils/errorHandler";
 
 interface BlogPost {
   id: number;
@@ -29,13 +32,23 @@ function getPreview(text: string, maxLength: number = 150): string {
 export default function Home() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchBlogPosts() {
       try {
-        const response = await fetch('/api/blog/posts?limit=20'); // 충분한 수를 가져와서 정렬
-        const data = await response.json();
-        if (data.success && data.posts.length > 0) {
+        setError(null);
+        const data = await safeApiCall<{ success: boolean; posts: BlogPost[] }>(
+          () => fetch('/api/blog/posts?limit=20'),
+          {
+            onError: (err) => {
+              setError(err.message);
+              showToast(err.message, 'error');
+            },
+          }
+        );
+
+        if (data?.success && data.posts.length > 0) {
           // 최신 포스트 1개 (첫 번째)
           const latestPost = data.posts[0];
           
@@ -52,7 +65,9 @@ export default function Home() {
           setBlogPosts([latestPost, ...otherPosts]);
         }
       } catch (error) {
-        console.error('Failed to fetch blog posts:', error);
+        const errorMessage = error instanceof Error ? error.message : '블로그 포스트를 불러오는데 실패했습니다.';
+        setError(errorMessage);
+        showToast(errorMessage, 'error');
       } finally {
         setLoading(false);
       }
@@ -61,8 +76,8 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
-      {/* 상단 배너 영역 - MNPS & Second Genesis */}
+    <div className="page">
+      {/* 상단 배너 영역 - MNPS & 성장 로드맵 */}
       <section className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 py-16 mb-8">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -91,8 +106,8 @@ export default function Home() {
               <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400/20 rounded-full blur-3xl -mr-32 -mt-32"></div>
             </Link>
 
-            {/* Second Genesis 배너 */}
-            <Link href="/second-genesis" className="group relative overflow-hidden rounded-2xl bg-white/10 backdrop-blur-md hover:bg-white/20 transition-all duration-300 shadow-xl">
+            {/* 성장 로드맵 배너 */}
+            <Link href="/growth-roadmap" className="group relative overflow-hidden rounded-2xl bg-white/10 backdrop-blur-md hover:bg-white/20 transition-all duration-300 shadow-xl">
               <div className="p-8 h-full flex flex-col justify-between">
                 <div>
                   <div className="flex items-center gap-3 mb-4">
@@ -101,7 +116,7 @@ export default function Home() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                     </div>
-                    <h2 className="text-3xl font-bold text-white">Second Genesis</h2>
+                    <h2 className="text-3xl font-bold text-white">성장 로드맵</h2>
                   </div>
                   <p className="text-white/90 text-lg mb-4">
                     전략적 방향 전환 도구로<br />
@@ -120,7 +135,7 @@ export default function Home() {
       </section>
 
       {/* 메인 콘텐츠 영역 */}
-      <div className="max-w-7xl mx-auto px-6 pb-16">
+      <div className="page-container pb-16">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* 메인 콘텐츠 영역 (블로그) */}
           <div className="lg:col-span-3">
@@ -132,7 +147,7 @@ export default function Home() {
               </div>
               <Link 
                 href="/blog" 
-                className="text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-2"
+                className="text-indigo-300 hover:text-indigo-200 font-semibold flex items-center gap-2"
               >
                 전체 보기
                 <ArrowRight className="w-4 h-4" />
@@ -141,8 +156,24 @@ export default function Home() {
 
             {/* 블로그 글 목록 */}
             {loading ? (
-              <div className="flex items-center justify-center py-20">
-                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              <div className="space-y-6">
+                <SkeletonLoader variant="card" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <SkeletonLoader key={i} variant="card" />
+                  ))}
+                </div>
+              </div>
+            ) : error ? (
+              <div className="card p-12 text-center">
+                <p className="text-red-400 mb-4">{error}</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="btn btn-primary"
+                  aria-label="새로고침"
+                >
+                  새로고침
+                </button>
               </div>
             ) : blogPosts.length === 0 ? (
               <div className="text-center py-20 text-gray-500">
@@ -154,7 +185,7 @@ export default function Home() {
                 {blogPosts[0] && (
                   <Link 
                     href={`/blog/${blogPosts[0].id}`}
-                    className="block group bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow overflow-hidden"
+                    className="block group rounded-xl border border-zinc-800 bg-zinc-900/70 shadow-lg hover:border-zinc-700 transition-colors overflow-hidden"
                   >
                     <div className="md:flex">
                       {blogPosts[0].image && (
@@ -168,7 +199,7 @@ export default function Home() {
                         </div>
                       )}
                       <div className={`${blogPosts[0].image ? 'md:w-2/3' : 'w-full'} p-6`}>
-                        <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                        <div className="flex items-center gap-4 text-sm text-gray-400 mb-3">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
                             {blogPosts[0].date}
@@ -184,13 +215,13 @@ export default function Home() {
                             {blogPosts[0].viewCount || 0}
                           </span>
                         </div>
-                        <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
+                        <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-indigo-200 transition-colors">
                           {blogPosts[0].title}
                         </h3>
-                        <p className="text-gray-600 line-clamp-3 mb-4">
+                        <p className="text-gray-300 line-clamp-3 mb-4">
                           {getPreview(blogPosts[0].content, 200)}
                         </p>
-                        <div className="flex items-center text-blue-600 font-semibold">
+                        <div className="flex items-center text-indigo-300 font-semibold">
                           자세히 보기
                           <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                         </div>
@@ -205,7 +236,7 @@ export default function Home() {
                     <Link
                       key={post.id}
                       href={`/blog/${post.id}`}
-                      className="block group bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow overflow-hidden"
+                      className="block group rounded-xl border border-zinc-800 bg-zinc-900/70 shadow-lg hover:border-zinc-700 transition-colors overflow-hidden"
                     >
                       {post.image && (
                         <div className="w-full h-48 bg-gray-200 relative overflow-hidden">
@@ -218,7 +249,7 @@ export default function Home() {
                         </div>
                       )}
                       <div className="p-5">
-                        <div className="flex items-center gap-3 text-xs text-gray-500 mb-2">
+                        <div className="flex items-center gap-3 text-xs text-gray-400 mb-2">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
                             {post.date}
@@ -234,13 +265,13 @@ export default function Home() {
                             {post.viewCount || 0}
                           </span>
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
+                        <h3 className="text-lg font-bold text-white mb-2 group-hover:text-indigo-200 transition-colors line-clamp-2">
                           {post.title}
                         </h3>
-                        <p className="text-gray-600 text-sm line-clamp-2 mb-3">
+                        <p className="text-gray-300 text-sm line-clamp-2 mb-3">
                           {getPreview(post.content, 100)}
                         </p>
-                        <div className="flex items-center text-blue-600 text-sm font-semibold">
+                        <div className="flex items-center text-indigo-300 text-sm font-semibold">
                           읽기
                           <ArrowRight className="w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform" />
                         </div>
@@ -255,25 +286,22 @@ export default function Home() {
           {/* 사이드바 */}
           <div className="lg:col-span-1 space-y-6">
             {/* 빠른 링크 */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">빠른 링크</h3>
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/70 shadow-lg p-6">
+              <h3 className="text-lg font-bold text-white mb-4">빠른 링크</h3>
               <div className="space-y-3">
-                <Link href="/services" className="block text-gray-700 hover:text-blue-600 transition-colors py-2 border-b border-gray-100">
+                <Link href="/services" className="block text-gray-200 hover:text-indigo-200 transition-colors py-2 border-b border-zinc-800">
                   서비스 소개
                 </Link>
-                <Link href="/board" className="block text-gray-700 hover:text-blue-600 transition-colors py-2 border-b border-gray-100">
+                <Link href="/board" className="block text-gray-200 hover:text-indigo-200 transition-colors py-2 border-b border-zinc-800">
                   게시판
-                </Link>
-                <Link href="/contact" className="block text-gray-700 hover:text-blue-600 transition-colors py-2">
-                  문의하기
                 </Link>
               </div>
             </div>
 
             {/* 인기 태그 */}
             {blogPosts.length > 0 && (
-              <div className="bg-white rounded-xl shadow-md p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">인기 태그</h3>
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900/70 shadow-lg p-6">
+                <h3 className="text-lg font-bold text-white mb-4">인기 태그</h3>
                 <div className="flex flex-wrap gap-2">
                   {Array.from(new Set(blogPosts.flatMap(post => 
                     post.tags ? post.tags.split(',').map(tag => tag.trim()).filter(Boolean) : []
@@ -281,7 +309,7 @@ export default function Home() {
                     <Link
                       key={idx}
                       href={`/blog?q=${encodeURIComponent(tag)}`}
-                      className="px-3 py-1 bg-gray-100 hover:bg-blue-100 text-gray-700 hover:text-blue-700 rounded-full text-sm transition-colors"
+                      className="px-3 py-1 bg-zinc-800 hover:bg-indigo-600/30 text-gray-300 hover:text-indigo-200 rounded-full text-sm transition-colors"
                     >
                       #{tag}
                     </Link>

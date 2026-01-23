@@ -79,12 +79,14 @@ CREATE TABLE IF NOT EXISTS board_posts (
   title TEXT NOT NULL,
   content TEXT NOT NULL,
   author TEXT NOT NULL,
+  anon_id TEXT,
   views INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_board_posts_author ON board_posts(author);
+CREATE INDEX IF NOT EXISTS idx_board_posts_anon_id ON board_posts(anon_id);
 CREATE INDEX IF NOT EXISTS idx_board_posts_created_at ON board_posts(created_at);
 
 -- ============================================

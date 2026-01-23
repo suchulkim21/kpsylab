@@ -30,10 +30,10 @@ export default function APIDocsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="page flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">API 문서 로딩 중...</p>
+          <p className="muted">API 문서 로딩 중...</p>
         </div>
       </div>
     );
@@ -41,12 +41,12 @@ export default function APIDocsPage() {
 
   if (!spec) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="page flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">API 문서를 불러올 수 없습니다.</p>
+          <p className="text-red-400 mb-4">API 문서를 불러올 수 없습니다.</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="btn btn-primary"
           >
             새로고침
           </button>
@@ -56,15 +56,17 @@ export default function APIDocsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="container mx-auto py-8">
+    <div className="page">
+      <div className="page-container py-10">
         <div className="mb-6">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">KPSY LAB API 문서</h1>
-          <p className="text-gray-600">
+          <h1 className="text-4xl font-bold text-white mb-2">KPSY LAB API 문서</h1>
+          <p className="muted">
             KPSY LAB 통합 플랫폼의 모든 API 엔드포인트 문서입니다.
           </p>
         </div>
-        <SwaggerUI spec={spec} />
+        <div className="rounded-xl border border-zinc-800 bg-white text-gray-900 p-4">
+          <SwaggerUI spec={spec} />
+        </div>
       </div>
     </div>
   );

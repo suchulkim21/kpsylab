@@ -29,6 +29,11 @@ function getRateLimitKey(request: NextRequest): string {
 
 function checkRateLimit(key: string, isApi: boolean): boolean {
   const now = Date.now();
+  for (const [entryKey, value] of rateLimitMap.entries()) {
+    if (now > value.resetTime) {
+      rateLimitMap.delete(entryKey);
+    }
+  }
   const limit = isApi ? RATE_LIMIT.apiMaxRequests : RATE_LIMIT.maxRequests;
   const entry = rateLimitMap.get(key);
 
@@ -48,16 +53,6 @@ function checkRateLimit(key: string, isApi: boolean): boolean {
   entry.count++;
   return true;
 }
-
-// 오래된 항목 정리 (메모리 누수 방지)
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, value] of rateLimitMap.entries()) {
-    if (now > value.resetTime) {
-      rateLimitMap.delete(key);
-    }
-  }
-}, RATE_LIMIT.windowMs);
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -134,7 +129,7 @@ export function middleware(request: NextRequest) {
   });
 
   // API 라우트에 대한 추가 보안 검사
-  if (isApiRoute && request.method === 'POST' || request.method === 'PUT' || request.method === 'DELETE') {
+  if (isApiRoute && (request.method === 'POST' || request.method === 'PUT' || request.method === 'DELETE')) {
     // Origin 검증 (CSRF 보호)
     const origin = request.headers.get('origin');
     const referer = request.headers.get('referer');

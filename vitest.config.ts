@@ -23,7 +23,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './'),
-      '@second-genesis': path.resolve(__dirname, './app/second-genesis'),
+      '@growth-roadmap': path.resolve(__dirname, './app/growth-roadmap'),
     },
   },
 });

@@ -62,8 +62,8 @@ export default function TestPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-900 text-white px-6 py-12">
-      <div className="max-w-3xl mx-auto space-y-8">
+    <main className="page">
+      <div className="page-container max-w-3xl py-12 space-y-8">
         <header className="space-y-2 text-center">
           <h1 className="text-4xl font-bold">MNPS 테스트</h1>
           <p className="text-gray-400">
@@ -72,14 +72,14 @@ export default function TestPage() {
         </header>
 
         {!showResult ? (
-          <section className="bg-gray-800/60 border border-gray-700 rounded-2xl p-6 space-y-6">
+          <section className="card p-6 space-y-6">
             <div className="flex items-center justify-between text-sm text-gray-400">
               <span>
                 문항 {currentIndex + 1} / {MNPS_QUESTIONS.length}
               </span>
               <span>{progress}%</span>
             </div>
-            <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
+            <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
               <div
                 className="h-full bg-cyan-500 transition-all"
                 style={{ width: `${progress}%` }}
@@ -112,21 +112,21 @@ export default function TestPage() {
               <button
                 onClick={handlePrev}
                 disabled={currentIndex === 0}
-                className="rounded-full px-6 py-3 bg-gray-700 text-white disabled:opacity-40"
+                className="btn btn-secondary rounded-full disabled:opacity-40"
               >
                 이전
               </button>
               <button
                 onClick={handleNext}
                 disabled={answers[current.id] == null}
-                className="rounded-full px-6 py-3 bg-cyan-600 text-white disabled:opacity-40"
+                className="btn btn-primary rounded-full disabled:opacity-40"
               >
                 {currentIndex === MNPS_QUESTIONS.length - 1 ? "결과 보기" : "다음"}
               </button>
             </div>
           </section>
         ) : (
-          <section className="bg-gray-800/60 border border-gray-700 rounded-2xl p-6 space-y-6">
+          <section className="card p-6 space-y-6">
             <h2 className="text-2xl font-bold text-center">결과 요약</h2>
             <div className="grid gap-4">
               {Object.entries(scores).map(([trait, value]) => (
@@ -142,13 +142,13 @@ export default function TestPage() {
             <div className="flex flex-col sm:flex-row gap-3 justify-between">
               <button
                 onClick={handleReset}
-                className="rounded-full px-6 py-3 bg-gray-700 text-white"
+                className="btn btn-secondary rounded-full"
               >
                 다시하기
               </button>
               <Link
                 href="/mnps"
-                className="rounded-full px-6 py-3 bg-cyan-600 text-white text-center"
+                className="btn btn-primary rounded-full text-center"
               >
                 MNPS 메인으로
               </Link>

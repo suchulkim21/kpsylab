@@ -3,14 +3,14 @@ import { Brain, Zap, BarChart3, ArrowRight, TestTube2, Sparkles } from "lucide-r
 
 export default function ServicesPage() {
   return (
-    <div className="min-h-screen bg-[#050505] text-white">
+    <div className="page">
       {/* Background Effect */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-900/20 blur-[120px] rounded-full" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900/20 blur-[120px] rounded-full" />
       </div>
 
-      <main className="relative z-10 max-w-7xl mx-auto px-6 py-24 md:py-32">
+      <main className="page-container relative z-10 py-24 md:py-32">
         {/* Header */}
         <header className="text-center mb-20 space-y-4">
           <h1 className="text-5xl md:text-7xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500">
@@ -59,7 +59,7 @@ export default function ServicesPage() {
                   </p>
                 </div>
 
-                <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 space-y-4">
+                <div className="card p-6 space-y-4">
                   <h4 className="text-xl font-semibold text-white">핵심 특징</h4>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
@@ -92,7 +92,7 @@ export default function ServicesPage() {
                   </ul>
                 </div>
 
-                <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-6">
+                <div className="card bg-blue-500/10 border-blue-500/20 p-6">
                   <h4 className="text-lg font-semibold text-blue-400 mb-3">측정 항목</h4>
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div className="text-gray-300">
@@ -113,7 +113,7 @@ export default function ServicesPage() {
 
               {/* 활용 방법 */}
               <div className="space-y-6">
-                <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/20 rounded-xl p-6">
+                <div className="card bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20 p-6">
                   <h4 className="text-xl font-semibold text-white mb-4">이런 분께 추천합니다</h4>
                   <ul className="space-y-3 text-gray-300">
                     <li className="flex items-start gap-3">
@@ -137,7 +137,7 @@ export default function ServicesPage() {
 
                 <Link
                   href="/mnps"
-                  className="group flex items-center justify-between bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 hover:border-blue-500/50 rounded-xl p-6 transition-all duration-300"
+                  className="group flex items-center justify-between rounded-xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 hover:border-blue-500/50 p-6 transition-all duration-300"
                 >
                   <div>
                     <div className="text-blue-400 font-semibold text-lg mb-1">MNPS 테스트 시작하기</div>
@@ -149,14 +149,14 @@ export default function ServicesPage() {
             </div>
           </section>
 
-          {/* Second Genesis 서비스 */}
+          {/* 성장 로드맵 서비스 */}
           <section className="space-y-8">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-16 h-16 rounded-full bg-purple-500/10 flex items-center justify-center">
                 <Sparkles className="w-8 h-8 text-purple-400" />
               </div>
               <div>
-                <h2 className="text-4xl font-bold tracking-tight">Second Genesis</h2>
+                <h2 className="text-4xl font-bold tracking-tight">성장 로드맵</h2>
                 <p className="text-purple-400 text-sm uppercase tracking-wider mt-1">
                   Strategic Psychology Analysis System
                 </p>
@@ -171,7 +171,7 @@ export default function ServicesPage() {
                     새로운 도약을 위한 전략적 심리 분석
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    Second Genesis는 3가지 모듈을 통해 당신의 성장 저해 요인, 현재 상태, 그리고 이상향을
+                    성장 로드맵는 3가지 모듈을 통해 당신의 성장 저해 요인, 현재 상태, 그리고 이상향을
                     종합적으로 분석하여 새로운 시작의 전략을 제시합니다.
                   </p>
                   <p className="text-gray-400 leading-relaxed mt-4">
@@ -182,7 +182,7 @@ export default function ServicesPage() {
 
                 {/* 3가지 모듈 */}
                 <div className="space-y-4">
-                  <div className="bg-zinc-900/50 border border-red-500/20 rounded-xl p-5">
+                <div className="card border-red-500/20 p-5">
                     <div className="flex items-center gap-3 mb-2">
                       <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center">
                         <span className="text-red-400 font-bold text-sm">1</span>
@@ -194,7 +194,7 @@ export default function ServicesPage() {
                     </p>
                   </div>
 
-                  <div className="bg-zinc-900/50 border border-blue-500/20 rounded-xl p-5">
+                <div className="card border-blue-500/20 p-5">
                     <div className="flex items-center gap-3 mb-2">
                       <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center">
                         <span className="text-blue-400 font-bold text-sm">2</span>
@@ -206,7 +206,7 @@ export default function ServicesPage() {
                     </p>
                   </div>
 
-                  <div className="bg-zinc-900/50 border border-purple-500/20 rounded-xl p-5">
+                <div className="card border-purple-500/20 p-5">
                     <div className="flex items-center gap-3 mb-2">
                       <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center">
                         <span className="text-purple-400 font-bold text-sm">3</span>
@@ -222,7 +222,7 @@ export default function ServicesPage() {
 
               {/* 활용 방법 */}
               <div className="space-y-6">
-                <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl p-6">
+                <div className="card bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 p-6">
                   <h4 className="text-xl font-semibold text-white mb-4">이런 분께 추천합니다</h4>
                   <ul className="space-y-3 text-gray-300">
                     <li className="flex items-start gap-3">
@@ -244,7 +244,7 @@ export default function ServicesPage() {
                   </ul>
                 </div>
 
-                <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-6">
+                <div className="card bg-purple-500/10 border-purple-500/20 p-6">
                   <h4 className="text-lg font-semibold text-purple-400 mb-3">분석 프로세스</h4>
                   <div className="space-y-3 text-sm text-gray-300">
                     <div className="flex items-center gap-3">
@@ -267,11 +267,11 @@ export default function ServicesPage() {
                 </div>
 
                 <Link
-                  href="/second-genesis"
-                  className="group flex items-center justify-between bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 hover:border-purple-500/50 rounded-xl p-6 transition-all duration-300"
+                  href="/growth-roadmap"
+                  className="group flex items-center justify-between rounded-xl border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 hover:border-purple-500/50 p-6 transition-all duration-300"
                 >
                   <div>
-                    <div className="text-purple-400 font-semibold text-lg mb-1">Second Genesis 시작하기</div>
+                    <div className="text-purple-400 font-semibold text-lg mb-1">성장 로드맵 시작하기</div>
                     <div className="text-gray-400 text-sm">3개 모듈 순차 진행</div>
                   </div>
                   <ArrowRight className="w-6 h-6 text-purple-400 group-hover:translate-x-2 transition-transform" />
@@ -288,15 +288,15 @@ export default function ServicesPage() {
           <div className="flex gap-4 justify-center flex-wrap">
             <Link
               href="/mnps"
-              className="px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl transition-colors"
+              className="btn btn-primary px-8"
             >
               MNPS 시작하기
             </Link>
             <Link
-              href="/second-genesis"
-              className="px-8 py-3 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-xl transition-colors"
+              href="/growth-roadmap"
+              className="btn btn-secondary px-8"
             >
-              Second Genesis 시작하기
+              성장 로드맵 시작하기
             </Link>
           </div>
         </div>

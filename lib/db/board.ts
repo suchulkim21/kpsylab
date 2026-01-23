@@ -24,9 +24,23 @@ export interface BoardPost {
   title: string;
   content: string;
   author: string;
+  anon_id?: string | null;
   views: number;
   created_at: string;
   updated_at: string;
+}
+
+function mapPost(post: any): BoardPost {
+  return {
+    id: post.id,
+    title: post.title,
+    content: post.content,
+    author: post.author,
+    anon_id: post.anon_id ?? null,
+    views: post.views || 0,
+    created_at: post.created_at,
+    updated_at: post.updated_at,
+  };
 }
 
 // 모든 게시글 조회 (페이지네이션)
@@ -46,15 +60,40 @@ export async function getPosts(limit: number = 20, offset: number = 0): Promise<
     return [];
   }
 
-  return (data || []).map(post => ({
-    id: post.id,
-    title: post.title,
-    content: post.content,
-    author: post.author,
-    views: post.views || 0,
-    created_at: post.created_at,
-    updated_at: post.updated_at,
-  }));
+  return (data || []).map(mapPost);
+}
+
+export async function getPostsForViewer(
+  limit: number,
+  offset: number,
+  anonId: string | null,
+  isAdmin: boolean
+): Promise<BoardPost[]> {
+  if (!supabase) {
+    throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
+  }
+
+  if (!isAdmin && !anonId) {
+    return [];
+  }
+
+  let query = supabase
+    .from('board_posts')
+    .select('*')
+    .order('id', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (!isAdmin && anonId) {
+    query = query.eq('anon_id', anonId);
+  }
+
+  const { data, error } = await query;
+  if (error) {
+    console.error('게시글 조회 실패:', error);
+    return [];
+  }
+
+  return (data || []).map(mapPost);
 }
 
 // 게시글 개수 조회
@@ -67,6 +106,32 @@ export async function getPostCount(): Promise<number> {
     .from('board_posts')
     .select('*', { count: 'exact', head: true });
 
+  if (error) {
+    console.error('게시글 개수 조회 실패:', error);
+    return 0;
+  }
+
+  return count || 0;
+}
+
+export async function getPostCountForViewer(anonId: string | null, isAdmin: boolean): Promise<number> {
+  if (!supabase) {
+    throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
+  }
+
+  if (!isAdmin && !anonId) {
+    return 0;
+  }
+
+  let query = supabase
+    .from('board_posts')
+    .select('*', { count: 'exact', head: true });
+
+  if (!isAdmin && anonId) {
+    query = query.eq('anon_id', anonId);
+  }
+
+  const { count, error } = await query;
   if (error) {
     console.error('게시글 개수 조회 실패:', error);
     return 0;
@@ -91,15 +156,37 @@ export async function getPost(id: number): Promise<BoardPost | null> {
     return null;
   }
 
-  return {
-    id: data.id,
-    title: data.title,
-    content: data.content,
-    author: data.author,
-    views: data.views || 0,
-    created_at: data.created_at,
-    updated_at: data.updated_at,
-  };
+  return mapPost(data);
+}
+
+export async function getPostForViewer(
+  id: number,
+  anonId: string | null,
+  isAdmin: boolean
+): Promise<BoardPost | null> {
+  if (!supabase) {
+    throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
+  }
+
+  if (!isAdmin && !anonId) {
+    return null;
+  }
+
+  let query = supabase
+    .from('board_posts')
+    .select('*')
+    .eq('id', id);
+
+  if (!isAdmin && anonId) {
+    query = query.eq('anon_id', anonId);
+  }
+
+  const { data, error } = await query.single();
+  if (error || !data) {
+    return null;
+  }
+
+  return mapPost(data);
 }
 
 // 조회수 증가
@@ -123,7 +210,12 @@ export async function incrementViews(id: number): Promise<void> {
 }
 
 // 게시글 생성
-export async function createPost(title: string, content: string, author: string): Promise<number> {
+export async function createPost(
+  title: string,
+  content: string,
+  author: string,
+  anonId?: string | null
+): Promise<number> {
   if (!supabase) {
     throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
   }
@@ -134,6 +226,7 @@ export async function createPost(title: string, content: string, author: string)
       title,
       content,
       author,
+      anon_id: anonId || null,
       views: 0,
     })
     .select()

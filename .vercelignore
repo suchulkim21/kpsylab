@@ -1,0 +1,26 @@
+# Vercel 배포 시 제외할 파일/폴더
+
+# 테스트 관련
+test-results/
+playwright-report/
+coverage/
+.nyc_output/
+
+# 개발 파일
+*.log
+.DS_Store
+.env.local
+.env*.local
+
+# 문서 (선택적)
+*.md
+!README.md
+
+# 스크립트
+scripts/
+*.ps1
+*.bat
+
+# 임시 파일
+*.tmp
+*.temp

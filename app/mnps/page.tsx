@@ -5,14 +5,14 @@ import { ArrowRight, TestTube2, BarChart3, FileText, Zap } from 'lucide-react';
 
 export default function MNPSPage() {
   return (
-    <div className="min-h-screen bg-[#050505] text-white">
+    <div className="page">
       {/* Background Effect */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-900/20 blur-[120px] rounded-full" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-cyan-900/20 blur-[120px] rounded-full" />
       </div>
 
-      <main className="relative z-10 max-w-4xl mx-auto px-6 py-24 md:py-32">
+      <main className="page-container relative z-10 py-24 md:py-32">
         {/* Header */}
         <header className="text-center mb-16 space-y-4">
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-blue-500/10 flex items-center justify-center">
@@ -32,7 +32,7 @@ export default function MNPSPage() {
         </header>
 
         {/* Description */}
-        <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-8 mb-12 space-y-6">
+        <div className="card p-8 mb-12 space-y-6">
           <div>
             <h2 className="text-2xl font-bold text-white mb-4">서비스 소개</h2>
             <p className="text-gray-300 leading-relaxed">
@@ -69,7 +69,7 @@ export default function MNPSPage() {
 
         {/* CTA */}
         <div className="text-center space-y-6">
-          <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-8">
+          <div className="card bg-blue-500/10 border-blue-500/20 p-8">
             <h3 className="text-2xl font-bold text-white mb-4">MNPS 테스트 시작하기</h3>
             <p className="text-gray-300 mb-6">
               약 15-20분 소요되며, 4가지 다크 테트라드 특성을 분석합니다.
@@ -77,14 +77,14 @@ export default function MNPSPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/mnps/test"
-                className="group flex items-center justify-center gap-2 px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl transition-all duration-300"
+                className="btn btn-primary px-8"
               >
                 <span>MNPS 테스트 시작</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link
                 href="/services"
-                className="px-8 py-4 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold rounded-xl transition-colors"
+                className="btn btn-secondary px-8"
               >
                 서비스 소개 보기
               </Link>

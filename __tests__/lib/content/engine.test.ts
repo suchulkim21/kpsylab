@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { assembleParagraphs, formatClinicalTone } from '@/app/second-genesis/lib/content/engine';
+import { assembleParagraphs, formatClinicalTone } from '@/app/growth-roadmap/lib/content/engine';
 
 interface TextBlock {
   content: string;

@@ -74,7 +74,7 @@ export default function ScenarioTester() {
                 rawSelections: selections
             };
             localStorage.setItem('sg_module2_result', JSON.stringify(resultData));
-            router.push('/second-genesis/module2/result');
+            router.push('/growth-roadmap/module2/result');
         }
     };
 

@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 import {
   Users,
@@ -76,44 +74,61 @@ interface Stats {
 }
 
 export default function AdminDashboard() {
-  const router = useRouter();
-  const { user, loading } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [adminKey, setAdminKey] = useState('');
+  const [adminKeyInput, setAdminKeyInput] = useState('');
 
   useEffect(() => {
-    if (!loading && (!user || user.role !== 'master')) {
-      router.push('/');
-      return;
+    const storedKey = sessionStorage.getItem('admin-key') || '';
+    setAdminKey(storedKey);
+    setAdminKeyInput(storedKey);
+    if (storedKey) {
+      fetchAllData(storedKey);
+    } else {
+      setIsLoading(false);
     }
+  }, []);
 
-    if (user && user.role === 'master') {
-      fetchAllData();
-    }
-  }, [user, loading, router]);
-
-  const fetchAllData = async () => {
+  const fetchAllData = async (keyOverride?: string) => {
     try {
       setIsLoading(true);
       setError(null);
+      const keyToUse = keyOverride ?? adminKey;
 
       // 기본 통계
-      const statsResponse = await fetch('/api/admin/stats');
+      const statsResponse = await fetch('/api/admin/stats', {
+        headers: keyToUse ? { 'x-admin-secret': keyToUse } : undefined,
+      });
       const statsData = await statsResponse.json();
       if (statsData.success) {
         setStats(statsData.stats);
+      } else if (statsResponse.status === 403) {
+        setStats(null);
+        setAnalytics(null);
+        setAnalysis(null);
+        setError('관리자 키가 유효하지 않습니다.');
+        return;
       }
 
       // 분석 데이터
-      const analyticsResponse = await fetch('/api/admin/analytics');
+      const analyticsResponse = await fetch('/api/admin/analytics', {
+        headers: keyToUse ? { 'x-admin-secret': keyToUse } : undefined,
+      });
       const analyticsData = await analyticsResponse.json();
       if (analyticsData.success) {
         setAnalytics(analyticsData.analytics);
         setAnalysis(analyticsData.analysis);
+      } else if (analyticsResponse.status === 403) {
+        setStats(null);
+        setAnalytics(null);
+        setAnalysis(null);
+        setError('관리자 키가 유효하지 않습니다.');
+        return;
       }
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -124,7 +139,45 @@ export default function AdminDashboard() {
     }
   };
 
-  if (loading || isLoading) {
+  if (!adminKey) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
+        <div className="w-full max-w-md bg-gray-900/60 border border-gray-800 rounded-xl p-6">
+          <h1 className="text-2xl font-bold mb-4">관리자 키 입력</h1>
+          <p className="text-sm text-gray-400 mb-6">
+            관리자 기능 접근을 위해 키가 필요합니다.
+          </p>
+          <input
+            type="password"
+            value={adminKeyInput}
+            onChange={(e) => setAdminKeyInput(e.target.value)}
+            placeholder="ADMIN_SECRET"
+            className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+          />
+          <button
+            onClick={() => {
+              const trimmed = adminKeyInput.trim();
+              if (!trimmed) return;
+              sessionStorage.setItem('admin-key', trimmed);
+              setAdminKey(trimmed);
+              fetchAllData(trimmed);
+            }}
+            className="mt-4 w-full px-4 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg transition-colors"
+          >
+            접근하기
+          </button>
+          <Link
+            href="/admin/reset"
+            className="mt-4 block text-sm text-gray-400 hover:text-gray-200 text-center transition-colors"
+          >
+            키를 잃어버렸나요?
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
@@ -135,21 +188,29 @@ export default function AdminDashboard() {
     );
   }
 
-  if (!user || user.role !== 'master') {
-    return null;
-  }
-
   if (error && !stats && !analytics) {
     return (
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4">
         <div className="text-red-500 text-xl font-bold mb-4">오류 발생</div>
         <p className="text-gray-400 mb-8">{error}</p>
-        <button
-          onClick={fetchAllData}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          다시 시도
-        </button>
+        <div className="flex flex-col gap-3 w-full max-w-xs">
+          <button
+            onClick={() => fetchAllData()}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            다시 시도
+          </button>
+          <button
+            onClick={() => {
+              sessionStorage.removeItem('admin-key');
+              setAdminKey('');
+              setAdminKeyInput('');
+            }}
+            className="px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
+          >
+            관리자 키 변경
+          </button>
+        </div>
       </div>
     );
   }
@@ -184,7 +245,7 @@ export default function AdminDashboard() {
             </p>
           </div>
           <button
-            onClick={fetchAllData}
+            onClick={() => fetchAllData()}
             className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
           >
             <RefreshCw className="w-4 h-4" />
@@ -494,7 +555,7 @@ export default function AdminDashboard() {
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Second Genesis</span>
+                    <span className="text-gray-400">성장 로드맵</span>
                     <span className={`font-bold ${getStatusColor(stats?.systemStatus?.secondGenesisService || 'unknown')}`}>
                       {(stats?.systemStatus?.secondGenesisService || 'unknown').toUpperCase()}
                     </span>

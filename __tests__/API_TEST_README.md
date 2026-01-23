@@ -6,7 +6,6 @@
 
 ## 테스트 파일
 
-- `api/auth.test.ts` - 인증 API 테스트 (회원가입, 로그인, 로그아웃)
 - `api/blog.test.ts` - 블로그 API 테스트 (포스트 조회, 검색)
 - `api/monitoring.test.ts` - 모니터링 API 테스트 (시스템, 에러, 성능)
 
@@ -35,7 +34,7 @@ npm run test:api
 또는 특정 테스트 파일만 실행:
 
 ```bash
-npm test __tests__/api/auth.test.ts
+npm test __tests__/api/blog.test.ts
 ```
 
 ## 환경 변수
@@ -51,12 +50,6 @@ API_BASE_URL=http://localhost:3000 npm run test:api
 ## 테스트 커버리지
 
 다음 API 엔드포인트들이 테스트됩니다:
-
-### 인증 API
-- ✅ POST /api/auth/register - 회원가입
-- ✅ POST /api/auth/login - 로그인 (이메일/아이디)
-- ✅ GET /api/auth/me - 현재 사용자 조회
-- ✅ POST /api/auth/logout - 로그아웃
 
 ### 블로그 API
 - ✅ GET /api/blog/posts - 포스트 목록 조회

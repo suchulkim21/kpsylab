@@ -13,7 +13,10 @@ export default defineConfig({
   /* CI에서 병렬 실행 수 */
   workers: process.env.CI ? 1 : undefined,
   /* 테스트 보고서 설정 */
-  reporter: 'html',
+  reporter: [
+    ['html'],
+    ['list'],
+  ],
   /* 공유 설정 */
   use: {
     /* Base URL */

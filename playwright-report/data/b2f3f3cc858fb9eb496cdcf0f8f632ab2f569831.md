@@ -1,0 +1,50 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - link "KPSY LAB" [ref=e3] [cursor=pointer]:
+      - /url: /
+    - navigation [ref=e4]:
+      - link "홈" [ref=e5] [cursor=pointer]:
+        - /url: /
+      - link "서비스 소개" [ref=e6] [cursor=pointer]:
+        - /url: /services
+      - link "MNPS" [ref=e7] [cursor=pointer]:
+        - /url: /mnps
+      - link "Second Genesis" [ref=e8] [cursor=pointer]:
+        - /url: /second-genesis
+      - link "블로그" [ref=e9] [cursor=pointer]:
+        - /url: /blog
+      - link "게시판" [ref=e10] [cursor=pointer]:
+        - /url: /board
+      - link "문의" [ref=e11] [cursor=pointer]:
+        - /url: /contact
+  - generic [ref=e14]:
+    - link "홈으로" [ref=e15] [cursor=pointer]:
+      - /url: /
+      - img [ref=e16]
+      - generic [ref=e18]: 홈으로
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - img [ref=e22]
+        - heading "로그인" [level=1] [ref=e25]
+        - paragraph [ref=e26]: 계정에 로그인하세요
+      - generic [ref=e27]:
+        - generic [ref=e28]:
+          - generic [ref=e29]: 이메일 또는 아이디
+          - textbox "이메일 또는 아이디를 입력하세요" [ref=e30]: invalid@example.com
+          - paragraph [ref=e31]: 마스터 계정은 이메일로 로그인 가능합니다.
+        - generic [ref=e32]:
+          - generic [ref=e33]: 비밀번호
+          - textbox "비밀번호를 입력하세요" [ref=e34]: wrongpassword
+        - button "로그인 중..." [disabled] [ref=e35]:
+          - generic [ref=e37]: 로그인 중...
+      - generic [ref=e38]:
+        - text: 계정이 없으신가요?
+        - link "회원가입" [ref=e39] [cursor=pointer]:
+          - /url: /register
+  - button "Open Next.js Dev Tools" [ref=e45] [cursor=pointer]:
+    - img [ref=e46]
+  - alert [ref=e49]
+```

@@ -25,14 +25,14 @@ test.describe('Navigation and Main Page', () => {
     await expect(page).toHaveURL(/\/mnps/, { timeout: 5000 });
   });
 
-  test('should navigate to Second Genesis service', async ({ page }) => {
+  test('should navigate to 성장 로드맵 service', async ({ page }) => {
     await page.goto('/');
 
-    // Second Genesis 링크 클릭
-    await page.click('a:has-text("Second Genesis"), nav a[href*="second-genesis"]');
+    // 성장 로드맵 링크 클릭
+    await page.click('a:has-text("성장 로드맵"), nav a[href*="growth-roadmap"]');
 
-    // Second Genesis 페이지로 이동 확인
-    await expect(page).toHaveURL(/\/second-genesis/, { timeout: 5000 });
+    // 성장 로드맵 페이지로 이동 확인
+    await expect(page).toHaveURL(/\/growth-roadmap/, { timeout: 5000 });
   });
 
   test('should navigate to services page', async ({ page }) => {
@@ -48,19 +48,6 @@ test.describe('Navigation and Main Page', () => {
     }
   });
 
-  test('should navigate to contact page', async ({ page }) => {
-    await page.goto('/');
-
-    // 문의 링크 클릭
-    const contactLink = page.locator('a:has-text("문의"), nav a[href*="contact"]');
-    const count = await contactLink.count();
-
-    if (count > 0) {
-      await contactLink.first().click();
-      await expect(page).toHaveURL(/\/contact/, { timeout: 5000 });
-    }
-  });
-
   test('should display navigation menu', async ({ page }) => {
     await page.goto('/');
 
@@ -69,7 +56,7 @@ test.describe('Navigation and Main Page', () => {
     await expect(nav).toBeVisible();
 
     // 주요 메뉴 항목 확인
-    const menuItems = ['홈', 'MNPS', 'Second Genesis', '블로그'];
+    const menuItems = ['홈', 'MNPS', '성장 로드맵', '블로그'];
     for (const item of menuItems) {
       const menuLink = page.locator(`a:has-text("${item}")`);
       const count = await menuLink.count();

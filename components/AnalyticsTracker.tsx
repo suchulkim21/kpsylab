@@ -10,6 +10,8 @@ export default function AnalyticsTracker() {
     // 페이지 변경 시 접속 추적
     const trackVisit = async () => {
       try {
+        await fetch('/api/identity', { method: 'GET' });
+
         // 디바이스 타입 감지
         const deviceType = /Mobile|Android|iPhone|iPad/.test(navigator.userAgent) ? 'mobile' : 'desktop';
         

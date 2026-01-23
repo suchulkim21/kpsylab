@@ -1,15 +1,17 @@
 import { NextResponse } from 'next/server';
-import { getPost, incrementViews, updatePost, deletePost } from '@/lib/db/board';
+import { cookies } from 'next/headers';
+import { getPostForViewer, incrementViews, updatePost, deletePost } from '@/lib/db/board';
+import { supabase } from '@/lib/db/supabase';
 
 export const dynamic = 'force-dynamic';
 
 // GET: 단일 게시글 조회
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id: idStr } = await params;
+    const { id: idStr } = params;
     const id = parseInt(idStr);
 
     if (isNaN(id)) {
@@ -19,9 +21,32 @@ export async function GET(
       );
     }
 
-    const post = await getPost(id);
+    const adminSecret = process.env.ADMIN_SECRET;
+    const providedSecret = request.headers.get('x-admin-secret');
+    const isAdmin = !!adminSecret && providedSecret === adminSecret;
+    const cookieStore = await cookies();
+    const anonId = cookieStore.get('anon-id')?.value || null;
+
+    const post = await getPostForViewer(id, anonId, isAdmin);
 
     if (!post) {
+      // 게시글이 존재하는지 확인 (권한 없음 vs 게시글 없음 구분)
+      if (supabase) {
+        const { data: exists } = await supabase
+          .from('board_posts')
+          .select('id')
+          .eq('id', id)
+          .single();
+        
+        if (exists) {
+          // 게시글은 존재하지만 권한이 없음
+          return NextResponse.json(
+            { success: false, error: '권한이 없습니다.', forbidden: true },
+            { status: 403 }
+          );
+        }
+      }
+      
       return NextResponse.json(
         { success: false, error: 'Post not found' },
         { status: 404 }
@@ -32,7 +57,7 @@ export async function GET(
     await incrementViews(id);
 
     // 증가된 조회수로 업데이트
-    const updatedPost = await getPost(id);
+    const updatedPost = await getPostForViewer(id, anonId, isAdmin);
 
     return NextResponse.json({
       success: true,
@@ -50,10 +75,10 @@ export async function GET(
 // PUT: 게시글 수정
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id: idStr } = await params;
+    const { id: idStr } = params;
     const id = parseInt(idStr);
     const body = await request.json();
     const { title, content } = body;
@@ -72,8 +97,21 @@ export async function PUT(
       );
     }
 
-    const success = await updatePost(id, title, content);
+    const adminSecret = process.env.ADMIN_SECRET;
+    const providedSecret = request.headers.get('x-admin-secret');
+    const isAdmin = !!adminSecret && providedSecret === adminSecret;
+    const cookieStore = await cookies();
+    const anonId = cookieStore.get('anon-id')?.value || null;
+    const post = await getPostForViewer(id, anonId, isAdmin);
 
+    if (!post) {
+      return NextResponse.json(
+        { success: false, error: '권한이 없거나 게시글을 찾을 수 없습니다.' },
+        { status: 403 }
+      );
+    }
+
+    const success = await updatePost(id, title, content);
     if (!success) {
       return NextResponse.json(
         { success: false, error: 'Post not found' },
@@ -96,10 +134,10 @@ export async function PUT(
 // DELETE: 게시글 삭제
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id: idStr } = await params;
+    const { id: idStr } = params;
     const id = parseInt(idStr);
 
     if (isNaN(id)) {
@@ -109,8 +147,21 @@ export async function DELETE(
       );
     }
 
-    const success = await deletePost(id);
+    const adminSecret = process.env.ADMIN_SECRET;
+    const providedSecret = request.headers.get('x-admin-secret');
+    const isAdmin = !!adminSecret && providedSecret === adminSecret;
+    const cookieStore = await cookies();
+    const anonId = cookieStore.get('anon-id')?.value || null;
+    const post = await getPostForViewer(id, anonId, isAdmin);
 
+    if (!post) {
+      return NextResponse.json(
+        { success: false, error: '권한이 없거나 게시글을 찾을 수 없습니다.' },
+        { status: 403 }
+      );
+    }
+
+    const success = await deletePost(id);
     if (!success) {
       return NextResponse.json(
         { success: false, error: 'Post not found' },
