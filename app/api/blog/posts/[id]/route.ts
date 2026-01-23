@@ -24,10 +24,10 @@ const normalizeBlogImage = (post: any) => {
 // GET: 단일 게시글 조회
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const postId = parseInt(id, 10);
 
     if (isNaN(postId)) {

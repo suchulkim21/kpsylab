@@ -8,10 +8,10 @@ export const dynamic = 'force-dynamic';
 // GET: 단일 게시글 조회
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: idStr } = params;
+    const { id: idStr } = await params;
     const id = parseInt(idStr);
 
     if (isNaN(id)) {
@@ -75,10 +75,10 @@ export async function GET(
 // PUT: 게시글 수정
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: idStr } = params;
+    const { id: idStr } = await params;
     const id = parseInt(idStr);
     const body = await request.json();
     const { title, content } = body;
@@ -134,10 +134,10 @@ export async function PUT(
 // DELETE: 게시글 삭제
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: idStr } = params;
+    const { id: idStr } = await params;
     const id = parseInt(idStr);
 
     if (isNaN(id)) {
