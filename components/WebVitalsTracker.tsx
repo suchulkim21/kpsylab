@@ -14,14 +14,14 @@ export interface WebVitalsMetric {
 
 /**
  * Web Vitals 추적 컴포넌트
- * Core Web Vitals (LCP, FID, CLS) 및 기타 메트릭 추적
+ * Core Web Vitals (LCP, INP, CLS) 및 기타 메트릭 추적
  */
 export default function WebVitalsTracker() {
   const pathname = usePathname();
 
   useEffect(() => {
     // Web Vitals 라이브러리 동적 로드 (선택적)
-    import('web-vitals').then(({ onCLS, onFID, onFCP, onLCP, onTTFB, onINP }) => {
+    import('web-vitals').then(({ onCLS, onFCP, onLCP, onTTFB, onINP }) => {
       const sendToAnalytics = (metric: WebVitalsMetric) => {
         // 로컬 스토리지에 저장 (선택적)
         const vitals = JSON.parse(localStorage.getItem('web-vitals') || '[]');
@@ -53,15 +53,14 @@ export default function WebVitalsTracker() {
         }
       };
 
-      // Core Web Vitals
+      // Core Web Vitals (FID는 INP로 대체됨)
       onCLS(sendToAnalytics);
-      onFID(sendToAnalytics);
       onLCP(sendToAnalytics);
+      onINP(sendToAnalytics);
 
       // 추가 메트릭
       onFCP(sendToAnalytics);
       onTTFB(sendToAnalytics);
-      onINP(sendToAnalytics);
     }).catch(() => {
       // web-vitals 패키지가 없으면 무시 (선택적 의존성)
       if (process.env.NODE_ENV === 'development') {
