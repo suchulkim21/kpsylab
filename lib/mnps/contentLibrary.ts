@@ -285,6 +285,14 @@ export const archetypeIntros: Record<string, ArchetypeIntro> = {
 
 export type DFactorKey = 'Egoism' | 'Entitlement' | 'MoralDisengagement' | 'Spitefulness';
 
+/** D-Factor 요인 한글 표기명 (리포트 출력용) */
+export const D_FACTOR_DISPLAY_KO: Record<DFactorKey, string> = {
+  Egoism: '이기주의',
+  Entitlement: '권리의식',
+  MoralDisengagement: '도덕적 이탈',
+  Spitefulness: '악의성',
+};
+
 export interface DFactorLevelInterpretation {
   Good: string;
   Bad: string;

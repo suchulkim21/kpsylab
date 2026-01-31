@@ -16,6 +16,7 @@ import {
   extraBadDepthBlocks,
   dFactorInterpretations,
   finalRuinScenarios,
+  D_FACTOR_DISPLAY_KO,
   TraitLevel,
   TraitKey,
   type TraitSnippet,
@@ -576,7 +577,7 @@ export function buildInterpretation(result: DarkNatureResult): DarkNatureInterpr
   }
 
   const good: InterpretationBlock = {
-    title: 'Good Version – 전략적 잠재력 보고서',
+    title: '전략적 잠재력 보고서',
     summary,
     highlights: goodHighlights,
   };
@@ -706,7 +707,7 @@ export function buildInterpretation(result: DarkNatureResult): DarkNatureInterpr
   }
 
   const bad: InterpretationBlock = {
-    title: 'Bad Version – Dark Risk Report',
+    title: '어두운 이면 보고서',
     summary: badSummary,
     highlights: badHighlights,
     risks: badRisks.length > 0 ? badRisks : undefined,
@@ -1055,18 +1056,18 @@ export function calculateDarkProfile(raw: DarkNatureResult): DarkProfile {
 
   if (high(m) && high(s)) {
     multiplier = 1.2;
-    synergyLabel = 'Strategic Predator Synergy (Machiavellianism + Sadism)';
+    synergyLabel = '전략적 포식자 시너지 (마키아벨리즘 + 사디즘)';
     synergyGoodText = '상대방의 심리를 완벽히 장악하여 조직을 리드합니다.';
     synergyBadText = '당신은 타인의 고통을 설계하고, 그들이 파멸해가는 과정을 즐기며 조종합니다.';
   } else if (high(m) && high(p)) {
     multiplier = 1.2;
-    synergyLabel = 'Cold Predator Synergy (Machiavellianism + Psychopathy)';
+    synergyLabel = '냉혈 포식자 시너지 (마키아벨리즘 + 사이코패시)';
   } else if (high(m) && high(n)) {
     multiplier = 1.2;
-    synergyLabel = 'Puppet Master Synergy (Machiavellianism + Narcissism)';
+    synergyLabel = '인형극의 주인 시너지 (마키아벨리즘 + 나르시시즘)';
   } else if (high(p) && high(s)) {
     multiplier = 1.2;
-    synergyLabel = 'Volatile Outlaw Synergy (Psychopathy + Sadism)';
+    synergyLabel = '폭발적 아웃로우 시너지 (사이코패시 + 사디즘)';
   }
 
   const totalDScore = Math.min(100, Math.round(dTotal * multiplier));
@@ -1084,7 +1085,7 @@ export function calculateDarkProfile(raw: DarkNatureResult): DarkProfile {
   const spread = Math.max(m, n, p, s) - Math.min(m, n, p, s);
   const defensive =
     spread < 15 && totalDScore >= 60
-      ? '응답 패턴이 평탄하게 보정되어 있습니다. 이는 실제 성향을 숨기기 위한 **Defensive / Manipulative 프로파일링** 신호일 수 있습니다.'
+      ? '응답 패턴이 평탄하게 보정되어 있습니다. 이는 실제 성향을 숨기기 위한 **방어적/조작적 프로파일링** 신호일 수 있습니다.'
       : '';
 
   // 4. Good Version (Elite Perspective) - 개인화된 텍스트
@@ -1439,7 +1440,7 @@ export function assembleReport(
         '**악의성** 수준이 눈에 띕니다. 타인의 불행이나 손해에서 쾌감을 느끼는 경향이 강화되면, 관계 파괴와 사회적 고립으로 이어질 수 있습니다.\n\n';
     }
 
-    // D-Factor 해석 (4대 하위 요인별 High/Low → Bad 관점 2문장)
+    // D-Factor 해석 (4대 하위 요인별 높음/낮음 → Bad 관점 2문장, 한글 표기)
     const dFactorMap: { key: DFactorKey; score: number }[] = [
       { key: 'Egoism', score: Number(rawSubs?.egoism) ?? 0 },
       { key: 'Entitlement', score: Number(rawSubs?.entitlement) ?? 0 },
@@ -1449,8 +1450,10 @@ export function assembleReport(
     fullBadReport += '## D-Factor 해석\n\n';
     for (const { key, score } of dFactorMap) {
       const level = score >= highCutoff ? 'High' : 'Low';
+      const levelKo = level === 'High' ? '높음' : '낮음';
       const text = dFactorInterpretations[key]?.[level]?.Bad;
-      if (text) fullBadReport += `**${key}** (${level}): ${text}\n\n`;
+      const labelKo = D_FACTOR_DISPLAY_KO[key];
+      if (text) fullBadReport += `**${labelKo}** (${levelKo}): ${text}\n\n`;
     }
 
     // 방어적·일관성·불성실 패턴 검사 (구간별: 심각/중등/경미)
@@ -1463,7 +1466,7 @@ export function assembleReport(
         '**[심각]** 검증 문항에서 정직·일관성이 낮게 나왔습니다. 분석 결과의 신뢰도가 제한적일 수 있으니, 참고용으로만 활용하시기 바랍니다.';
     } else if (spread < 15 && totalDScore >= 60) {
       defensive =
-        '**[중등]** 응답 패턴이 평탄하게 보정되어 있습니다. 이는 실제 성향을 숨기기 위한 Defensive/Manipulative 프로파일링 신호일 수 있습니다.';
+        '**[중등]** 응답 패턴이 평탄하게 보정되어 있습니다. 이는 실제 성향을 숨기기 위한 방어적/조작적 프로파일링 신호일 수 있습니다.';
     } else if (validationScore !== undefined && validationScore >= highCutoff && spread < 20) {
       defensive =
         '**[경미]** 검증 문항에서 "정직·일관성"을 강하게 주장했으나, 4개 특성 점수는 다소 평탄합니다. 실제 성향을 완화해 답했을 가능성을 참고하세요.';
@@ -1486,7 +1489,7 @@ export function assembleReport(
     const intensity: 'critical' | 'high' | 'moderate' =
       totalDScore >= dTotalCritical ? 'critical' : totalDScore >= dTotalHigh ? 'high' : 'moderate';
     
-    fullBadReport += '## Final Ruin Scenario\n\n';
+    fullBadReport += '## 최종 리스크 시나리오\n\n';
     
     // Final Warnings (모든 경고 포함)
     const warnings = finalWarnings[intensity];

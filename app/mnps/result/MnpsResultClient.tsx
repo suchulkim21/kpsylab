@@ -156,7 +156,7 @@ export default function MnpsResultClient() {
             종합 D 점수: {profile.totalDScore} / 100
             {result?.isExtremeTop && (
               <span className="ml-2 text-sm font-normal text-amber-400" title="원점수 100 초과">
-                (Extreme)
+                (극단)
               </span>
             )}
           </h1>
@@ -265,7 +265,7 @@ export default function MnpsResultClient() {
             </div>
             <div>
               <h2 className="text-xl font-bold text-emerald-300">
-                Elite View
+                엘리트 뷰
               </h2>
               <p className="text-xs text-emerald-400/70">당신의 강점을 엘리트 관점으로 해석합니다</p>
             </div>
@@ -290,7 +290,7 @@ export default function MnpsResultClient() {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-red-400">
-                  Dark Nature
+                  어두운 이면
                 </h2>
                 <p className="text-xs text-red-400/70">가공 없는 어두운 이면</p>
               </div>

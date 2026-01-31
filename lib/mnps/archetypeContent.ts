@@ -594,3 +594,71 @@ export const ARCHETYPE_CONTENT: Record<MnpsArchetypeId, ArchetypeContent> = {
     advice: '모두에게 좋은 사람이 되려 하지 마십시오. 때로는 미움받을 용기를 내어 자신의 색깔을 드러내야 합니다.',
   },
 };
+
+// ==========================================
+// 3. The Puppet Master 상세 콘텐츠 (확장 구조)
+// ==========================================
+
+/** D-Factor 요인별 설명 (꼭두각시 조종사 아키타입) */
+export interface PuppetMasterDFactor {
+  Egoism: string;
+  Entitlement: string;
+  MoralDisengagement: string;
+  Spitefulness: string;
+}
+
+/** 최악의 미래 시나리오 단계별 구조 */
+export interface RuinScenarioSteps {
+  발단: string;
+  전개: string;
+  위기: string;
+  절정: string;
+  결말: string;
+}
+
+/** The Puppet Master 전용 상세 콘텐츠 (제목·요약·분석·특징·D-Factor·붕괴 시나리오·전략) */
+export interface PuppetMasterDetailedContent {
+  title: string;
+  quote: string;
+  summary: string;
+  analysis: string;
+  traits: string[];
+  dFactor: PuppetMasterDFactor;
+  ruinScenario: RuinScenarioSteps;
+  strategy: string;
+}
+
+export const PUPPET_MASTER_CONTENT: PuppetMasterDetailedContent = {
+  title: `The Puppet Master: 꼭두각시 조종사`,
+  quote: `가공 없는 어두운 이면: 당신은 사람을 사람이 아닌 '장기말'로 봅니다.`,
+  summary: `겉으로는 칭찬하고 격려하지만, 속으로는 그들을 어떻게 이용해먹을지 끊임없이 계산합니다. 당신의 친절은 연기이며, 목적이 달성되면 언제든 가면을 벗고 상대를 헌신짝처럼 버릴 수 있습니다.`,
+  analysis: `당신에게 타인은 감정을 가진 존재가 아닌, 목적 달성을 위한 '사용 가능한 자원'이거나 '제거해야 할 장애물'일 뿐입니다.
+이 전략적 사고는 복잡한 환경에서 살아남기 위해 키운 기술이지만, 그 이면에는 통제력을 잃거나 무능해 보이는 것에 대한 깊은 공포가 자리 잡고 있습니다.
+문제는 이 이중성이 드러나는 순간입니다. 당신이 연출한 팀은 실제로는 당신을 경계하며, 당신이 '전략'과 '진심'의 경계를 잊는 순간 아무도 당신의 진짜 말을 믿지 않게 됩니다.`,
+  traits: [
+    `자신의 기여를 과대평가하고 타인의 노력을 폄하함`,
+    `비판을 받으면 방어적으로 반응하며 책임을 전가함`,
+    `단기적 성과를 위해 장기적 신뢰 관계를 희생함`,
+    `갈등 상황에서 상대의 심리적 불편함을 관찰하며 즐김`,
+    `타인이 손해를 보더라도 내 이익이 우선됨`,
+  ],
+  dFactor: {
+    Egoism: `평소엔 낮으나, 위기 시 방어적 이기주의가 폭발할 위험.`,
+    Entitlement: `낮은 권리 의식은 역설적으로 과도한 자기 희생 후 보상 심리로 이어짐.`,
+    MoralDisengagement: `경직된 도덕관이 오히려 '선한 목적'을 위한 비윤리적 수단을 정당화하지 못해 망설이게 함.`,
+    Spitefulness: `악의가 없어서 오히려 이용당하다가, 한계점에서 폭발함.`,
+  },
+  ruinScenario: {
+    발단: `40대 중반, 사회적으로 성공한 당신. 부하들은 당신의 눈빛만으로 움직이고 회의실의 법은 당신입니다.`,
+    전개: `믿었던 부하의 내부 고발 혹은 배우자의 이혼 선언. 사소한 균열이지만 당신은 '조종하고 회피하면 된다'고 믿습니다.`,
+    위기: `회피와 유혹이 통하지 않습니다. "저 사람은 편에 따라 말이 바뀐다"는 평판이 공식화되며 가면이 벗겨집니다.`,
+    절정: `사람들이 당신을 비난하는 대신 '투명인간' 취급합니다. 화려한 사무실은 그대로지만, 아무도 당신에게 보고하거나 상의하지 않습니다.`,
+    결말: `텅 빈 방에 홀로 남습니다. "나는 팀을 위해 최선을 다했는데"라고 되뇌지만, 당신이 장기말처럼 썼던 사람들은 이미 모두 떠났습니다.`,
+  },
+  strategy: `모든 사람을 완벽하게 속일 수는 없습니다. 가장 가까운 측근, 혹은 가족에게만큼은 계산과 연기를 멈추고 가면을 벗은 '진심'을 보이십시오. 그것이 유일한 생명줄이 될 것입니다.`,
+};
+
+/** 아키타입 상세 콘텐츠 객체 (키: puppetMaster 등) */
+export const ARCHETYPE_DETAILED_CONTENT: { puppetMaster: PuppetMasterDetailedContent } = {
+  puppetMaster: PUPPET_MASTER_CONTENT,
+};
