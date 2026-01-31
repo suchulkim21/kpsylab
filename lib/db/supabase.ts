@@ -18,6 +18,13 @@ export const supabase = supabaseUrl && supabaseAnonKey
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
+/** Service Role 클라이언트 (서버 전용). RLS 우회로 assessments/responses/results_metadata 쓰기 시 사용. */
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+export const supabaseAdmin =
+  supabaseUrl && serviceRoleKey
+    ? createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } })
+    : null;
+
 // Supabase 연결 확인
 export async function checkSupabaseConnection(): Promise<boolean> {
   if (!supabase) {

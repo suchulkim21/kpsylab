@@ -12,9 +12,9 @@ export default function Navigation() {
       <Link
         href="/"
         className="text-xl font-bold tracking-tighter text-white hover:text-gray-200 transition-colors"
-        aria-label="KPSY LAB 홈으로 이동"
+        aria-label="www.kpsylab.com 홈으로 이동"
       >
-        KPSY LAB
+        www.kpsylab.com
       </Link>
       
       <nav
@@ -22,13 +22,6 @@ export default function Navigation() {
         role="navigation"
         aria-label="주요 메뉴"
       >
-        <Link
-          href="/"
-          className="text-white hover:text-gray-200 transition-colors text-sm"
-          aria-current="page"
-        >
-          홈
-        </Link>
         <Link
           href="/services"
           className="text-white hover:text-gray-200 transition-colors text-sm"
@@ -46,12 +39,6 @@ export default function Navigation() {
           className="text-purple-300 hover:text-purple-200 transition-colors text-sm"
         >
           성장 로드맵
-        </Link>
-        <Link
-          href="/blog"
-          className="text-white hover:text-gray-200 transition-colors text-sm"
-        >
-          블로그
         </Link>
         <Link
           href="/board"

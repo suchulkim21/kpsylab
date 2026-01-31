@@ -23,7 +23,12 @@ import {
   BarChart3,
   ArrowUpRight,
   ArrowDownRight,
+  Download,
+  Plus,
 } from 'lucide-react';
+import BlogScheduleManager from '@/components/BlogScheduleManager';
+import BlogAnalyticsCharts from '@/components/BlogAnalyticsCharts';
+import BlogPostEditor from '@/components/BlogPostEditor';
 
 interface AnalyticsData {
   totalVisits: number;
@@ -36,6 +41,32 @@ interface AnalyticsData {
   blogPostViews: { postId: number; title: string; viewCount: number }[];
   deviceTypes: { deviceType: string; count: number }[];
   dailyTrend: { date: string; visits: number; uniqueVisitors: number }[];
+}
+
+interface BlogAnalytics {
+  overview: {
+    totalPosts: number;
+    totalViews: number;
+    avgViewsPerPost: number;
+    topCategories: Array<{ category: string; views: number; count: number }>;
+  };
+  topPosts: Array<{
+    id: number;
+    title: string;
+    views: number;
+    publishedDate: string;
+    author: string;
+  }>;
+  trends: {
+    dailyViews: Array<{ date: string; views: number }>;
+    categoryDistribution: Record<string, number>;
+  };
+  recentPosts: Array<{
+    id: number;
+    title: string;
+    views: number;
+    publishedDate: string;
+  }>;
 }
 
 interface AnalysisInsight {
@@ -76,12 +107,14 @@ interface Stats {
 export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [blogAnalytics, setBlogAnalytics] = useState<BlogAnalytics | null>(null);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [adminKey, setAdminKey] = useState('');
   const [adminKeyInput, setAdminKeyInput] = useState('');
+  const [showPostEditor, setShowPostEditor] = useState(false);
 
   useEffect(() => {
     const storedKey = sessionStorage.getItem('admin-key') || '';
@@ -98,6 +131,7 @@ export default function AdminDashboard() {
     try {
       setIsLoading(true);
       setError(null);
+      const key = keyOverride || adminKey;
       const keyToUse = keyOverride ?? adminKey;
 
       // 기본 통계
@@ -129,6 +163,15 @@ export default function AdminDashboard() {
         setAnalysis(null);
         setError('관리자 키가 유효하지 않습니다.');
         return;
+      }
+
+      // 블로그 분석 데이터
+      const blogAnalyticsResponse = await fetch('/api/admin/blog/analytics', {
+        headers: keyToUse ? { 'x-admin-key': keyToUse } : undefined,
+      });
+      const blogAnalyticsData = await blogAnalyticsResponse.json();
+      if (blogAnalyticsData.success) {
+        setBlogAnalytics(blogAnalyticsData.analytics);
       }
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -505,7 +548,226 @@ export default function AdminDashboard() {
           )}
         </div>
 
-        {/* 인기 블로그 포스트 */}
+        {/* 블로그 분석 섹션 */}
+        {blogAnalytics && (
+          <section className="mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-3xl font-bold text-white flex items-center gap-2">
+                <FileText className="w-7 h-7 text-indigo-400" />
+                블로그 분석
+              </h2>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowPostEditor(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors text-sm font-semibold"
+                >
+                  <Plus className="w-4 h-4" />
+                  새 포스트 작성
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/admin/blog/export?type=posts', {
+                        headers: { 'x-admin-key': adminKey },
+                      });
+                      if (response.ok) {
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `blog-posts-${new Date().toISOString().split('T')[0]}.csv`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                      }
+                    } catch (error) {
+                      console.error('내보내기 실패:', error);
+                    }
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors text-sm"
+                >
+                  <Download className="w-4 h-4" />
+                  포스트 CSV
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/admin/blog/export?type=analytics', {
+                        headers: { 'x-admin-key': adminKey },
+                      });
+                      if (response.ok) {
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `blog-analytics-${new Date().toISOString().split('T')[0]}.csv`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                      }
+                    } catch (error) {
+                      console.error('내보내기 실패:', error);
+                    }
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors text-sm"
+                >
+                  <Download className="w-4 h-4" />
+                  분석 CSV
+                </button>
+              </div>
+            </div>
+
+            {/* 블로그 개요 카드 */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+              <div className="bg-gradient-to-br from-indigo-900/20 to-indigo-800/10 border border-indigo-700/50 rounded-xl p-6">
+                <FileText className="w-8 h-8 text-indigo-400 mb-4" />
+                <p className="text-gray-400 text-sm mb-1">총 포스트</p>
+                <p className="text-3xl font-bold text-white">{blogAnalytics.overview.totalPosts.toLocaleString()}</p>
+              </div>
+              <div className="bg-gradient-to-br from-blue-900/20 to-blue-800/10 border border-blue-700/50 rounded-xl p-6">
+                <Eye className="w-8 h-8 text-blue-400 mb-4" />
+                <p className="text-gray-400 text-sm mb-1">총 조회수</p>
+                <p className="text-3xl font-bold text-white">{blogAnalytics.overview.totalViews.toLocaleString()}</p>
+              </div>
+              <div className="bg-gradient-to-br from-green-900/20 to-green-800/10 border border-green-700/50 rounded-xl p-6">
+                <TrendingUp className="w-8 h-8 text-green-400 mb-4" />
+                <p className="text-gray-400 text-sm mb-1">평균 조회수</p>
+                <p className="text-3xl font-bold text-white">{blogAnalytics.overview.avgViewsPerPost.toLocaleString()}</p>
+              </div>
+              <div className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border border-purple-700/50 rounded-xl p-6">
+                <BarChart3 className="w-8 h-8 text-purple-400 mb-4" />
+                <p className="text-gray-400 text-sm mb-1">카테고리</p>
+                <p className="text-3xl font-bold text-white">{blogAnalytics.overview.topCategories.length}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+              {/* 인기 포스트 */}
+              <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-green-400" />
+                  인기 포스트 TOP 10
+                </h3>
+                <div className="space-y-3">
+                  {blogAnalytics.topPosts.map((post, index) => (
+                    <Link
+                      key={post.id}
+                      href={`/blog/${post.id}`}
+                      className="block p-4 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-colors"
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-gray-500 font-mono w-6">#{index + 1}</span>
+                          <span className="text-white font-semibold line-clamp-2 flex-1">{post.title}</span>
+                        </div>
+                        <span className="text-green-400 font-bold ml-4 whitespace-nowrap">
+                          {post.views.toLocaleString()}회
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-4 text-xs text-gray-500 ml-9">
+                        <span>{post.author}</span>
+                        <span>•</span>
+                        <span>{new Date(post.publishedDate).toLocaleDateString('ko-KR')}</span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              {/* 인기 카테고리 */}
+              <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-purple-400" />
+                  인기 카테고리
+                </h3>
+                <div className="space-y-4">
+                  {blogAnalytics.overview.topCategories.slice(0, 10).map((category, index) => {
+                    const maxViews = blogAnalytics.overview.topCategories[0]?.views || 1;
+                    const percentage = (category.views / maxViews) * 100;
+                    return (
+                      <div key={index}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500 font-mono w-6">#{index + 1}</span>
+                            <span className="text-white font-semibold">{category.category}</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-purple-400 font-bold">{category.views.toLocaleString()}회</span>
+                            <span className="text-gray-500 text-xs ml-2">({category.count}개)</span>
+                          </div>
+                        </div>
+                        <div className="w-full bg-gray-800 rounded-full h-2 ml-8">
+                          <div
+                            className="bg-purple-500 h-2 rounded-full"
+                            style={{ width: `${percentage}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* 차트 시각화 */}
+            <div className="mb-8">
+              <BlogAnalyticsCharts
+                dailyViews={blogAnalytics.trends.dailyViews}
+                categoryDistribution={blogAnalytics.trends.categoryDistribution}
+                topCategories={blogAnalytics.overview.topCategories}
+              />
+            </div>
+
+            {/* 최근 포스트 */}
+            <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+              <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                <Activity className="w-5 h-5 text-blue-400" />
+                최근 포스트
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {blogAnalytics.recentPosts.map((post) => (
+                  <Link
+                    key={post.id}
+                    href={`/blog/${post.id}`}
+                    className="block p-4 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-colors"
+                  >
+                    <h4 className="text-white font-semibold line-clamp-2 mb-2">{post.title}</h4>
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>{new Date(post.publishedDate).toLocaleDateString('ko-KR')}</span>
+                      <span className="text-blue-400">{post.views.toLocaleString()}회</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* 블로그 일정 관리 */}
+        {adminKey && (
+          <section className="mb-12">
+            <BlogScheduleManager adminKey={adminKey} />
+          </section>
+        )}
+
+        {/* 블로그 포스트 에디터 */}
+        {showPostEditor && (
+          <BlogPostEditor
+            adminKey={adminKey}
+            onSave={() => {
+              setShowPostEditor(false);
+              // 데이터 새로고침
+              if (adminKey) {
+                fetchAllData(adminKey);
+              }
+            }}
+            onCancel={() => setShowPostEditor(false)}
+          />
+        )}
+
+        {/* 인기 블로그 포스트 (기존) */}
         {analytics && analytics.blogPostViews.length > 0 && (
           <section className="mb-12">
             <h3 className="text-2xl font-semibold text-white mb-6 flex items-center gap-2">

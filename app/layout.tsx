@@ -41,6 +41,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://www.kpsylab.com",
   },
+  other: {
+    'naver-site-verification': '722a468f75232d932b84e1718430fa62220eaf69',
+  },
 };
 
 export default function RootLayout({

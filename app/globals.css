@@ -95,4 +95,63 @@ body {
     white-space: nowrap;
     border-width: 0;
   }
+
+  /* 블로그 콘텐츠 스타일 */
+  .blog-content {
+    color: var(--app-text);
+    line-height: 1.75;
+  }
+
+  .blog-content h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: var(--app-text);
+  }
+
+  .blog-content p {
+    margin-bottom: 1.25rem;
+    color: var(--app-text);
+  }
+
+  .blog-content ul,
+  .blog-content ol {
+    margin: 1.25rem 0;
+    padding-left: 1.75rem;
+  }
+
+  .blog-content li {
+    margin-bottom: 0.5rem;
+    color: var(--app-text);
+  }
+
+  .blog-content strong {
+    font-weight: 600;
+    color: var(--app-text);
+  }
+
+  .blog-content blockquote {
+    border-left: 4px solid var(--app-accent);
+    padding-left: 1.5rem;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: var(--app-muted);
+  }
+
+  .blog-content a {
+    color: var(--app-accent);
+    text-decoration: underline;
+  }
+
+  .blog-content a:hover {
+    color: var(--app-accent-strong);
+  }
+
+  .blog-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    margin: 1.5rem 0;
+  }
 }

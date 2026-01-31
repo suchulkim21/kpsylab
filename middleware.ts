@@ -88,9 +88,9 @@ export function middleware(request: NextRequest) {
       ? [
           "default-src 'self'",
           "script-src 'self' 'unsafe-inline'", // Next.js 필요
-          "style-src 'self' 'unsafe-inline'",
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
           "img-src 'self' data: https: images.unsplash.com www.kpsylab.com kpsylab.com",
-          "font-src 'self' data:",
+          "font-src 'self' data: https://fonts.gstatic.com",
           "connect-src 'self' https:",
           "frame-ancestors 'none'",
           "base-uri 'self'",
@@ -99,9 +99,9 @@ export function middleware(request: NextRequest) {
       : [
           "default-src 'self'",
           "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // 개발 모드용
-          "style-src 'self' 'unsafe-inline'",
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
           "img-src 'self' data: https:",
-          "font-src 'self' data:",
+          "font-src 'self' data: https://fonts.gstatic.com",
           "connect-src 'self' https: http://localhost:* ws://localhost:*",
           "frame-ancestors 'none'",
         ].join('; '),

@@ -9,18 +9,6 @@ import { logPageView } from '@/lib/db/analytics';
 
 export const dynamic = 'force-dynamic';
 
-const BLOG_IMAGE_COUNT = 120;
-
-const normalizeBlogImage = (post: any) => {
-  const image = String(post.image || '').trim();
-  if (!image.startsWith('/images/blog/')) {
-    const index = ((post.id || 1) - 1) % BLOG_IMAGE_COUNT + 1;
-    const suffix = String(index).padStart(3, '0');
-    post.image = `/images/blog/topic_${suffix}.jpg`;
-  }
-  return post;
-};
-
 // GET: 모든 게시글 조회 (검색 옵션 포함)
 export async function GET(request: Request) {
   try {
@@ -75,9 +63,6 @@ export async function GET(request: Request) {
       dedupeTitleSet.add(key);
       return true;
     });
-
-    // 이미지 경로 정규화 (로컬 이미지로 통일)
-    dedupedPosts.forEach(normalizeBlogImage);
 
     // 조회수 정보 가져오기 (analytics DB에서)
     try {

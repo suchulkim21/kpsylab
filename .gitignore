@@ -12,6 +12,8 @@
 
 # testing
 /coverage
+/playwright-report/
+/test-results/
 
 # next.js
 /.next/
@@ -19,6 +21,9 @@
 
 # production
 /build
+
+# Local SQLite (Supabase used in production; migration 완료 후 남은 파일)
+/data/*.db
 
 # misc
 .DS_Store

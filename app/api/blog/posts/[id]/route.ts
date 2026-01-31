@@ -9,18 +9,6 @@ import { logPageView } from '@/lib/db/analytics';
 
 export const dynamic = 'force-dynamic';
 
-const BLOG_IMAGE_COUNT = 120;
-
-const normalizeBlogImage = (post: any) => {
-  const image = String(post.image || '').trim();
-  if (!image.startsWith('/images/blog/')) {
-    const index = ((post.id || 1) - 1) % BLOG_IMAGE_COUNT + 1;
-    const suffix = String(index).padStart(3, '0');
-    post.image = `/images/blog/topic_${suffix}.jpg`;
-  }
-  return post;
-};
-
 // GET: 단일 게시글 조회
 export async function GET(
   request: Request,
@@ -62,7 +50,6 @@ export async function GET(
       console.error('페이지 조회 기록 실패:', err);
     });
 
-    normalizeBlogImage(post);
     return NextResponse.json({ success: true, post });
   } catch (error) {
     console.error('Error fetching blog post:', error);

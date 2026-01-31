@@ -1,325 +1,120 @@
 'use client';
 
 import Link from "next/link";
-import Image from "next/image";
-import { useEffect, useState } from "react";
-import { ArrowRight, Calendar, User, Eye } from "lucide-react";
-import { LoadingSpinner } from "@/components/LoadingSpinner";
-import { SkeletonLoader } from "@/components/SkeletonLoader";
-import { safeApiCall, showToast } from "@/lib/utils/errorHandler";
-
-interface BlogPost {
-  id: number;
-  title: string;
-  content: string;
-  author: string;
-  date: string;
-  tags: string;
-  image: string;
-  viewCount?: number;
-}
-
-// HTML 태그 제거 및 미리보기 텍스트 생성
-function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, '').trim();
-}
-
-function getPreview(text: string, maxLength: number = 150): string {
-  const cleanText = stripHtml(text);
-  return cleanText.length > maxLength ? cleanText.substring(0, maxLength) + '...' : cleanText;
-}
+import { ArrowRight, TestTube2, Activity } from "lucide-react";
 
 export default function Home() {
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchBlogPosts() {
-      try {
-        setError(null);
-        const data = await safeApiCall<{ success: boolean; posts: BlogPost[] }>(
-          () => fetch('/api/blog/posts?limit=20'),
-          {
-            onError: (err) => {
-              setError(err.message);
-              showToast(err.message, 'error');
-            },
-          }
-        );
-
-        if (data?.success && data.posts.length > 0) {
-          // 최신 포스트 1개 (첫 번째)
-          const latestPost = data.posts[0];
-          
-          // 나머지 포스트를 조회수 순으로 정렬
-          const otherPosts = data.posts.slice(1)
-            .sort((a: BlogPost, b: BlogPost) => {
-              const aViews = a.viewCount || 0;
-              const bViews = b.viewCount || 0;
-              return bViews - aViews; // 내림차순
-            })
-            .slice(0, 5); // 상위 5개만
-          
-          // 최신 포스트 + 조회수 상위 5개 조합
-          setBlogPosts([latestPost, ...otherPosts]);
-        }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : '블로그 포스트를 불러오는데 실패했습니다.';
-        setError(errorMessage);
-        showToast(errorMessage, 'error');
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchBlogPosts();
-  }, []);
-
   return (
     <div className="page">
-      {/* 상단 배너 영역 - MNPS & 성장 로드맵 */}
-      <section className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 py-16 mb-8">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* MNPS 배너 */}
-            <Link href="/mnps" className="group relative overflow-hidden rounded-2xl bg-white/10 backdrop-blur-md hover:bg-white/20 transition-all duration-300 shadow-xl">
-              <div className="p-8 h-full flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <h2 className="text-3xl font-bold text-white">MNPS</h2>
-                  </div>
-                  <p className="text-white/90 text-lg mb-4">
-                    Dark Tetrad 심리 분석을 통해<br />
-                    자신의 내면을 탐구하세요
-                  </p>
-                </div>
-                <div className="flex items-center text-white font-semibold group-hover:translate-x-2 transition-transform">
-                  테스트 시작하기
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </div>
-              </div>
-              <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400/20 rounded-full blur-3xl -mr-32 -mt-32"></div>
-            </Link>
-
-            {/* 성장 로드맵 배너 */}
-            <Link href="/growth-roadmap" className="group relative overflow-hidden rounded-2xl bg-white/10 backdrop-blur-md hover:bg-white/20 transition-all duration-300 shadow-xl">
-              <div className="p-8 h-full flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center">
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                    </div>
-                    <h2 className="text-3xl font-bold text-white">성장 로드맵</h2>
-                  </div>
-                  <p className="text-white/90 text-lg mb-4">
-                    전략적 방향 전환 도구로<br />
-                    새로운 성장을 시작하세요
-                  </p>
-                </div>
-                <div className="flex items-center text-white font-semibold group-hover:translate-x-2 transition-transform">
-                  시작하기
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </div>
-              </div>
-              <div className="absolute top-0 right-0 w-64 h-64 bg-purple-400/20 rounded-full blur-3xl -mr-32 -mt-32"></div>
-            </Link>
-          </div>
-        </div>
+      {/* 히어로 */}
+      <section className="text-center py-16 md:py-24">
+        <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white mb-4">
+          www.kpsylab.com
+        </h1>
+        <p className="text-lg text-gray-300 mb-1">
+          심리 분석 통합 서비스 플랫폼
+        </p>
+        <p className="text-sm text-gray-400">
+          두 가지 심리 테스트로 자신을 발견하세요
+        </p>
       </section>
 
-      {/* 메인 콘텐츠 영역 */}
-      <div className="page-container pb-16">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* 메인 콘텐츠 영역 (블로그) */}
-          <div className="lg:col-span-3">
-            {/* 섹션 헤더 */}
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">최신 블로그</h2>
-                <p className="text-gray-500 text-sm mt-1">심리학 관련 인사이트와 아티클</p>
+      {/* 두 가지 테스트 카드 */}
+      <section className="page-container max-w-5xl mx-auto pb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* MNPS */}
+          <Link
+            href="/mnps/test"
+            className="group block rounded-2xl border border-zinc-800 bg-zinc-900/80 hover:border-cyan-500/50 hover:bg-zinc-900 transition-all duration-300 overflow-hidden"
+          >
+            <div className="p-8 md:p-10">
+              <div className="w-14 h-14 rounded-xl bg-cyan-500/20 flex items-center justify-center mb-6">
+                <TestTube2 className="w-7 h-7 text-cyan-400" />
               </div>
-              <Link 
-                href="/blog" 
-                className="text-indigo-300 hover:text-indigo-200 font-semibold flex items-center gap-2"
-              >
-                전체 보기
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
+                MNPS
+              </h2>
+              <p className="text-xl font-bold text-cyan-300 mb-6">
+                내 안의 어둠을 과학적으로 탐구하다
+              </p>
+              
+              <div className="mb-6">
+                <h3 className="text-lg font-bold text-white mb-3">서비스 소개</h3>
+                <p className="text-gray-300 text-sm leading-relaxed mb-3">
+                  MNPS 테스트는 심리학의 다크 테트라드(Dark Tetrad) 이론을 기반으로 개발되었으며, 응답 결과는 AI가 분석합니다.
+                  그러나 MNPS 테스트는 과학적으로 검증되지 않았습니다. 그러니 맹신하지 마십시오.
+                </p>
+                <p className="text-gray-300 text-sm leading-relaxed mb-3">
+                  다크 테트라드는 마키아벨리즘, 나르시시즘, 사이코패시, 사디즘 네 가지 특성을 함께 보는 개념으로,
+                  이 테스트는 이러한 경향이 어떻게 섞여 있는지를 대략적으로 살펴보는 도구입니다.
+                </p>
+                <p className="text-gray-400 text-xs leading-relaxed">
+                  과학적 근거는 많이 알려진 이론들을 근거로 하였으며, 그 근거는 과학적인 결과입니다.
+                </p>
+              </div>
 
-            {/* 블로그 글 목록 */}
-            {loading ? (
-              <div className="space-y-6">
-                <SkeletonLoader variant="card" />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <SkeletonLoader key={i} variant="card" />
-                  ))}
-                </div>
-              </div>
-            ) : error ? (
-              <div className="card p-12 text-center">
-                <p className="text-red-400 mb-4">{error}</p>
-                <button
-                  onClick={() => window.location.reload()}
-                  className="btn btn-primary"
-                  aria-label="새로고침"
-                >
-                  새로고침
-                </button>
-              </div>
-            ) : blogPosts.length === 0 ? (
-              <div className="text-center py-20 text-gray-500">
-                <p>등록된 블로그 글이 없습니다.</p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {/* 첫 번째 글 - 큰 카드 */}
-                {blogPosts[0] && (
-                  <Link 
-                    href={`/blog/${blogPosts[0].id}`}
-                    className="block group rounded-xl border border-zinc-800 bg-zinc-900/70 shadow-lg hover:border-zinc-700 transition-colors overflow-hidden"
-                  >
-                    <div className="md:flex">
-                      {blogPosts[0].image && (
-                        <div className="md:w-1/3 h-64 md:h-auto bg-gray-200 relative overflow-hidden">
-                          <Image
-                            src={blogPosts[0].image}
-                            alt={blogPosts[0].title}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        </div>
-                      )}
-                      <div className={`${blogPosts[0].image ? 'md:w-2/3' : 'w-full'} p-6`}>
-                        <div className="flex items-center gap-4 text-sm text-gray-400 mb-3">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-4 h-4" />
-                            {blogPosts[0].date}
-                          </span>
-                          {blogPosts[0].author && (
-                            <span className="flex items-center gap-1">
-                              <User className="w-4 h-4" />
-                              {blogPosts[0].author}
-                            </span>
-                          )}
-                          <span className="flex items-center gap-1">
-                            <Eye className="w-4 h-4" />
-                            {blogPosts[0].viewCount || 0}
-                          </span>
-                        </div>
-                        <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-indigo-200 transition-colors">
-                          {blogPosts[0].title}
-                        </h3>
-                        <p className="text-gray-300 line-clamp-3 mb-4">
-                          {getPreview(blogPosts[0].content, 200)}
-                        </p>
-                        <div className="flex items-center text-indigo-300 font-semibold">
-                          자세히 보기
-                          <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                )}
-
-                {/* 나머지 글들 - 그리드 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {blogPosts.slice(1).map((post) => (
-                    <Link
-                      key={post.id}
-                      href={`/blog/${post.id}`}
-                      className="block group rounded-xl border border-zinc-800 bg-zinc-900/70 shadow-lg hover:border-zinc-700 transition-colors overflow-hidden"
-                    >
-                      {post.image && (
-                        <div className="w-full h-48 bg-gray-200 relative overflow-hidden">
-                          <Image
-                            src={post.image}
-                            alt={post.title}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        </div>
-                      )}
-                      <div className="p-5">
-                        <div className="flex items-center gap-3 text-xs text-gray-400 mb-2">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {post.date}
-                          </span>
-                          {post.author && (
-                            <span className="flex items-center gap-1">
-                              <User className="w-3 h-3" />
-                              {post.author}
-                            </span>
-                          )}
-                          <span className="flex items-center gap-1">
-                            <Eye className="w-3 h-3" />
-                            {post.viewCount || 0}
-                          </span>
-                        </div>
-                        <h3 className="text-lg font-bold text-white mb-2 group-hover:text-indigo-200 transition-colors line-clamp-2">
-                          {post.title}
-                        </h3>
-                        <p className="text-gray-300 text-sm line-clamp-2 mb-3">
-                          {getPreview(post.content, 100)}
-                        </p>
-                        <div className="flex items-center text-indigo-300 text-sm font-semibold">
-                          읽기
-                          <ArrowRight className="w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform" />
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 사이드바 */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* 빠른 링크 */}
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/70 shadow-lg p-6">
-              <h3 className="text-lg font-bold text-white mb-4">빠른 링크</h3>
-              <div className="space-y-3">
-                <Link href="/services" className="block text-gray-200 hover:text-indigo-200 transition-colors py-2 border-b border-zinc-800">
-                  서비스 소개
-                </Link>
-                <Link href="/board" className="block text-gray-200 hover:text-indigo-200 transition-colors py-2 border-b border-zinc-800">
-                  게시판
-                </Link>
+              <div className="pt-4 border-t border-zinc-700">
+                <h3 className="text-lg font-bold text-white mb-2">MNPS 테스트 시작하기</h3>
+                <p className="text-gray-300 text-sm mb-4">
+                  응답을 마치면 AI 분석을 기반으로 한 간단한 결과 리포트를 제공합니다.
+                </p>
+                <span className="inline-flex items-center gap-2 text-cyan-400 font-semibold group-hover:gap-3 transition-all">
+                  테스트 시작
+                  <ArrowRight className="w-5 h-5" />
+                </span>
               </div>
             </div>
+            <div className="h-1 bg-gradient-to-r from-cyan-600 to-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+          </Link>
 
-            {/* 인기 태그 */}
-            {blogPosts.length > 0 && (
-              <div className="rounded-xl border border-zinc-800 bg-zinc-900/70 shadow-lg p-6">
-                <h3 className="text-lg font-bold text-white mb-4">인기 태그</h3>
-                <div className="flex flex-wrap gap-2">
-                  {Array.from(new Set(blogPosts.flatMap(post => 
-                    post.tags ? post.tags.split(',').map(tag => tag.trim()).filter(Boolean) : []
-                  ))).slice(0, 8).map((tag, idx) => (
-                    <Link
-                      key={idx}
-                      href={`/blog?q=${encodeURIComponent(tag)}`}
-                      className="px-3 py-1 bg-zinc-800 hover:bg-indigo-600/30 text-gray-300 hover:text-indigo-200 rounded-full text-sm transition-colors"
-                    >
-                      #{tag}
-                    </Link>
-                  ))}
-                </div>
+          {/* 성장 로드맵 */}
+          <Link
+            href="/growth-roadmap"
+            className="group block rounded-2xl border border-zinc-800 bg-zinc-900/80 hover:border-purple-500/50 hover:bg-zinc-900 transition-all duration-300 overflow-hidden"
+          >
+            <div className="p-8 md:p-10">
+              <div className="w-14 h-14 rounded-xl bg-purple-500/20 flex items-center justify-center mb-6">
+                <Activity className="w-7 h-7 text-purple-400" />
               </div>
-            )}
-          </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
+                성장 로드맵
+              </h2>
+              <p className="text-purple-400 text-sm font-medium mb-4">
+                통합 심리 분석 아키텍처
+              </p>
+              <p className="text-gray-400 mb-6 leading-relaxed">
+                성장 저해 요인, 현 상태, 이상향을 3단계로 분석하고
+                전략적 방향 전환을 위한 최종 아키텍처를 제시합니다.
+              </p>
+              <ul className="space-y-2 text-sm text-gray-500 mb-6">
+                <li>· 성장 저해 요인 · 현 상태 · 이상향 3모듈</li>
+                <li>· 최종 통합 리포트</li>
+              </ul>
+              <span className="inline-flex items-center gap-2 text-purple-400 font-semibold group-hover:gap-3 transition-all">
+                시작하기
+                <ArrowRight className="w-5 h-5" />
+              </span>
+            </div>
+            <div className="h-1 bg-gradient-to-r from-purple-600 to-purple-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+          </Link>
         </div>
-      </div>
+
+        {/* 하단 링크 */}
+        <div className="mt-16 flex flex-wrap justify-center gap-6 text-sm">
+          <Link
+            href="/services"
+            className="text-gray-400 hover:text-white transition-colors"
+          >
+            서비스 소개
+          </Link>
+          <Link
+            href="/board"
+            className="text-gray-400 hover:text-white transition-colors"
+          >
+            게시판
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
