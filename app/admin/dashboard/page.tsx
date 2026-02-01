@@ -817,7 +817,7 @@ export default function AdminDashboard() {
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-400">성장 로드맵</span>
+                    <span className="text-gray-400">마인드 아키텍터</span>
                     <span className={`font-bold ${getStatusColor(stats?.systemStatus?.secondGenesisService || 'unknown')}`}>
                       {(stats?.systemStatus?.secondGenesisService || 'unknown').toUpperCase()}
                     </span>

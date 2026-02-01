@@ -82,7 +82,7 @@ export default function ResultPage() {
                     <h1 className="text-3xl md:text-4xl font-bold mb-3 text-gray-100">
                         전략적 차이 분석
                     </h1>
-                    <p className="text-gray-400 text-sm">Ideal vs Potential Gap Report</p>
+                    <p className="text-gray-400 text-sm">이상향 대 잠재력 격차 분석</p>
                 </header>
 
                 {/* Strategy Header */}
@@ -176,8 +176,8 @@ export default function ResultPage() {
                             <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
                                 <PolarGrid stroke="#333" />
                                 <PolarAngleAxis dataKey="subject" tick={{ fill: '#888', fontSize: 12 }} />
-                                <Radar name="Ideal" dataKey="A" stroke="#a855f7" fill="#a855f7" fillOpacity={0.2} />
-                                <Radar name="Potential" dataKey="B" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.4} />
+                                <Radar name="이상향" dataKey="A" stroke="#a855f7" fill="#a855f7" fillOpacity={0.2} />
+                                <Radar name="잠재력" dataKey="B" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.4} />
                             </RadarChart>
                         </ResponsiveContainer>
                     </div>

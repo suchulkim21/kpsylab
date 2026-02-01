@@ -18,7 +18,8 @@
     "optimize:images": "node scripts/optimize-images.js",
     "download:images": "tsx scripts/download-blog-images.ts --count 120",
     "download:image": "tsx scripts/download-single-image.ts",
-    "upload:blog": "tsx scripts/upload-blog-posts.ts"
+    "upload:blog": "tsx scripts/upload-blog-posts.ts",
+    "check:db": "tsx scripts/check-db-schema.ts"
   },
   "dependencies": {
     "@sentry/nextjs": "^10.36.0",
@@ -31,8 +32,8 @@
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.562.0",
     "next": "16.1.1",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "recharts": "^3.6.0",
     "stripe": "^17.7.0",
     "web-vitals": "^5.1.0"
@@ -55,6 +56,7 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-react": "^5.31.0",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5",
     "vitest": "^4.0.16"
   }

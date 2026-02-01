@@ -50,7 +50,7 @@ function IntegrationContent() {
 
 export default function IntegrationPage() {
     return (
-        <Suspense fallback={<div className="text-white">Loading Sync...</div>}>
+        <Suspense fallback={<div className="text-white">통합 중...</div>}>
             <IntegrationContent />
         </Suspense>
     );

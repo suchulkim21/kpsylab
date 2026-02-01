@@ -48,7 +48,7 @@ export default function AssessmentPage() {
                         <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight">이상향과 잠재력</h1>
                         <p className="text-gray-400 text-lg leading-relaxed max-w-lg mx-auto">
                             당신이 추구하는 이상적 자아와 실제 잠재력 사이의 정합성을 측정합니다.<br />
-                            Gap Analysis를 통해 최적의 성장 전략을 도출하세요.
+                            격차 분석을 통해 최적의 성장 전략을 도출하세요.
                         </p>
                     </div>
 

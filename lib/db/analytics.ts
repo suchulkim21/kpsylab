@@ -11,10 +11,10 @@ export async function initAnalyticsDB(): Promise<void> {
     throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
   }
   
-  // 연결 테스트
-  const { error } = await supabase.from('visits').select('count').limit(1);
+  // 연결 테스트 (visits 테이블 존재 및 읽기 가능 여부)
+  const { error } = await supabase.from('visits').select('id').limit(1);
   if (error && error.code !== 'PGRST116') {
-    console.warn('Supabase 연결 확인:', error.message);
+    console.warn('Supabase visits 테이블 확인:', error.message);
   }
 }
 

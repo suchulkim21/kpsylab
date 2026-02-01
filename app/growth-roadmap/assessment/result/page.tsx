@@ -48,10 +48,10 @@ export default function AssessmentResultPage() {
 
     // Strategy Maps
     const strategyMap: { [key: string]: string } = {
-        'Alignment': '최적화 (Alignment)',
-        'Expansion': '잠재력 확장 (Expansion)',
-        'Correction': '방향 보정 (Correction)',
-        'Pivot': '도약 전환 (Pivot)'
+        'Alignment': '최적화',
+        'Expansion': '잠재력 확장',
+        'Correction': '방향 보정',
+        'Pivot': '도약 전환'
     };
 
     // Dynamic Colors based on Strategy
@@ -68,11 +68,11 @@ export default function AssessmentResultPage() {
 
                 {/* Visual Data Column */}
                 <div className="lg:sticky lg:top-8 order-2 lg:order-1">
-                    <div className="glass-panel p-6 rounded-2xl relative overflow-hidden">
+                    <div className="report-card relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-purple-600 rounded-full mix-blend-screen filter blur-3xl opacity-20"></div>
                         <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-600 rounded-full mix-blend-screen filter blur-3xl opacity-20"></div>
 
-                        <h3 className="text-sm font-mono text-gray-400 mb-8 tracking-widest text-center">벡터 분석</h3>
+                        <h3 className="report-section-label mb-6 text-left">벡터 분석</h3>
 
                         <div className="h-[400px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
@@ -99,32 +99,32 @@ export default function AssessmentResultPage() {
                 </div>
 
                 {/* Strategy Report Column */}
-                <div className="order-1 lg:order-2 flex flex-col gap-8">
+                <div className="order-1 lg:order-2 flex flex-col gap-8 text-left">
 
                     {/* Header */}
                     <div>
-                        <div className="inline-block px-3 py-1 border border-white/20 rounded-full text-xs font-mono mb-4 text-gray-400">
+                        <span className="report-section-label block mb-2">
                             신뢰도: {result.alignmentScore}%
-                        </div>
-                        <h1 className="text-5xl font-bold mb-2 tracking-tight">
+                        </span>
+                        <h1 className="report-section-title">
                             <span style={{ color: accentColor }}>{strategyMap[result.strategy]}</span>
-                            <br /><span className="text-white">전략 제안</span>
+                            <span className="block mt-1">전략 제안</span>
                         </h1>
                     </div>
 
                     {/* Deep Analysis Content */}
-                    <div className="prose prose-invert max-w-none text-gray-300 leading-8">
+                    <div className="prose prose-invert max-w-none text-left">
                         {contentText.split("\n\n").map((paragraph: string, idx: number) => {
                             if (paragraph.startsWith("**") && paragraph.length < 100) {
                                 const clean = paragraph.replace(/\*\*/g, "");
                                 return (
-                                    <div key={idx} className="mt-8 mb-4 border-l-4 pl-4" style={{ borderLeftColor: accentColor }}>
-                                        <h3 className="text-lg font-bold text-white m-0">{clean}</h3>
+                                    <div key={idx} className="report-heading mt-8 mb-4" style={{ borderLeftColor: accentColor }}>
+                                        {clean}
                                     </div>
                                 );
                             }
                             return (
-                                <p key={idx} className="mb-6 text-justify opacity-90">
+                                <p key={idx} className="report-body mb-6">
                                     {paragraph.split("**").map((part, i) =>
                                         i % 2 === 1 ? <strong key={i} className="text-white font-bold">{part}</strong> : part
                                     )}
@@ -133,16 +133,12 @@ export default function AssessmentResultPage() {
                         })}
                     </div>
 
-                    <div className="pt-8 border-t border-gray-800 flex justify-between items-center">
-                        <Link href="/growth-roadmap/assessment">
-                            <div className="text-sm text-gray-500 hover:text-white transition-colors underline underline-offset-4 cursor-pointer">
-                                재분석 수행
-                            </div>
+                    <div className="pt-8 border-t border-gray-800 report-actions justify-center">
+                        <Link href="/growth-roadmap/assessment" className="report-btn-secondary">
+                            재검사
                         </Link>
-                        <Link href="/growth-roadmap/report">
-                            <div className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 shadow-lg shadow-purple-900/20 cursor-pointer">
-                                최종 아키텍처 확인 <span className="text-xs">→</span>
-                            </div>
+                        <Link href="/growth-roadmap/report" className="report-btn-primary flex items-center gap-2">
+                            최종 아키텍처 확인 <span className="text-xs">→</span>
                         </Link>
                     </div>
 

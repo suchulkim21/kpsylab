@@ -27,7 +27,13 @@ export const ADDITIONAL_QUESTIONS: Scenario[] = [
                 text: "시간을 두고 각자 다시 검토하게 한다.", 
                 type: "feeling", 
                 weight: { proactivity: -5, adaptability: 8, socialDistance: 3 } 
-            }
+            },
+            { 
+                id: "ADD_OP_1D", 
+                text: "결론이 나든 말든 내 의견은 밝히지 않고 다수결을 따른다.", 
+                type: "thinking", 
+                weight: { proactivity: -8, adaptability: 3, socialDistance: 12 } 
+            } // 변경됨: 주도권 포기 + 책임 회피
         ]
     },
     {
@@ -51,7 +57,13 @@ export const ADDITIONAL_QUESTIONS: Scenario[] = [
                 text: "일단 멈추고 상황이 정리되기를 기다린다.", 
                 type: "feeling", 
                 weight: { proactivity: -8, adaptability: 5, socialDistance: 5 } 
-            }
+            },
+            { 
+                id: "ADD_OP_2D", 
+                text: "더 이상 관여하지 않고 해당 프로젝트에서 손을 뗀다.", 
+                type: "thinking", 
+                weight: { proactivity: -10, adaptability: 0, socialDistance: 12 } 
+            } // 변경됨: 완전 철수 + 몰입 포기
         ]
     },
     {
@@ -75,7 +87,13 @@ export const ADDITIONAL_QUESTIONS: Scenario[] = [
                 text: "이번은 넘어가고 다음부터 기록을 남긴다.", 
                 type: "feeling", 
                 weight: { proactivity: -5, adaptability: 8, socialDistance: -3 } 
-            }
+            },
+            { 
+                id: "ADD_OP_3D", 
+                text: "앞으로 상사에게 아이디어를 공유하지 않는다.", 
+                type: "thinking", 
+                weight: { proactivity: -5, adaptability: 0, socialDistance: 15 } 
+            } // 변경됨: 정보 차단 + 신뢰 철회
         ]
     },
     {
@@ -99,7 +117,13 @@ export const ADDITIONAL_QUESTIONS: Scenario[] = [
                 text: "무시하고 내 일에 집중한다.", 
                 type: "feeling", 
                 weight: { proactivity: -5, adaptability: 3, socialDistance: 12 } 
-            }
+            },
+            { 
+                id: "ADD_OP_4D", 
+                text: "해당 동료와의 모든 협업을 거부한다.", 
+                type: "thinking", 
+                weight: { proactivity: -3, adaptability: -5, socialDistance: 15 } 
+            } // 변경됨: 관계 단절 + 보복
         ]
     },
     {
@@ -123,7 +147,13 @@ export const ADDITIONAL_QUESTIONS: Scenario[] = [
                 text: "가능한 범위 내에서 최소한만 구현한다.", 
                 type: "feeling", 
                 weight: { proactivity: -5, adaptability: 5, socialDistance: 3 } 
-            }
+            },
+            { 
+                id: "ADD_OP_5D", 
+                text: "예산 결정권자의 판단이므로, 그대로 진행하고 결과는 그들 책임으로 둔다.", 
+                type: "thinking", 
+                weight: { proactivity: -8, adaptability: 3, socialDistance: 12 } 
+            } // 변경됨: 책임 전가 + 수동적 순응
         ]
     },
     {
@@ -147,7 +177,13 @@ export const ADDITIONAL_QUESTIONS: Scenario[] = [
                 text: "직접 접촉을 피하고 각자 영역을 지킨다.", 
                 type: "feeling", 
                 weight: { proactivity: -5, adaptability: 3, socialDistance: 15 } 
-            }
+            },
+            { 
+                id: "ADD_OP_6D", 
+                text: "라이벌이 실수하기를 기다리며 정보만 수집한다.", 
+                type: "thinking", 
+                weight: { proactivity: -3, adaptability: 5, socialDistance: 12 } 
+            } // 변경됨: 은밀한 관찰 + 기회주의
         ]
     },
     {
@@ -171,7 +207,13 @@ export const ADDITIONAL_QUESTIONS: Scenario[] = [
                 text: "개인 사정을 우선하고 업무는 나중에 처리한다.", 
                 type: "feeling", 
                 weight: { proactivity: -5, adaptability: 8, socialDistance: 5 } 
-            }
+            },
+            { 
+                id: "ADD_OP_7D", 
+                text: "아무에게도 말하지 않고 자리를 비운 뒤, 나중에 변명한다.", 
+                type: "thinking", 
+                weight: { proactivity: -5, adaptability: 0, socialDistance: 15 } 
+            } // 변경됨: 비밀 행동 + 사후 정당화
         ]
     },
     {
@@ -195,7 +237,13 @@ export const ADDITIONAL_QUESTIONS: Scenario[] = [
                 text: "대세를 따르며 최소한의 저항만 한다.", 
                 type: "feeling", 
                 weight: { proactivity: -8, adaptability: 5, socialDistance: 5 } 
-            }
+            },
+            { 
+                id: "ADD_OP_8D", 
+                text: "동료들의 동향을 파악하되, 누구와도 연대하지 않는다.", 
+                type: "thinking", 
+                weight: { proactivity: 0, adaptability: 5, socialDistance: 15 } 
+            } // 변경됨: 고립된 정보 수집 + 연대 거부
         ]
     },
     {
@@ -219,7 +267,13 @@ export const ADDITIONAL_QUESTIONS: Scenario[] = [
                 text: "일단 중단하고 재검토한다.", 
                 type: "feeling", 
                 weight: { proactivity: -5, adaptability: 5, socialDistance: 3 } 
-            }
+            },
+            { 
+                id: "ADD_OP_9D", 
+                text: "내 아이디어가 아닌 것처럼 거리를 두고, 결과를 관망한다.", 
+                type: "thinking", 
+                weight: { proactivity: -8, adaptability: 0, socialDistance: 15 } 
+            } // 변경됨: 책임 이탈 + 소유권 부정
         ]
     }
 ];

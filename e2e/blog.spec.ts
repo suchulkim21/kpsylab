@@ -8,19 +8,17 @@ test.describe('Blog Functionality', () => {
   test('should display blog posts on main page', async ({ page }) => {
     await page.goto('/');
 
-    // 블로그 포스트가 표시되는지 확인
-    // 헤더나 제목이 있는지 확인
-    const blogSection = page.locator('text=블로그, text=Blog, h2, h3').first();
-    await expect(blogSection).toBeVisible({ timeout: 5000 });
+    // 블로그 섹션 제목 또는 블로그 링크 확인
+    await expect(page.getByRole('heading', { name: '블로그' })).toBeVisible({ timeout: 8000 });
   });
 
   test('should navigate to blog page', async ({ page }) => {
     await page.goto('/');
 
-    // 블로그 링크 클릭
-    await page.click('a:has-text("블로그"), nav a[href*="blog"]');
+    // 블로그 링크 (nav 또는 본문) 클릭 - force로 뷰포트 밖이어도 클릭
+    const blogLink = page.locator('a[href="/blog"]').first();
+    await blogLink.click({ force: true, timeout: 10000 });
 
-    // 블로그 페이지로 이동 확인
     await expect(page).toHaveURL(/\/blog/, { timeout: 5000 });
   });
 

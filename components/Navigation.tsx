@@ -38,7 +38,13 @@ export default function Navigation() {
           href="/growth-roadmap"
           className="text-purple-300 hover:text-purple-200 transition-colors text-sm"
         >
-          성장 로드맵
+          마인드 아키텍터
+        </Link>
+        <Link
+          href="/blog"
+          className="text-white hover:text-gray-200 transition-colors text-sm"
+        >
+          블로그
         </Link>
         <Link
           href="/board"

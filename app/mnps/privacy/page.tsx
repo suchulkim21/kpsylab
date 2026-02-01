@@ -13,7 +13,7 @@ export default function MnpsPrivacyPage() {
   return (
     <LegalPageShell
       title="개인정보 처리방침"
-      subtitle="MNPS: Dark Nature Test"
+      subtitle="MNPS 다크 테스트"
       backLabel="MNPS로 돌아가기"
     >
       {/* 수집 항목 */}

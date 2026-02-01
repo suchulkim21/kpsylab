@@ -228,9 +228,9 @@ export default function TestPage() {
     <main className="page">
       <div className="page-container max-w-3xl py-12 space-y-8">
         <header className="space-y-2 text-center">
-          <h1 className="text-4xl font-bold">Dark Nature Test</h1>
+          <h1 className="text-4xl font-bold">MNPS 다크 테스트</h1>
           <p className="text-gray-400">
-            42문항으로 당신의 Dark Nature를 측정합니다.
+            42문항으로 당신의 다크 테트라드 성향을 측정합니다.
           </p>
           <p className="text-xs text-amber-400/90">
             원활한 분석을 위해 시작 후 24시간 이내에 완료해 주세요.

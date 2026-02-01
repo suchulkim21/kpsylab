@@ -34,7 +34,7 @@ const DATA: Record<AnalysisType, ResultItem[]> = {
         { id: "M2_HLA_01", category: "심층 진단", title: "핵심 욕구", content: "환경과 사람을 통제하여 예측 가능한 질서를 만들고자 합니다." },
         { id: "M2_HLA_02", category: "심층 진단", title: "두려움", content: "주도권을 잃고 무력해지는 상황을 견디지 못합니다." },
         { id: "M2_HLA_03", category: "심층 진단", title: "그림자 자아", content: "'독재자'. 자신의 뜻대로 되지 않으면 분노하는 억압된 자아입니다." },
-        { id: "M2_HLA_04", category: "심층 진단", title: "방어 기제", content: "통제와 합리화. 불안할수록 더 강하게 주변을 옥꣈니다." },
+        { id: "M2_HLA_04", category: "심층 진단", title: "방어 기제", content: "통제와 합리화. 불안할수록 더 강하게 주변을 옥죕니다." },
         { id: "M2_HLA_05", category: "심층 진단", title: "자아 분열", content: "완벽한 리더상과 고립된 내면 사이의 괴리." },
         { id: "M2_HLA_06", category: "심층 진단", title: "에너지 원천", content: "계획대로 성과가 도출될 때." },
         { id: "M2_HLA_07", category: "인지 프로세스", title: "정보 처리", content: "필요한 정보만 빠르게 취사선택하여 구조화합니다." },

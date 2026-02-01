@@ -2,6 +2,8 @@ import { ScenarioOption } from "@growth-roadmap/types/module2";
 
 /**
  * 답변 일관성 검증 및 신뢰도 계산
+ * 4개 선택지 환경에 최적화됨 (v2.1)
+ * Detached Observer D 선택지 패턴 반영
  */
 
 export interface ConsistencyResult {
@@ -11,8 +13,39 @@ export interface ConsistencyResult {
     recommendation: string; // 권장 사항
 }
 
+// 4개 선택지 환경에서의 최적화된 상수값
+const CONSTANTS = {
+    // 균등 분포 감지 범위 (4개 선택지 환경에서 확장)
+    BALANCE_MIN_PERCENT: 23,
+    BALANCE_MAX_PERCENT: 43,
+    
+    // Phase 간 점수 차이 임계값 (4개 선택지로 인해 점수 분산 증가)
+    PHASE_SCORE_DIFF_THRESHOLD: 35,
+    
+    // 타입 분포 편차 임계값 (3개 type: thinking, feeling, acting)
+    // D 선택지 대부분 thinking → Detached Observer는 thinking 비중 높음 허용
+    TYPE_DEVIATION_THRESHOLD: 0.85,
+    
+    // 점수 범위 임계값
+    // D 선택지: socialDistance 10~15, proactivity/adaptability 음수 → 극단 분산 정상
+    RANGE_LOW_PERCENT: 8,
+    RANGE_HIGH_PERCENT: 200,
+    
+    // 감점 기준
+    PENALTY_BALANCED: 18,
+    PENALTY_PHASE_INCONSISTENT: 12,
+    PENALTY_TYPE_DEVIATION: 8,
+    PENALTY_RANGE_LOW: 22,
+    PENALTY_RANGE_HIGH: 8,
+    
+    // 일관성 레벨 임계값
+    HIGH_RELIABILITY_THRESHOLD: 75,
+    MEDIUM_RELIABILITY_THRESHOLD: 50
+};
+
 /**
  * 답변 일관성을 검증하고 신뢰도 점수를 계산합니다.
+ * 4개 선택지 환경에 최적화된 알고리즘
  */
 export function checkAnswerConsistency(
     selections: ScenarioOption[],
@@ -41,36 +74,46 @@ export function checkAnswerConsistency(
         const aPercent = (totalScores.adaptability / total) * 100;
         const sdPercent = (totalScores.socialDistance / total) * 100;
 
-        // 세 변수가 모두 30-40% 범위에 있으면 랜덤 선택 가능성
+        // 세 변수가 모두 균등 범위에 있으면 랜덤 선택 가능성
         const isBalanced = 
-            pPercent >= 25 && pPercent <= 45 &&
-            aPercent >= 25 && aPercent <= 45 &&
-            sdPercent >= 25 && sdPercent <= 45;
+            pPercent >= CONSTANTS.BALANCE_MIN_PERCENT && pPercent <= CONSTANTS.BALANCE_MAX_PERCENT &&
+            aPercent >= CONSTANTS.BALANCE_MIN_PERCENT && aPercent <= CONSTANTS.BALANCE_MAX_PERCENT &&
+            sdPercent >= CONSTANTS.BALANCE_MIN_PERCENT && sdPercent <= CONSTANTS.BALANCE_MAX_PERCENT;
 
         if (isBalanced) {
-            reliabilityScore -= 20;
+            reliabilityScore -= CONSTANTS.PENALTY_BALANCED;
             issues.push("답변 패턴이 비정상적으로 균등합니다. 일부 답변이 무작위로 선택되었을 가능성이 있습니다.");
         }
     }
 
-    // 2. Phase 간 일관성 검증
+    // 2. Phase 간 일관성 검증 (강화된 버전)
     const phase1Dominant = getDominantTrait(phaseSelections.phase1);
     const phase2Dominant = getDominantTrait(phaseSelections.phase2);
     const phase3Dominant = getDominantTrait(phaseSelections.phase3);
 
-    // Phase 1과 2는 유사한 패턴을 보여야 함 (자극 제어와 심리적 저항은 연관됨)
+    // Phase 1과 2 일관성 검증
     if (phase1Dominant && phase2Dominant && phase1Dominant !== phase2Dominant) {
         const phase1Score = getTraitScore(phaseSelections.phase1, phase1Dominant);
         const phase2Score = getTraitScore(phaseSelections.phase2, phase2Dominant);
         
-        // 점수 차이가 너무 크면 일관성 문제
-        if (Math.abs(phase1Score - phase2Score) > 30) {
-            reliabilityScore -= 15;
+        if (Math.abs(phase1Score - phase2Score) > CONSTANTS.PHASE_SCORE_DIFF_THRESHOLD) {
+            reliabilityScore -= CONSTANTS.PENALTY_PHASE_INCONSISTENT;
             issues.push("Phase 1과 Phase 2 간 답변 패턴이 크게 다릅니다.");
         }
     }
 
-    // 3. 반복 패턴 검증 (같은 유형의 선택이 너무 많거나 적으면 이상)
+    // Phase 2와 3 일관성 검증 (추가)
+    if (phase2Dominant && phase3Dominant && phase2Dominant !== phase3Dominant) {
+        const phase2Score = getTraitScore(phaseSelections.phase2, phase2Dominant);
+        const phase3Score = getTraitScore(phaseSelections.phase3, phase3Dominant);
+        
+        if (Math.abs(phase2Score - phase3Score) > CONSTANTS.PHASE_SCORE_DIFF_THRESHOLD) {
+            reliabilityScore -= CONSTANTS.PENALTY_PHASE_INCONSISTENT * 0.5; // 약간 낮은 페널티
+            issues.push("Phase 2와 Phase 3 간 답변 패턴에 변화가 있습니다.");
+        }
+    }
+
+    // 3. 반복 패턴 검증 (3개 type: thinking, feeling, acting)
     const selectionTypes = selections.map(opt => opt.type);
     const typeCounts: Record<string, number> = {};
     selectionTypes.forEach(type => {
@@ -78,33 +121,37 @@ export function checkAnswerConsistency(
     });
 
     const totalSelections = selections.length;
-    const expectedCount = totalSelections / 3; // 각 타입당 약 1/3
+    const uniqueTypes = Object.keys(typeCounts).length;
+    const expectedCount = totalSelections / Math.max(uniqueTypes, 3); // 동적으로 계산
 
     Object.entries(typeCounts).forEach(([type, count]) => {
         const deviation = Math.abs(count - expectedCount) / expectedCount;
-        if (deviation > 0.5) { // 50% 이상 편차
-            reliabilityScore -= 10;
-            issues.push(`${type} 유형의 선택이 비정상적으로 많거나 적습니다.`);
+        if (deviation > CONSTANTS.TYPE_DEVIATION_THRESHOLD) {
+            reliabilityScore -= CONSTANTS.PENALTY_TYPE_DEVIATION;
+            const typeLabel = getTypeLabel(type);
+            issues.push(`${typeLabel} 유형의 선택이 비정상적으로 많거나 적습니다.`);
         }
     });
 
-    // 4. 점수 범위 검증 (너무 극단적인 값은 의심)
+    // 4. 점수 범위 검증 (4개 선택지 환경에 맞게 조정)
     if (total > 0) {
         const maxScore = Math.max(totalScores.proactivity, totalScores.adaptability, totalScores.socialDistance);
         const minScore = Math.min(totalScores.proactivity, totalScores.adaptability, totalScores.socialDistance);
         
-        // 최대값과 최소값의 차이가 너무 작으면 (랜덤), 너무 크면 (극단적) 문제
         const range = maxScore - minScore;
         const rangePercent = (range / total) * 100;
         
-        if (rangePercent < 10) {
-            reliabilityScore -= 25;
+        if (rangePercent < CONSTANTS.RANGE_LOW_PERCENT) {
+            reliabilityScore -= CONSTANTS.PENALTY_RANGE_LOW;
             issues.push("답변 점수가 비정상적으로 균등합니다. 무작위 선택 가능성이 높습니다.");
-        } else if (rangePercent > 80) {
-            reliabilityScore -= 10;
+        } else if (rangePercent > CONSTANTS.RANGE_HIGH_PERCENT) {
+            reliabilityScore -= CONSTANTS.PENALTY_RANGE_HIGH;
             issues.push("답변 점수가 비정상적으로 극단적입니다.");
         }
     }
+
+    // 5. 응답 시간 패턴 검증 (빠른 연속 응답 감지 - 향후 확장용)
+    // TODO: 응답 시간 데이터가 제공되면 활성화
 
     // 신뢰도 점수 범위 조정 (0-100)
     reliabilityScore = Math.max(0, Math.min(100, reliabilityScore));
@@ -113,10 +160,10 @@ export function checkAnswerConsistency(
     let consistencyLevel: 'high' | 'medium' | 'low';
     let recommendation: string;
 
-    if (reliabilityScore >= 75) {
+    if (reliabilityScore >= CONSTANTS.HIGH_RELIABILITY_THRESHOLD) {
         consistencyLevel = 'high';
         recommendation = "답변이 매우 일관적입니다. 분석 결과의 신뢰도가 높습니다.";
-    } else if (reliabilityScore >= 50) {
+    } else if (reliabilityScore >= CONSTANTS.MEDIUM_RELIABILITY_THRESHOLD) {
         consistencyLevel = 'medium';
         recommendation = "일부 답변이 일관적이지 않을 수 있습니다. 더 정확한 분석을 위해 추가 질문에 답변하시겠습니까?";
     } else {
@@ -130,6 +177,18 @@ export function checkAnswerConsistency(
         issues,
         recommendation
     };
+}
+
+/**
+ * 타입 레이블 변환 (한글)
+ */
+function getTypeLabel(type: string): string {
+    const labels: Record<string, string> = {
+        'thinking': '사고형',
+        'feeling': '감정형',
+        'acting': '행동형'
+    };
+    return labels[type] || type;
 }
 
 /**

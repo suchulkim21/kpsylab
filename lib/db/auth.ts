@@ -6,15 +6,15 @@
 import crypto from 'crypto';
 import { supabase } from './supabase';
 
-// 비밀번호 해싱
-function hashPassword(password: string): string {
+// 비밀번호 해싱 (테스트에서 사용)
+export function hashPassword(password: string): string {
   const salt = crypto.randomBytes(16).toString('hex');
   const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
   return `${salt}:${hash}`;
 }
 
-// 비밀번호 검증
-function verifyPassword(password: string, hash: string): boolean {
+// 비밀번호 검증 (테스트에서 사용)
+export function verifyPassword(password: string, hash: string): boolean {
   const [salt, hashValue] = hash.split(':');
   const verifyHash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
   return hashValue === verifyHash;

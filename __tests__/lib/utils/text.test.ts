@@ -49,7 +49,7 @@ describe('Text Utility Functions', () => {
       const text = 'A'.repeat(200);
       const result = truncateText(text, 100);
       expect(result.length).toBe(103); // 100 + '...'
-      expect(result).toEndWith('...');
+      expect(result.endsWith('...')).toBe(true);
     });
 
     it('should not truncate short text', () => {

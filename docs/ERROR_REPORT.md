@@ -19,7 +19,7 @@
 | 파일 | 에러 | 비고 |
 |------|------|------|
 | `__tests__/lib/auth.test.ts` | `hashPassword`, `verifyPassword`가 `@/lib/db/auth`에서 export되지 않음 | auth 모듈에서 export 추가 또는 테스트에서 import 제거/수정 |
-| `__tests__/lib/content/engine.test.ts` | `TextBlock`에 `id` 필드 없음 (growth-roadmap `engine`의 `TextBlock`과 불일치) | 테스트 데이터에 `id` 추가 또는 `engine` 타입 맞춤 |
+| `__tests__/lib/content/engine.test.ts` | ~~`TextBlock`에 `id` 필드 없음~~ | **해결**: `TextBlock`을 engine에서 import하고 모든 블록에 `id` 추가 |
 | `__tests__/lib/utils/text.test.ts` | `toEndWith`가 `Assertion<string>`에 없음 | vitest 확장 또는 assertion 방식 변경 |
 
 ### 2.2 API / 컴포넌트

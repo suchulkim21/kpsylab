@@ -21,12 +21,12 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "KPSY LAB - 심리 분석 서비스 통합 플랫폼",
-  description: "MNPS, 성장 로드맵 등 심리 분석 서비스를 제공하는 통합 플랫폼",
-  keywords: ["심리 분석", "심리 측정", "Dark Tetrad", "MNPS", "성장 로드맵", "KPSY LAB"],
+  description: "MNPS, 마인드 아키텍터 등 심리 분석 서비스를 제공하는 통합 플랫폼",
+  keywords: ["심리 분석", "심리 측정", "다크 테트라드", "MNPS", "마인드 아키텍터", "KPSY LAB"],
   authors: [{ name: "KPSY LAB" }],
   openGraph: {
     title: "KPSY LAB - 심리 분석 서비스 통합 플랫폼",
-    description: "MNPS, 성장 로드맵 등 심리 분석 서비스를 제공하는 통합 플랫폼",
+    description: "MNPS, 마인드 아키텍터 등 심리 분석 서비스를 제공하는 통합 플랫폼",
     url: "https://www.kpsylab.com",
     siteName: "KPSY LAB",
     locale: "ko_KR",
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "KPSY LAB - 심리 분석 서비스 통합 플랫폼",
-    description: "MNPS, 성장 로드맵 등 심리 분석 서비스를 제공하는 통합 플랫폼",
+    description: "MNPS, 마인드 아키텍터 등 심리 분석 서비스를 제공하는 통합 플랫폼",
   },
   metadataBase: new URL("https://www.kpsylab.com"),
   alternates: {

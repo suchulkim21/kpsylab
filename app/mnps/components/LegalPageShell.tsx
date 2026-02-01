@@ -13,7 +13,7 @@ type LegalPageShellProps = {
  */
 export default function LegalPageShell({
   title,
-  subtitle = 'MNPS: Dark Nature Test',
+  subtitle = 'MNPS 다크 테스트',
   backHref = '/mnps',
   backLabel = 'MNPS로 돌아가기',
   children,
@@ -42,10 +42,6 @@ export default function LegalPageShell({
         </header>
 
         <div className="space-y-8">{children}</div>
-
-        <footer className="pt-6 border-t border-zinc-800 text-xs text-zinc-500">
-          문의: KPSY LAB
-        </footer>
       </div>
     </main>
   );

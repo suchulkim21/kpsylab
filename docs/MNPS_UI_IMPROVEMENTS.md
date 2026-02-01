@@ -1,12 +1,43 @@
-# MNPS 결과 페이지 UI 개선 사항
+# MNPS 테스트·결과 페이지 UI 개선 사항
 
 ## 개요
 
-MNPS 테스트 결과 페이지의 가독성과 사용자 경험을 개선하기 위해 다음 요소들이 추가/개선되었습니다.
+MNPS **테스트 페이지**의 3단계 분할 진행·중간 피드백과 **결과 페이지**의 가독성·한글화를 포함한 UI 개선 사항을 정리합니다.
 
 ---
 
-## 1. 마크다운 파싱 지원
+## 1. 테스트 페이지: 3단계 분할 진행(Phased Assessment)
+
+### 1.1 단계 구분
+
+| Phase | 문항 | 설명 |
+|-------|------|------|
+| **Phase 1** | Q1~Q14 | 기본 성향·자기 인식·권리 의식·도덕적 이탈 측정 |
+| **Phase 2** | Q15~Q28 | 갈등·경쟁·사이코패시·사디즘·상황 시나리오·악의성 측정 |
+| **Phase 3** | Q29~Q42 | 검증·일관성 쌍·심화 문항으로 신뢰도 보정 |
+
+### 1.2 중간 휴식 화면(InterstitialView)
+
+- **파일**: `app/mnps/test/InterstitialView.tsx`
+- **표시 시점**: Q14·Q28 답변 직후. 다음 문항으로 넘어가지 않고 중간 화면 노출.
+- **흐름**: 약 1.8초 "데이터 분석 중..." 로딩(회전 스피너) → 제목·부제·메시지(2~3문단)·"지금까지 감지된 것" 인사이트 3개·다음 단계 버튼.
+- **메시지 변형**: Phase 1 종료 후 3종, Phase 2 종료 후 3종. 랜덤 선택으로 재방문 시 다른 문구 노출 가능.
+- **디자인**: 카드형 레이아웃, cyan 포인트, Framer Motion(opacity·y) 전환, 버튼 호버/탭 스케일.
+
+### 1.3 진행 표시
+
+- **라벨**: "Step 1/3", "Step 2/3", "Step 3/3" (기존 42문항 % 대신 단계별 성취감).
+- **진행 바**: 전체 42문항 기준 비율 유지. `motion.div`로 너비 애니메이션.
+- **단계별 안내**: 1단계 "기본 성향 파악", 2단계 "심층 패턴 분석", 3단계 "마지막 확인".
+
+### 1.4 기술 스택
+
+- React State: `viewMode`(question | interstitial), `interstitialPhase`(1 | 2), `currentPhase`(1~3).
+- Framer Motion: `AnimatePresence`, `motion.div`로 문항 ↔ 휴식 화면 전환.
+
+---
+
+## 2. 마크다운 파싱 지원
 
 ### 구현
 
@@ -28,9 +59,9 @@ MNPS 테스트 결과 페이지의 가독성과 사용자 경험을 개선하기
 
 ---
 
-## 2. 아키타입 정보 표시
+## 3. 아키타입 정보 표시
 
-### 2.1 Headline (한 줄 요약)
+### 3.1 Headline (한 줄 요약)
 
 ```tsx
 {profile.headline && (
@@ -44,7 +75,7 @@ MNPS 테스트 결과 페이지의 가독성과 사용자 경험을 개선하기
 - "감정이 제거된 완벽한 이성, 오직 효율만이 당신의 언어입니다." (MACH_PURE)
 - "자신을 숭배하지 않는 세상은 당신에게 존재할 가치가 없습니다." (NARC_PURE)
 
-### 2.2 Highlights (핵심 특징)
+### 3.2 Highlights (핵심 특징)
 
 ```tsx
 {profile.highlights && profile.highlights.length > 0 && (
@@ -69,9 +100,9 @@ MNPS 테스트 결과 페이지의 가독성과 사용자 경험을 개선하기
 
 ---
 
-## 3. 섹션별 디자인 개선
+## 4. 섹션별 디자인 개선
 
-### 3.1 Elite View (Good Report)
+### 4.1 엘리트 뷰 (Good Report)
 
 **변경 전**:
 ```tsx
@@ -111,7 +142,7 @@ MNPS 테스트 결과 페이지의 가독성과 사용자 경험을 개선하기
 - 섹션 설명 추가
 - 마크다운 파싱 적용
 
-### 3.2 Dark Nature (Bad Report)
+### 4.2 어두운 이면 (Bad Report)
 
 **변경 전**:
 ```tsx
@@ -134,7 +165,7 @@ MNPS 테스트 결과 페이지의 가독성과 사용자 경험을 개선하기
     </div>
     <div>
       <h2 className="text-xl font-bold text-red-400">
-        Dark Nature
+        어두운 이면
       </h2>
       <p className="text-xs text-red-400/70">가공 없는 어두운 이면</p>
     </div>
@@ -156,32 +187,32 @@ MNPS 테스트 결과 페이지의 가독성과 사용자 경험을 개선하기
 
 ---
 
-## 4. 색상 시스템
+## 5. 색상 시스템
 
 ### 색상 팔레트
 
 | 섹션 | 주요 색상 | 배경 | 테두리 |
 |------|----------|------|--------|
-| **Elite View** | Emerald (에메랄드) | `from-emerald-950/40 to-zinc-900` | `border-emerald-800/50` |
-| **Dark Nature** | Red (레드) | `from-red-950/50 to-zinc-950` | `border-red-800/60` |
+| **엘리트 뷰** | Emerald (에메랄드) | `from-emerald-950/40 to-zinc-900` | `border-emerald-800/50` |
+| **어두운 이면** | Red (레드) | `from-red-950/50 to-zinc-950` | `border-red-800/60` |
 | **Highlights** | Cyan (사이안) | `bg-zinc-900/50` | `border-zinc-800` |
 | **아키타입 이름** | Zinc-100 (밝은 회색) | - | - |
 | **Headline** | Zinc-300 (중간 회색, 이탤릭) | - | - |
 
 ---
 
-## 5. 아이콘 사용
+## 6. 아이콘 사용
 
 **라이브러리**: `lucide-react`
 
 | 아이콘 | 사용처 | 색상 |
 |--------|--------|------|
-| `Trophy` | Elite View 섹션 헤더 | `text-emerald-400` |
-| `Skull` | Dark Nature 섹션 헤더 & CTA 오버레이 | `text-red-400` |
+| `Trophy` | 엘리트 뷰 섹션 헤더 | `text-emerald-400` |
+| `Skull` | 어두운 이면 섹션 헤더 & CTA 오버레이 | `text-red-400` |
 
 ---
 
-## 6. 데이터 흐름
+## 7. 데이터 흐름
 
 ```
 darkNatureScoring.ts (assembleReport)
@@ -203,7 +234,7 @@ MnpsResultClient.tsx
 
 ---
 
-## 7. 타입 정의
+## 8. 타입 정의
 
 ### AssembledReport
 
@@ -248,7 +279,7 @@ export interface ArchetypeContent {
 
 ---
 
-## 9. 접근성 (Accessibility)
+## 10. 접근성 (Accessibility)
 
 - **색상 대비**: WCAG AA 기준 충족
 - **아이콘**: 텍스트와 함께 표시 (아이콘만으로 의미 전달 X)
@@ -257,7 +288,7 @@ export interface ArchetypeContent {
 
 ---
 
-## 10. 향후 개선 가능 사항
+## 11. 향후 개선 가능 사항
 
 ### 10.1 탭 UI (선택사항)
 

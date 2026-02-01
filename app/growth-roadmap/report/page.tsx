@@ -260,7 +260,7 @@ export default function FinalReportPage() {
                 <div className="z-10 max-w-2xl w-full bg-[#0a0a0a] border border-purple-500/30 p-8 rounded-2xl shadow-[0_0_50px_rgba(168,85,247,0.1)]">
                     <div className="flex items-center gap-2 mb-6">
                         <Activity className="text-purple-500 animate-pulse" size={20} />
-                        <span className="text-purple-400 font-mono text-xs tracking-widest uppercase">핵심 로직 보정 (Logic Calibration)</span>
+                        <span className="text-purple-400 font-mono text-xs tracking-widest uppercase">핵심 로직 보정</span>
                     </div>
 
                     <h2 className="text-2xl font-bold text-white mb-8 leading-relaxed">
@@ -300,35 +300,31 @@ export default function FinalReportPage() {
 
             <div className="max-w-6xl mx-auto px-6 py-24 relative z-10">
                 {/* Header Section */}
-                <header className="mb-16 border-b border-gray-800/50 pb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div>
-                        <div className="flex items-center gap-3 mb-4">
-                            <span className="px-2 py-0.5 bg-purple-500/10 border border-purple-500/20 rounded text-[10px] font-mono text-purple-400 tracking-widest uppercase">
-                                보안 등급: 1급
-                            </span>
-                            <span className="px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 rounded text-[10px] font-mono text-blue-400 tracking-widest uppercase">
-                                분석 알고리즘 v3.1 (KR)
-                            </span>
-                        </div>
-                        <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-400 to-gray-600">
-                            전술 감사 보고서
-                        </h1>
-                        <p className="text-gray-500 text-sm font-mono tracking-wide uppercase">
-                            심층 정밀 분석 // 대상 ID: {scores?.typeCode}-{scores?.m1Type}
-                        </p>
+                <header className="mb-16 border-b border-gray-800/50 pb-8 text-left">
+                    <div className="flex items-center gap-3 mb-3">
+                        <span className="report-section-label text-purple-400">
+                            보안 등급: 1급
+                        </span>
+                        <span className="report-section-label text-blue-400">
+                            분석 알고리즘 v3.1
+                        </span>
                     </div>
+                    <h1 className="report-section-title text-3xl md:text-5xl">
+                        전술 감사 보고서
+                    </h1>
+                    <p className="report-section-summary mt-2">
+                        심층 정밀 분석 // 대상 ID: {scores?.typeCode}-{scores?.m1Type}
+                    </p>
                 </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Left Column: Visual Data (Sticky) */}
                     <div className="lg:col-span-4 space-y-6">
                         {/* Radar Chart Card */}
-                        <div className="p-6 rounded-xl bg-[#0a0a0a] border border-gray-800/60 shadow-[0_4px_20px_rgba(0,0,0,0.3)] backdrop-blur-sm relative overflow-hidden group">
-                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500/30 to-transparent opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                            <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-sm font-bold font-mono text-gray-300 uppercase tracking-widest flex items-center gap-2">
-                                    <Activity size={16} className="text-purple-400" /> 벡터 격차 분석
-                                </h3>
+                        <div className="report-card relative overflow-hidden group">
+                            <div className="flex items-center gap-2 mb-6 text-left">
+                                <Activity size={16} className="text-purple-400" />
+                                <h3 className="report-section-label text-purple-400">벡터 격차 분석</h3>
                             </div>
                             <div className="h-[400px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -355,17 +351,17 @@ export default function FinalReportPage() {
 
                         {/* Metric Cards */}
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="p-6 rounded-xl bg-[#0a0a0a] border border-gray-800/60 flex flex-col items-center justify-center text-center group hover:border-red-500/30 transition-colors">
+                            <div className="report-card text-left group hover:border-red-500/30 transition-colors">
                                 <Fingerprint size={24} className="text-gray-500 mb-3 group-hover:text-red-500 transition-colors" />
-                                <span className="text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">핵심 무의식</span>
-                                <span className="text-lg md:text-xl font-bold text-white tracking-tight whitespace-pre-wrap break-keep leading-snug min-h-[3rem] flex items-center justify-center">
+                                <span className="report-section-label block mb-2">핵심 무의식</span>
+                                <span className="report-section-title text-lg min-h-[3rem] block">
                                     {scores?.m1Term}
                                 </span>
                             </div>
-                            <div className="p-6 rounded-xl bg-[#0a0a0a] border border-gray-800/60 flex flex-col items-center justify-center text-center group hover:border-blue-500/30 transition-colors">
+                            <div className="report-card text-left group hover:border-blue-500/30 transition-colors">
                                 <Brain size={24} className="text-gray-500 mb-3 group-hover:text-blue-500 transition-colors" />
-                                <span className="text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">대인 전략 양상</span>
-                                <span className="text-lg md:text-xl font-bold text-white tracking-tight whitespace-pre-wrap break-keep leading-snug min-h-[3rem] flex items-center justify-center">
+                                <span className="report-section-label block mb-2">대인 전략 양상</span>
+                                <span className="report-section-title text-lg min-h-[3rem] block">
                                     {scores?.m2Term}
                                 </span>
                             </div>
@@ -400,7 +396,7 @@ export default function FinalReportPage() {
                                     // If the paragraph is JUST a list
                                     if (items.every(line => line.trim().startsWith('-') || line.trim().startsWith('**'))) {
                                         return (
-                                            <ul key={idx} className="list-disc pl-5 space-y-2 mb-4 text-gray-300">
+                                            <ul key={idx} className="list-disc pl-5 space-y-2 mb-4 report-body">
                                                 {items.map((item, i) => {
                                                     const cleanItem = item.replace(/^- /, '').trim();
                                                     // Parse Bold inside list item
@@ -423,7 +419,7 @@ export default function FinalReportPage() {
                                 // 2. Handle Regular Paragraphs with Bold
                                 const parts = para.split(/(\*\*.*?\*\*)/g);
                                 return (
-                                    <p key={idx} className="mb-4 leading-relaxed whitespace-pre-wrap text-gray-300">
+                                    <p key={idx} className="report-body mb-4 whitespace-pre-wrap">
                                         {parts.map((part, pIdx) =>
                                             part.startsWith('**') && part.endsWith('**')
                                                 ? <strong key={pIdx} className="text-purple-400 font-semibold">{part.slice(2, -2)}</strong>
@@ -438,7 +434,7 @@ export default function FinalReportPage() {
                                 <div className="w-2 h-2 bg-gray-500"></div>
                             </div>
                             <p className="text-xs font-mono text-gray-600 uppercase tracking-[0.2em] mb-2">
-                                시스템 로직: FinalAnalysisEngine.ts // 상태: 검증됨
+                                시스템 로직: 최종 분석 엔진 // 상태: 검증됨
                             </p>
                             <p className="text-[10px] text-gray-700">
                                 본 문서는 대상자의 전용 분석 결과입니다.<br />

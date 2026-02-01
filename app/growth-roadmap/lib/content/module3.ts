@@ -34,25 +34,39 @@ function getGapText(gap: number): string {
     return "매우 심각한 수준으로, 의사결정 프로세스를 교란시키는 주요 저해 요인으로 작용하고 있습니다.";
 }
 
+export interface Module3ResultItem {
+    id: string;
+    title: string;
+    content: string;
+}
+
 export function generateModule3Content(data: M3Data): string {
+    return assembleParagraphs(
+        generateModule3Items(data).map(({ id, content }) => ({ id, content }))
+    );
+}
+
+/** Module3 엔진용: 플레이스홀더 없이 실제 블록만 반환 */
+export function generateModule3Items(data: M3Data): Module3ResultItem[] {
     const strategy = STRATEGY_DEFINITIONS[data.strategy] ? data.strategy : "Alignment";
     const dim = data.dominantGap || "growth";
+    const dimLabel = dim === 'stability' ? '안정성' : dim === 'growth' ? '성장성' : dim === 'relation' ? '관계성' : '자율성';
 
-    const blocks: TextBlock[] = [
+    return [
         {
-            id: "m3_intro",
-            // Removed .split('(')[0] logic as values are purely Korean
+            id: "m3-1",
+            title: "재구성 분석 결과 1: 전략 도출",
             content: `이상향과 잠재력 간의 벡터 분석 결과, 귀하에게는 **'${STRATEGY_DEFINITIONS[strategy].split('은')[0].trim()}'**이 가장 시급한 솔루션으로 도출되었습니다.\n\n${STRATEGY_DEFINITIONS[strategy]}`
         },
         {
-            id: "m3_gap_analysis",
-            content: `**벡터 불일치 분석**\n\n특히 **${dim === 'stability' ? '안정성' : dim === 'growth' ? '성장성' : dim === 'relation' ? '관계성' : '자율성'}** 영역에서 감지된 불일치는 ${getGapText(50)} \n\n${DIMENSION_ANALYSIS[dim]}`
+            id: "m3-2",
+            title: "재구성 분석 결과 2: 벡터 불일치 분석",
+            content: `**벡터 불일치 분석**\n\n특히 **${dimLabel}** 영역에서 감지된 불일치는 ${getGapText(50)} \n\n${DIMENSION_ANALYSIS[dim]}`
         },
         {
-            id: "m3_core_advice",
+            id: "m3-3",
+            title: "재구성 분석 결과 3: 전술적 행동 지침",
             content: `**전술적 행동 지침**\n\n${GAP_ADVICE[strategy]}`
         }
     ];
-
-    return assembleParagraphs(blocks);
 }

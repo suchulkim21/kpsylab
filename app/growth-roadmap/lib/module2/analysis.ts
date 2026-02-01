@@ -1,5 +1,17 @@
 import { ScenarioOption, AnalysisVariables } from "@growth-roadmap/types/module2";
 
+/**
+ * Module 2 분석 엔진 (v2.1)
+ * 4개 선택지 환경에 최적화됨 (Detached Observer D 선택지 반영)
+ *
+ * 가중치 분포 (4개 선택지):
+ * - 선택지 A (acting): proactivity 5~15, adaptability -10~10, socialDistance -5~15
+ * - 선택지 B (thinking): proactivity 0~10, adaptability 5~15, socialDistance -5~10
+ * - 선택지 C (feeling): proactivity -5~5, adaptability 3~10, socialDistance -15~5
+ * - 선택지 D (Detached Observer): proactivity -10~0, adaptability -8~5, socialDistance 10~15
+ *   → 개입 포기, 책임 회피, 관찰자 위치, 자기보호 중심의 독자적 전략가 페르소나
+ */
+
 // 심리학적 특성 상세 분석을 위한 타입 확장
 interface EnhancedAnalysis {
     trait: string;
@@ -18,6 +30,23 @@ interface EnhancedAnalysis {
     comparisonPercentiles?: { proactivity: number; adaptability: number; socialDistance: number };
 }
 
+// 4개 선택지 환경에서의 분석 상수
+const ANALYSIS_CONSTANTS = {
+    // Percentile 임계값 (4개 선택지 환경에서 분산 증가 반영)
+    HIGH_PERCENTILE_THRESHOLD: 55,    // 상위 30%
+    MID_PERCENTILE_THRESHOLD: 35,     // 중위 30-70%
+    
+    // 점수 정규화 계수 (27개 시나리오 × 4개 선택지 기준)
+    NORMALIZATION_FACTOR: 1.0,
+    
+    // 최소 응답 수 (신뢰도 있는 분석을 위한)
+    MIN_SELECTIONS_FOR_ANALYSIS: 9
+};
+
+/**
+ * 선택된 옵션들로부터 분석 변수를 계산합니다.
+ * 4개 선택지 환경에 최적화됨
+ */
 export function calculateAnalysis(selectedOptions: ScenarioOption[]): AnalysisVariables {
     const result: AnalysisVariables = {
         proactivity: 0,
@@ -36,7 +65,25 @@ export function calculateAnalysis(selectedOptions: ScenarioOption[]): AnalysisVa
         if (option.weight.socialDistance) result.socialDistance += option.weight.socialDistance;
     });
 
+    // 정규화 적용 (필요시)
+    result.proactivity *= ANALYSIS_CONSTANTS.NORMALIZATION_FACTOR;
+    result.adaptability *= ANALYSIS_CONSTANTS.NORMALIZATION_FACTOR;
+    result.socialDistance *= ANALYSIS_CONSTANTS.NORMALIZATION_FACTOR;
+
     return result;
+}
+
+/**
+ * 백분위 계산 (4개 선택지 환경에 최적화)
+ */
+export function calculatePercentile(percent: number): string {
+    if (percent >= ANALYSIS_CONSTANTS.HIGH_PERCENTILE_THRESHOLD) {
+        return "상위 30%";
+    } else if (percent >= ANALYSIS_CONSTANTS.MID_PERCENTILE_THRESHOLD) {
+        return "중위 30-70%";
+    } else {
+        return "하위 30%";
+    }
 }
 
 export function calculateIntermediateResult(phase: number, options: ScenarioOption[]) {
@@ -88,10 +135,10 @@ export function calculateIntermediateResult(phase: number, options: ScenarioOpti
     let improvementPlan = "";
     let successMetrics = "";
 
-    // Calculate percentiles (compared to general population)
-    const pPercentile = pPercent >= 60 ? "상위 30%" : pPercent >= 40 ? "중위 30-70%" : "하위 30%";
-    const aPercentile = aPercent >= 60 ? "상위 30%" : aPercent >= 40 ? "중위 30-70%" : "하위 30%";
-    const sdPercentile = sdPercent >= 60 ? "상위 30%" : sdPercent >= 40 ? "중위 30-70%" : "하위 30%";
+    // Calculate percentiles (compared to general population) - 4개 선택지 환경에 최적화
+    const pPercentile = calculatePercentile(pPercent);
+    const aPercentile = calculatePercentile(aPercent);
+    const sdPercentile = calculatePercentile(sdPercent);
 
     // Phase 3 Special Logic: Social Archetype
     if (phase === 3) {

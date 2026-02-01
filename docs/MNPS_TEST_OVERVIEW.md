@@ -150,8 +150,9 @@
   - **SubFactor 강조** (도덕적 이탈·악의성 높을 때 경고 문장)
   - **응답 신뢰도 참고**: 구간별(심각/중등/경미) 방어·일관성 경고
   - 시너지 Bad 텍스트
-  - **Final Ruin Scenario** (강도: critical/high/moderate). **Critical** 시 테마별 시나리오 1종 노출: The Corporate Purge(조직적 숙청), The Gaslight Backfire(통제의 역습), The Dopamine Burnout(쾌락의 종말) + 생존 전략(Survival Tip).
-  - **D-Factor 해석**: 4대 하위 요인(Egoism, Entitlement, MoralDisengagement, Spitefulness)별 High/Low에 대한 Bad 관점 2문장.
+  - **최종 리스크 시나리오** (강도: critical/high/moderate). **Critical** 시 테마별 시나리오 1종 노출: Corporate Purge(조직적 숙청), Gaslight Backfire(통제의 역습), Dopamine Burnout(쾌락의 종말) + 생존 전략. 리포트 내 섹션 제목은 한글 "최종 리스크 시나리오".
+  - **D-Factor 해석**: 4대 하위 요인 **한글 표기**(이기주의, 권리의식, 도덕적 이탈, 악의성) 및 **높음/낮음**별 Bad 관점 2문장. `contentLibrary.dFactorInterpretations` + `D_FACTOR_DISPLAY_KO`.
+  - **최종 리스크 시나리오** 섹션 제목은 한글 "최종 리스크 시나리오"로 표시. Critical 시 테마별 시나리오 1종 + 생존 전략.
   - 법적·임상적 진단이 아님을 밝히는 안내 문구
 
 ### 5.4 아키타입 (Dynamic Profile Matrix)
@@ -202,8 +203,15 @@
 
 ### 7.1 테스트 페이지 (`/mnps/test`)
 
-- **파일**: `app/mnps/test/page.tsx`, `app/mnps/test/questions.ts`
-- **동작**: 42문항을 order 순으로 1문항씩 표시, 1~5 선택 시 다음 문항으로 이동. 진행률·카테고리 라벨 표시.
+- **파일**: `app/mnps/test/page.tsx`, `app/mnps/test/InterstitialView.tsx`, `app/mnps/test/questions.ts`
+- **3단계 분할 진행(Phased Assessment)**:
+  - **Phase 1**: Q1~Q14 (index 0~13)
+  - **Phase 2**: Q15~Q28 (index 14~27)
+  - **Phase 3**: Q29~Q42 (index 28~41)
+- **중간 휴식 화면(Interstitial)**: Q14·Q28 답변 직후 다음 문항으로 넘어가지 않고 **중간 분석 화면**을 표시. "데이터 분석 중..." 로딩 애니메이션(약 1.8초) 후, 현재 진행 상황·흥미 유발 멘트·다음 단계 시작 버튼 노출. Phase 1 종료 후 3종·Phase 2 종료 후 3종 **메시지 변형**을 랜덤 선택하여 표시(subtitle, message, insights 3개, buttonLabel).
+- **진행 표시**: 상단 진행 바는 전체 42문항 기준 비율 유지. 라벨은 **Step 1/3**, **Step 2/3**, **Step 3/3** 형태로 단계별 성취감 제공. 단계별 안내 문구(1단계: 기본 성향 파악, 2단계: 심층 패턴 분석, 3단계: 마지막 확인).
+- **상태**: `viewMode`(question | interstitial), `interstitialPhase`(1 | 2), `currentPhase`(1~3)로 문항 뷰와 휴식 뷰 전환. Framer Motion으로 화면 전환 애니메이션 적용.
+- **동작**: 42문항을 order 순으로 1문항씩 표시, 1~5 선택 시 다음 문항으로 이동(Phase 경계에서는 Interstitial 표시 후 버튼 클릭 시 다음 Phase 첫 문항으로 이동). 진행률·카테고리·Step 라벨 표시.
 - **완료 시**: assessmentId가 있으면 `/api/mnps/complete`에 responses·startedAt 전송 후 `/mnps/result?assessmentId=...` 로 이동(클라이언트는 결과 객체를 sessionStorage에 저장하지 않음). 없으면 sessionStorage에 미리보기용 저장 후 `/mnps/result` 로 이동.
 - **채점**: 클라이언트의 `scoreDarkNature` 호출은 **UI 미리보기용**이며, 최종 결과는 서버에서 산출·저장한 데이터를 results API로만 표시합니다.
 
@@ -211,7 +219,8 @@
 
 - **파일**: `app/mnps/result/page.tsx`, `app/mnps/result/MnpsResultClient.tsx`, `app/mnps/result/DisclaimerBanner.tsx`
 - **표시 내용**:
-  - **종합 D 점수** (0~100), **Extreme** 태그(rawDTotal > 100 시), **아키타입**, **분석 정확도**(색상 구간: 90% 이상 녹색, 75~89% 노랑, 75% 미만 빨강). 응답 시간 페널티 시 안내 문구 표시.
+  - **종합 D 점수** (0~100), **극단** 태그(rawDTotal > 100 시, 한글 "(극단)"), **아키타입**, **분석 정확도**(색상 구간: 90% 이상 녹색, 75~89% 노랑, 75% 미만 빨강). 응답 시간 페널티 시 안내 문구 표시.
+  - **엘리트 뷰**(Good 리포트)·**어두운 이면**(Bad 리포트) 섹션 제목 한글 표기.
   - **실시간 백분위 배지**: `percentile_at_creation`이 있으면 "당신은 N%의 위험군입니다"(N = 100 − 백분위, 소수 1자리). **상위 10% 이내**는 붉은색 경고 스타일, **하위 50%**는 안전(녹색) 스타일, 그 외는 중간(노랑) 스타일.
   - **다크 테트라드 프로필** 레이더 차트 (마키아벨리즘, 나르시시즘, 사이코패시, 사디즘).
   - **긍정 해석(엘리트 관점)**: Good 리포트 전문.
@@ -250,8 +259,9 @@ apps/portal/
 │   │   ├── privacy/
 │   │   │   └── page.tsx             # 개인정보 처리방침 (수집·목적·보관·면책)
 │   │   ├── test/
-│   │   │   ├── page.tsx             # 테스트 진행 UI
-│   │   │   └── questions.ts        # 42문항 정의, VALIDATION_QUESTION_IDS, CONSISTENCY_PAIR_IDS
+│   │   │   ├── page.tsx             # 테스트 진행 UI (3단계 분할, Step 1/3, Interstitial 연동)
+│   │   │   ├── InterstitialView.tsx # 중간 휴식 화면 (Phase 1/2 종료 후, 로딩+메시지 변형 3종×2)
+│   │   │   └── questions.ts         # 42문항 정의, VALIDATION_QUESTION_IDS, CONSISTENCY_PAIR_IDS
 │   │   └── result/
 │   │       ├── page.tsx            # 결과 페이지 (generateMetadata, OG)
 │   │       ├── MnpsResultClient.tsx # 결과 클라이언트 (레이더, Good/Bad, CTA)
@@ -269,8 +279,10 @@ apps/portal/
 │   └── ...
 ├── lib/
 │   ├── mnps/
-│   │   ├── darkNatureScoring.ts  # scoreDarkNature, mapRawDTotalToDisplay, assembleReport, NORM_CONFIG, D_SCORE_CONFIG
-│   │   ├── contentLibrary.ts    # trait 스니펫, 시너지, 아키타입 소개·딥다이브 등
+│   │   ├── darkNatureScoring.ts  # scoreDarkNature, assembleReport, NORM_CONFIG, D_SCORE_CONFIG; D-Factor/최종 시나리오 한글 표기
+│   │   ├── contentLibrary.ts    # trait 스니펫, 시너지, 아키타입 소개·딥다이브, D_FACTOR_DISPLAY_KO, finalRuinScenarios
+│   │   ├── archetypeContent.ts  # ARCHETYPE_CONTENT(19종), PUPPET_MASTER_CONTENT, ARCHETYPE_DETAILED_CONTENT.puppetMaster
+│   │   ├── dynamicProfileMatrix.ts  # determineArchetype, getIntensity, MnpsArchetypeId
 │   │   └── normConfigFromDistribution.ts  # 규준 분포 기반 권장 NORM_CONFIG
 │   └── db/
 │       └── migrations/
@@ -415,8 +427,10 @@ apps/portal/
 | **시너지** | **6조합** × 2~3종 | mach–sadism, mach–psych, mach–narc, psych–sadism, narc–psych, **narc–sadism**(Spotlight Predator). Good/Bad 쌍. 500자 분량 해석 문서: `docs/mnps_synergy_interpretations.md` |
 | **아키타입 소개** | 9종 × (Good + Bad) | Puppet Master, Silent Predator, Mirror Egoist, Volatile Outlaw, 단일 특성 4종, Mixed. 각 1~2문장 |
 | **아키타입 딥다이브** | **10종** × 3블록 | Puppet Master, Silent Predator, Mirror Egoist, Volatile Outlaw, Strategic Game Architect, High-Impact Ego Architect, Cold Crisis Operator, Social Predator, Mixed Strategic Profile, **The Chaos Engine**. Bad 전용: 무의식적 작동 원리 / 필연적 관계 파탄 / 사회적 붕괴 트리거 |
-| **D-Factor 해석** | 4요인 × High/Low × Good/Bad | Egoism, Entitlement, MoralDisengagement, Spitefulness. 각 2문장. `contentLibrary.dFactorInterpretations` |
-| **Final Ruin 3테마** | 3종 | Corporate Purge(조직적 숙청), Gaslight Backfire(통제의 역습), Dopamine Burnout(쾌락의 종말). Critical 시 1종 + 생존 팁. `contentLibrary.finalRuinScenarios` |
+| **D-Factor 해석** | 4요인 × 높음/낮음 × Good/Bad | 이기주의, 권리의식, 도덕적 이탈, 악의성(한글 표기). 각 2문장. `contentLibrary.dFactorInterpretations` + `D_FACTOR_DISPLAY_KO` |
+| **Final Ruin 3테마** | 3종 | Corporate Purge(조직적 숙청), Gaslight Backfire(통제의 역습), Dopamine Burnout(쾌락의 종말). Critical 시 1종 + 생존 팁. 섹션 제목 한글 "최종 리스크 시나리오". `contentLibrary.finalRuinScenarios` |
+| **중간 피드백(Interstitial)** | Phase 1 × 3종, Phase 2 × 3종 | Q14·Q28 답변 후 표시. subtitle, message(2~3문단), insights(3개 불릿), buttonLabel. "데이터 분석 중..." 로딩 후 랜덤 변형. `app/mnps/test/InterstitialView.tsx` |
+| **아키타입 상세(puppetMaster)** | 1종 확장 구조 | title, quote, summary, analysis, traits, dFactor, ruinScenario(발단~결말), strategy. `lib/mnps/archetypeContent.ts` → `PUPPET_MASTER_CONTENT`, `ARCHETYPE_DETAILED_CONTENT.puppetMaster` |
 | **특성 스니펫 톤 변형** | 4특성 × 3레벨 × 3톤 | Clinical / Social / Direct. Good·Bad 각 변형. `contentLibrary.traitSnippetToneVariations` |
 | **최종 경고** | 3강도 × 3종 | critical/high/moderate. Final Ruin 시나리오 |
 | **추가 Bad 블록** | 6블록 | 어두운 알고리즘·페르소나 괴리·실제 사례·붕괴 단계·법적 리스크·회복 가능성 등, 2000자 이상 분량 |
@@ -488,7 +502,19 @@ apps/portal/
 | **개인정보 처리방침** | 수집 항목(응답·점수·접속 로그, 회원 식별 정보 미수집), 수집 목적(서비스·통계·알고리즘 개선·익명화), 보관 기간(법률 자문 후 구체화·캐시 삭제·요청 시 파기 방향), 면책 요약. |
 | **연결** | 결과 페이지 하단 `DisclaimerBanner`에서 이용약관·개인정보처리방침 링크 노출. |
 
-### 11.6 문서·산출물
+### 11.6 3단계 분할 진행·중간 피드백·한글화
+
+| 항목 | 내용 |
+|------|------|
+| **3단계 분할(Phased Assessment)** | Phase 1(Q1~Q14), Phase 2(Q15~Q28), Phase 3(Q29~Q42). Q14·Q28 답변 직후 중간 휴식 화면 표시. |
+| **InterstitialView** | "데이터 분석 중..." 로딩(약 1.8초) 후, Phase 1 종료 3종·Phase 2 종료 3종 메시지 변형(subtitle, message, insights 3개, buttonLabel) 랜덤 표시. Framer Motion 전환. |
+| **진행 표시** | 상단 라벨 "Step 1/3", "Step 2/3", "Step 3/3". 단계별 안내 문구. |
+| **D-Factor 한글 표기** | 리포트 내 Egoism→이기주의, Entitlement→권리의식, MoralDisengagement→도덕적 이탈, Spitefulness→악의성. High/Low→높음/낮음. `contentLibrary.D_FACTOR_DISPLAY_KO`. |
+| **최종 리스크 시나리오** | 섹션 제목 "Final Ruin Scenario" → "최종 리스크 시나리오". 시너지 라벨·방어적/조작적 등 리포트·결과 페이지 문구 한글화. |
+| **결과 페이지 라벨** | Extreme→극단, Elite View→엘리트 뷰, Dark Nature→어두운 이면. |
+| **Puppet Master 상세 콘텐츠** | `archetypeContent.ts`에 `PUPPET_MASTER_CONTENT`(title, quote, summary, analysis, traits, dFactor, ruinScenario, strategy), `ARCHETYPE_DETAILED_CONTENT.puppetMaster` 추가. |
+
+### 11.7 문서·산출물
 
 | 파일 | 설명 |
 |------|------|
@@ -524,7 +550,9 @@ apps/portal/
 - **결과 조회**: GET `/api/mnps/results`는 서버 저장 `result_snapshot`을 그대로 반환. 결과 페이지는 이 데이터만 렌더링에 사용. 대안: Service Role로 조회 후 앱 레벨에서 session_id/user_id 검증.
 - **제출 회복성**: complete API는 멱등(이미 완료 시 저장 결과만 반환). 테스트 페이지는 네트워크/5xx 시 재시도(최대 3회, 지수 백오프).
 - **실시간 백분위**: complete 시 RPC get_d_score_percentile 호출 → percentile_at_creation 저장. 결과 페이지에 "당신은 N%의 위험군입니다" 배지(§9.6).
-- **리포트 확장**: 아키타입 딥다이브 10종, 시너지 6종, D-Factor 해석, Final Ruin 3테마, 특성 톤 변형, 바넘 효과 마키아벨리즘 서문(§11.4).
+- **3단계 분할·중간 피드백**: 테스트는 Phase 1(Q1~Q14)·Phase 2(Q15~Q28)·Phase 3(Q29~Q42)로 나뉘며, Q14·Q28 답변 후 InterstitialView(로딩+메시지 변형 3종×2) 표시. 진행 라벨 Step 1/3·2/3·3/3(§11.6).
+- **리포트·UI 한글화**: D-Factor(이기주의·권리의식·도덕적 이탈·악의성, 높음/낮음), 최종 리스크 시나리오, 시너지 라벨, 결과 페이지(극단·엘리트 뷰·어두운 이면)(§11.6).
+- **리포트 확장**: 아키타입 딥다이브 10종, 시너지 6종, D-Factor 해석, Final Ruin 3테마, 특성 톤 변형, 바넘 효과 마키아벨리즘 서문, Puppet Master 상세 콘텐츠(§11.4, §11.6).
 - **이용약관·개인정보처리방침**: `/mnps/terms`, `/mnps/privacy`에서 베타 안내·면책·저작권 및 수집·목적·보관·면책 안내. LegalPageShell 공통 레이아웃, 결과 하단 DisclaimerBanner 링크(§7.3, §11.5).
 - **완성도**: 기능 약 94%, 운영 준비 약 90%. 동적 OG·법적 페이지 구현 완료. 결제는 코드 준비·베타 비활성, 규준은 수동(§14.6 참고).
 - API는 assessments → responses → complete → results 흐름이며, DB 미사용 시 sessionStorage로 미리보기 결과를 유지합니다.

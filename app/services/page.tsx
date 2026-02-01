@@ -17,7 +17,7 @@ export default function ServicesPage() {
             서비스 소개
           </h1>
           <p className="text-gray-400 text-lg md:text-xl font-light tracking-widest uppercase">
-            Comprehensive Psychology Services
+            통합 심리 분석 서비스
           </p>
           <p className="text-gray-300 text-base max-w-2xl mx-auto mt-6">
             심리 분석 및 측정 서비스를 통해 자신의 내면을 탐구하고,
@@ -37,7 +37,7 @@ export default function ServicesPage() {
               <div>
                 <h2 className="text-4xl font-bold tracking-tight">MNPS</h2>
                 <p className="text-blue-400 text-sm uppercase tracking-wider mt-1">
-                  Dark Tetrad Analysis Platform
+                  다크 테트라드 분석 플랫폼
                 </p>
               </div>
             </div>
@@ -149,16 +149,16 @@ export default function ServicesPage() {
             </div>
           </section>
 
-          {/* 성장 로드맵 서비스 */}
+          {/* 마인드 아키텍터 서비스 */}
           <section className="space-y-8">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-16 h-16 rounded-full bg-purple-500/10 flex items-center justify-center">
                 <Sparkles className="w-8 h-8 text-purple-400" />
               </div>
               <div>
-                <h2 className="text-4xl font-bold tracking-tight">성장 로드맵</h2>
+                <h2 className="text-4xl font-bold tracking-tight">마인드 아키텍터</h2>
                 <p className="text-purple-400 text-sm uppercase tracking-wider mt-1">
-                  Strategic Psychology Analysis System
+                  전략적 심리 분석 시스템
                 </p>
               </div>
             </div>
@@ -171,7 +171,7 @@ export default function ServicesPage() {
                     새로운 도약을 위한 전략적 심리 분석
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    성장 로드맵는 3가지 모듈을 통해 당신의 성장 저해 요인, 현재 상태, 그리고 이상향을
+                    마인드 아키텍터는 3가지 모듈을 통해 당신의 성장 저해 요인, 현재 상태, 그리고 이상향을
                     종합적으로 분석하여 새로운 시작의 전략을 제시합니다.
                   </p>
                   <p className="text-gray-400 leading-relaxed mt-4">
@@ -271,7 +271,7 @@ export default function ServicesPage() {
                   className="group flex items-center justify-between rounded-xl border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 hover:border-purple-500/50 p-6 transition-all duration-300"
                 >
                   <div>
-                    <div className="text-purple-400 font-semibold text-lg mb-1">성장 로드맵 시작하기</div>
+                    <div className="text-purple-400 font-semibold text-lg mb-1">마인드 아키텍터 시작하기</div>
                     <div className="text-gray-400 text-sm">3개 모듈 순차 진행</div>
                   </div>
                   <ArrowRight className="w-6 h-6 text-purple-400 group-hover:translate-x-2 transition-transform" />
@@ -296,7 +296,7 @@ export default function ServicesPage() {
               href="/growth-roadmap"
               className="btn btn-secondary px-8"
             >
-              성장 로드맵 시작하기
+              마인드 아키텍터 시작하기
             </Link>
           </div>
         </div>

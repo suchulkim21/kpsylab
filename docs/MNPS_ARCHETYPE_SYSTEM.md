@@ -117,12 +117,25 @@ interface ArchetypeContent {
 
 ---
 
+## 아키타입 상세 콘텐츠 (확장 구조)
+
+**The Puppet Master(꼭두각시 조종사)** 전용 확장 콘텐츠가 별도 구조로 제공됩니다.
+
+| 키 | 타입 | 설명 |
+|----|------|------|
+| `PUPPET_MASTER_CONTENT` | `PuppetMasterDetailedContent` | title, quote, summary, analysis, traits, dFactor(4요인), ruinScenario(발단~결말), strategy |
+| `ARCHETYPE_DETAILED_CONTENT.puppetMaster` | 동일 | 상동. 키 `puppetMaster`로 접근 |
+
+**파일**: `lib/mnps/archetypeContent.ts`. 인터페이스: `PuppetMasterDFactor`, `RuinScenarioSteps`, `PuppetMasterDetailedContent`.
+
+---
+
 ## 구현 파일
 
 | 파일 | 역할 |
 |------|------|
 | `lib/mnps/dynamicProfileMatrix.ts` | 아키타입 결정 로직, 타입 정의, 디스플레이 매핑 |
-| `lib/mnps/archetypeContent.ts` | 19종 아키타입별 상세 콘텐츠 (headline, highlights, reports, advice) |
+| `lib/mnps/archetypeContent.ts` | 19종 아키타입별 상세 콘텐츠 (ARCHETYPE_CONTENT), PUPPET_MASTER_CONTENT, ARCHETYPE_DETAILED_CONTENT |
 | `lib/mnps/darkNatureScoring.ts` | 채점 엔진, `assembleReport`에서 아키타입 콘텐츠 통합 |
 | `app/mnps/result/MnpsResultClient.tsx` | 결과 페이지 UI (headline, highlights 렌더링) |
 
@@ -135,8 +148,8 @@ interface ArchetypeContent {
 1. **아키타입 이름**: 상단 요약 섹션
 2. **Headline**: 이탤릭체 한 줄 요약
 3. **핵심 특징 카드**: 회색 배경 카드에 불릿 리스트로 highlights 표시
-4. **Elite View**: 에메랄드 그라데이션 + Trophy 아이콘 + Good Report (마크다운 파싱)
-5. **Dark Nature**: 레드 그라데이션 + Skull 아이콘 + Bad Report (유료/베타 무료)
+4. **엘리트 뷰**: 에메랄드 그라데이션 + Trophy 아이콘 + Good Report (마크다운 파싱)
+5. **어두운 이면**: 레드 그라데이션 + Skull 아이콘 + Bad Report (유료/베타 무료)
 
 ---
 

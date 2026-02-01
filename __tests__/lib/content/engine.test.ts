@@ -1,17 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { assembleParagraphs, formatClinicalTone } from '@/app/growth-roadmap/lib/content/engine';
-
-interface TextBlock {
-  content: string;
-  condition?: boolean;
-}
+import { assembleParagraphs, formatClinicalTone, TextBlock } from '@/app/growth-roadmap/lib/content/engine';
 
 describe('Content Engine Utilities', () => {
   describe('assembleParagraphs', () => {
     it('should join blocks with double newline', () => {
       const blocks: TextBlock[] = [
-        { content: 'First paragraph', condition: true },
-        { content: 'Second paragraph', condition: true },
+        { id: 'p1', content: 'First paragraph', condition: true },
+        { id: 'p2', content: 'Second paragraph', condition: true },
       ];
 
       const result = assembleParagraphs(blocks);
@@ -20,9 +15,9 @@ describe('Content Engine Utilities', () => {
 
     it('should filter out blocks with condition false', () => {
       const blocks: TextBlock[] = [
-        { content: 'Included', condition: true },
-        { content: 'Excluded', condition: false },
-        { content: 'Also included', condition: true },
+        { id: 'a', content: 'Included', condition: true },
+        { id: 'b', content: 'Excluded', condition: false },
+        { id: 'c', content: 'Also included', condition: true },
       ];
 
       const result = assembleParagraphs(blocks);
@@ -32,8 +27,8 @@ describe('Content Engine Utilities', () => {
 
     it('should include blocks without condition', () => {
       const blocks: TextBlock[] = [
-        { content: 'No condition' },
-        { content: 'Has condition', condition: true },
+        { id: 'nc', content: 'No condition' },
+        { id: 'hc', content: 'Has condition', condition: true },
       ];
 
       const result = assembleParagraphs(blocks);
@@ -47,7 +42,7 @@ describe('Content Engine Utilities', () => {
 
     it('should handle single block', () => {
       const blocks: TextBlock[] = [
-        { content: 'Only one' },
+        { id: 'only', content: 'Only one' },
       ];
 
       expect(assembleParagraphs(blocks)).toBe('Only one');

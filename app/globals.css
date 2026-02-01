@@ -24,6 +24,48 @@ body {
 }
 
 @layer components {
+  /* 타이포그래피 계층 (공통 규칙) */
+  .typography-h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  @media (min-width: 768px) {
+    .typography-h1 {
+      font-size: 2.25rem;
+    }
+  }
+
+  .typography-h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  @media (min-width: 768px) {
+    .typography-h2 {
+      font-size: 1.875rem;
+    }
+  }
+
+  .typography-h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+  }
+
+  .typography-body {
+    font-size: 0.875rem;
+    color: rgb(209 213 219);
+  }
+
+  .typography-caption {
+    font-size: 0.75rem;
+    color: rgb(156 163 175);
+  }
+
+  .typography-subtitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
   .page {
     min-height: 100vh;
     background: var(--app-bg);
@@ -32,7 +74,7 @@ body {
 
   .page-container {
     margin: 0 auto;
-    max-width: 80rem;
+    max-width: 80rem; /* max-w-7xl */
     padding: 0 1.5rem;
   }
 
@@ -153,5 +195,109 @@ body {
     height: auto;
     border-radius: 0.5rem;
     margin: 1.5rem 0;
+  }
+
+  /* === 리포트 페이지 공통 디자인 시스템 === */
+  /* 정렬: 모든 리포트 콘텐츠 좌측 정렬 */
+  .report-section-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgb(156 163 175);
+  }
+
+  .report-section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: rgb(255 255 255);
+    margin-top: 0.25rem;
+  }
+  @media (min-width: 768px) {
+    .report-section-title {
+      font-size: 1.875rem;
+    }
+  }
+
+  .report-section-summary {
+    font-size: 1rem;
+    color: rgb(156 163 175);
+    margin-top: 0.5rem;
+    line-height: 1.6;
+  }
+
+  /* 카드: 모든 리포트 카드 통일 */
+  .report-card {
+    background: rgb(31 41 55 / 0.5);
+    border: 1px solid rgb(55 65 81);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+  }
+
+  /* 섹션 제목: 좌측 정렬 + 좌측 보더 */
+  .report-heading {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: rgb(255 255 255);
+    padding-left: 0.5rem;
+    border-left: 4px solid rgb(99 102 241);
+  }
+
+  /* 본문 텍스트 */
+  .report-body {
+    font-size: 1rem;
+    color: rgb(209 213 219);
+    line-height: 1.75;
+  }
+
+  /* 하단 버튼 영역 통일 */
+  .report-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .report-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    border: 1px solid rgb(55 65 81);
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgb(156 163 175);
+    transition: all 0.2s;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .report-btn-secondary:hover {
+    background: rgb(31 41 55);
+    color: rgb(255 255 255);
+    border-color: rgb(75 85 99);
+  }
+
+  .report-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    background: rgb(255 255 255);
+    border: none;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: rgb(0 0 0);
+    transition: all 0.2s;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .report-btn-primary:hover {
+    background: rgb(229 231 235);
   }
 }

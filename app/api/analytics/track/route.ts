@@ -7,13 +7,36 @@ export const dynamic = 'force-dynamic';
 // POST: 접속 추적
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    // 빈 body 또는 aborted 요청 처리 (페이지 전환 시 발생)
+    const text = await request.text();
+    if (!text || text.trim() === '') {
+      return NextResponse.json(
+        { success: false, error: '요청 본문이 비어 있습니다.' },
+        { status: 400 }
+      );
+    }
+    let body: { pagePath?: string; referrer?: string; userAgent?: string; deviceType?: string };
+    try {
+      body = JSON.parse(text);
+    } catch {
+      return NextResponse.json(
+        { success: false, error: '잘못된 JSON 형식입니다.' },
+        { status: 400 }
+      );
+    }
     const {
       pagePath,
       referrer,
       userAgent,
       deviceType,
     } = body;
+
+    if (!pagePath || typeof pagePath !== 'string') {
+      return NextResponse.json(
+        { success: false, error: 'pagePath가 필요합니다.' },
+        { status: 400 }
+      );
+    }
 
     // 세션 ID 생성 또는 가져오기
     const cookieStore = await cookies();

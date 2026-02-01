@@ -25,13 +25,13 @@ test.describe('Navigation and Main Page', () => {
     await expect(page).toHaveURL(/\/mnps/, { timeout: 5000 });
   });
 
-  test('should navigate to 성장 로드맵 service', async ({ page }) => {
+  test('should navigate to 마인드 아키텍터 service', async ({ page }) => {
     await page.goto('/');
 
-    // 성장 로드맵 링크 클릭
-    await page.click('a:has-text("성장 로드맵"), nav a[href*="growth-roadmap"]');
+    // 마인드 아키텍터 링크 클릭
+    await page.click('a:has-text("마인드 아키텍터"), nav a[href*="growth-roadmap"]');
 
-    // 성장 로드맵 페이지로 이동 확인
+    // 마인드 아키텍터 페이지로 이동 확인
     await expect(page).toHaveURL(/\/growth-roadmap/, { timeout: 5000 });
   });
 
@@ -56,7 +56,7 @@ test.describe('Navigation and Main Page', () => {
     await expect(nav).toBeVisible();
 
     // 주요 메뉴 항목 확인
-    const menuItems = ['홈', 'MNPS', '성장 로드맵', '블로그'];
+    const menuItems = ['홈', 'MNPS', '마인드 아키텍터', '블로그'];
     for (const item of menuItems) {
       const menuLink = page.locator(`a:has-text("${item}")`);
       const count = await menuLink.count();

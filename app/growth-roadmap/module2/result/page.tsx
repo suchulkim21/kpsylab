@@ -80,7 +80,7 @@ export default function Module2ResultPage() {
                 <p className="text-gray-400 mb-8">{error}</p>
                 <Link href="/growth-roadmap/module2">
                     <button className="px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors">
-                        다시 진단하기
+                        재검사
                     </button>
                 </Link>
             </div>
@@ -95,34 +95,31 @@ export default function Module2ResultPage() {
     return (
         <div className="min-h-screen bg-black text-white p-6 animate-fade-in-up relative overflow-hidden font-sans">
 
-            <div className="max-w-4xl mx-auto pt-10 pb-20 relative z-10">
-                <header className="mb-10 text-center">
-                    <span className="text-blue-500 font-mono text-xs tracking-widest border border-blue-900 bg-blue-900/10 px-3 py-1 rounded-full mb-4 inline-block">
+            <div className="max-w-4xl mx-auto pt-10 pb-20 relative z-10 text-left">
+                <header className="mb-10">
+                    <span className="report-section-label text-blue-400 block mb-2">
                         심층 분석 보고서
                     </span>
-                    <h1 className="text-3xl md:text-5xl font-bold mb-4 text-white tracking-tight">
+                    <h1 className="report-section-title">
                         행동 패턴 정밀 진단
                     </h1>
-                    <p className="text-gray-400 text-sm md:text-base">대인 관계 및 의사결정 메커니즘 해독</p>
+                    <p className="report-section-summary">대인 관계 및 의사결정 메커니즘 해독</p>
                 </header>
 
-                {/* TYPE HEADER - Unified Glass Style */}
-                <div className="glass-panel p-8 rounded-2xl mb-12 border border-white/10 bg-white/5 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full mix-blend-screen filter blur-3xl"></div>
-                    <div className="relative z-10 text-center">
-                        <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 bg-blue-900/20 border border-blue-500/30 rounded-full">
-                            <Brain className="text-blue-500" size={16} />
-                            <span className="text-blue-400 font-bold text-sm">진단된 유형</span>
-                        </div>
-                        <h2 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-400 mb-2">
-                            {typeName}
-                        </h2>
+                {/* TYPE HEADER - report-card 스타일 통일 */}
+                <div className="report-card mb-12 relative overflow-hidden">
+                    <div className="flex items-center gap-2 mb-3">
+                        <Brain className="text-blue-500" size={18} />
+                        <span className="report-section-label text-blue-400">진단된 유형</span>
                     </div>
+                    <h2 className="report-section-title text-3xl md:text-4xl">
+                        {typeName}
+                    </h2>
                 </div>
 
                 {/* 신뢰도 표시 */}
                 {consistency && (
-                    <div className={`mb-8 p-6 rounded-2xl border ${
+                    <div className={`mb-8 report-card border ${
                         consistency.consistencyLevel === 'high' 
                             ? 'bg-green-900/20 border-green-700/30' 
                             : consistency.consistencyLevel === 'medium'
@@ -234,12 +231,12 @@ export default function Module2ResultPage() {
 
                         return (
                             <section key={catKey} className="border-t border-gray-800 pt-8">
-                                <h3 className="text-2xl font-bold text-blue-400 mb-6 pl-2 border-l-4 border-blue-500">
+                                <h3 className="report-heading mb-6 border-blue-500" style={{ borderLeftColor: 'rgb(59 130 246)' }}>
                                     {catKey}
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {items.map((item) => (
-                                        <div key={item.id} className="bg-white/5 border border-white/10 p-5 rounded-xl hover:bg-white/10 transition-colors relative overflow-hidden group">
+                                        <div key={item.id} className="report-card hover:bg-gray-800/50 transition-colors relative overflow-hidden group">
                                             <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/5 rounded-full blur-xl group-hover:bg-blue-500/10 transition-colors"></div>
                                             <div className="text-gray-500 text-xs font-mono mb-2 uppercase tracking-wider relative z-10">{item.title}</div>
                                             <div className="text-gray-200 leading-relaxed font-medium relative z-10">
@@ -253,16 +250,12 @@ export default function Module2ResultPage() {
                     })}
                 </div>
 
-                <div className="mt-20 text-center flex justify-center gap-4">
-                    <Link href="/growth-roadmap/module2">
-                        <div className="px-6 py-3 border border-gray-700 text-gray-400 font-bold rounded-full hover:bg-gray-800 transition-colors cursor-pointer text-sm">
-                            다시 진단하기
-                        </div>
+                <div className="report-actions">
+                    <Link href="/growth-roadmap/module2" className="report-btn-secondary">
+                        재검사
                     </Link>
-                    <Link href="/growth-roadmap/assessment">
-                        <div className="px-10 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors flex items-center gap-2 cursor-pointer shadow-lg shadow-blue-900/20 text-sm">
-                            다음 단계로 이동 <span className="text-xs">→</span>
-                        </div>
+                    <Link href="/growth-roadmap/assessment" className="report-btn-primary flex items-center gap-2">
+                        다음 단계로 이동 <span className="text-xs">→</span>
                     </Link>
                 </div>
             </div>

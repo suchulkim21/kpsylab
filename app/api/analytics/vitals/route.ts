@@ -16,7 +16,17 @@ interface WebVitalsMetric {
 
 export async function POST(request: Request) {
   try {
-    const metric: WebVitalsMetric = await request.json();
+    // 빈 body 또는 aborted 요청 처리 (페이지 전환 시 발생)
+    const text = await request.text();
+    if (!text || text.trim() === '') {
+      return NextResponse.json({ success: false }, { status: 400 });
+    }
+    let metric: WebVitalsMetric;
+    try {
+      metric = JSON.parse(text) as WebVitalsMetric;
+    } catch {
+      return NextResponse.json({ success: false }, { status: 400 });
+    }
 
     // Supabase에 저장 (service_usage 테이블 활용)
     if (supabase) {
