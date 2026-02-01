@@ -85,8 +85,10 @@ export default function MnpsResultClient() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-black text-white flex items-center justify-center">
-        <p className="text-gray-400">결과를 불러오는 중입니다...</p>
+      <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center gap-4 px-6">
+        <div className="w-12 h-12 rounded-full border-2 border-cyan-500 border-t-transparent animate-spin" />
+        <p className="text-cyan-400/90 font-medium">무의식 패턴 대조 중...</p>
+        <p className="text-xs text-gray-500">당신만의 리포트를 생성하고 있습니다.</p>
       </main>
     );
   }

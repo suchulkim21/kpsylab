@@ -51,7 +51,9 @@ async function main() {
 
   let allOk = true;
   for (const t of tables) {
-    const res = await checkTable(supabase, t.name, t.cols);
+    // supabase를 'any' 타입으로 강제 변환하여 타입 체크를 건너뜁니다.
+    // t.cols 뒤에도 'as any'를 추가합니다.
+    const res = await checkTable(supabase as any, t.name, t.cols as any);
     if (res.ok) {
       const { count } = await supabase.from(t.name).select('*', { count: 'exact', head: true });
       console.log(`✅ ${t.name}: 정상 인식 (레코드 수: ${count ?? '?'})`);

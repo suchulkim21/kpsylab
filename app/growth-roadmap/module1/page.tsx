@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { questions as phase1Pool } from '@growth-roadmap/lib/module1/questions';
 import { analyzeInterference } from '@growth-roadmap/lib/module1/analysisEngine';
+import { applyRetestAndPropagate } from '@/lib/services/consistencyAuditor';
 
 export default function Module1Page() {
     const router = useRouter();
@@ -42,40 +43,69 @@ export default function Module1Page() {
         const newHistory = [...history, { id: option.id, choice: option.id }];
         setHistory(newHistory);
 
-        setTimeout(() => {
-            // CAT: Early Termination Logic
-            // Check after minimum 10 questions
-            if (newHistory.length >= 10) {
-                const currentAnalysis = analyzeInterference(newHistory.map(h => h.id));
-                const maxScore = Math.max(...Object.values(currentAnalysis.vector).map(Number));
+        // CAT: Early Termination Logic
+        if (newHistory.length >= 10) {
+            const currentAnalysis = analyzeInterference(newHistory.map(h => h.id));
+            const maxScore = Math.max(...Object.values(currentAnalysis.vector).map(Number));
 
-                // If dominant trait is > 50%, terminate early (Confidence Threshold)
-                if (maxScore > 0.50) {
-                    finishAnalysis(newHistory);
-                    return;
-                }
-            }
-
-            if (currentIndex + 1 < questions.length) {
-                setCurrentIndex(prev => prev + 1);
-                setSelectedOptionId(null);
-            } else {
+            if (maxScore > 0.50) {
                 finishAnalysis(newHistory);
+                return;
             }
-        }, 500);
+        }
+
+        if (currentIndex + 1 < questions.length) {
+            setCurrentIndex(prev => prev + 1);
+            setSelectedOptionId(null);
+        } else {
+            finishAnalysis(newHistory);
+        }
     };
 
     const finishAnalysis = async (finalHistory: any[]) => {
         const shadowData = finalHistory.map(h => h.id);
         const resultAnalysis = analyzeInterference(shadowData);
+        const vectorNum = Object.fromEntries(
+            Object.entries(resultAnalysis.vector).map(([k, v]) => [k, parseFloat(String(v)) || 0])
+        );
+
+        const isRetest = hasResult;
+        let previousResult: { type: string; vector: Record<string, number> } | undefined;
+        if (isRetest) {
+            const stored = localStorage.getItem('sg_module1_result');
+            if (stored) {
+                try {
+                    const prev = JSON.parse(stored);
+                    const prevVec = prev.vector ?? {};
+                    previousResult = {
+                        type: prev.dominantType ?? 'A',
+                        vector: typeof prevVec === 'object' ? Object.fromEntries(
+                            Object.entries(prevVec).map(([k, v]) => [k, parseFloat(String(v)) || 0])
+                        ) : {},
+                    };
+                } catch {}
+            }
+        }
+
+        applyRetestAndPropagate({
+            targetModule: 'Module_1',
+            isRetest,
+            previousResult,
+            newResult: { type: resultAnalysis.dominantType, vector: vectorNum },
+        });
 
         const resultData = {
             timestamp: new Date().toISOString(),
             shadowData: shadowData,
-            vector: resultAnalysis.vector, // Save Vector
+            vector: resultAnalysis.vector,
             dominantType: resultAnalysis.dominantType
         };
         localStorage.setItem('sg_module1_result', JSON.stringify(resultData));
+        fetch('/api/analytics/service-usage', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ serviceName: 'mind-architect-m1', actionType: 'complete' }),
+        }).catch(() => {});
         router.push('/growth-roadmap/module1/result');
     };
 
@@ -160,19 +190,19 @@ export default function Module1Page() {
                     {currentQ.options.map((option: any) => {
                         const isSelected = selectedOptionId === option.id;
                         return (
-                            <motion.button
-                                key={option.id}
-                                initial={{ opacity: 0, x: -5 }}
-                                animate={{
-                                    opacity: 1,
-                                    x: 0,
-                                    backgroundColor: isSelected ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.02)',
-                                    borderColor: isSelected ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.05)'
-                                }}
-                                whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', borderColor: 'rgba(255, 255, 255, 0.1)' }}
-                                onClick={() => handleOptionClick(option)}
-                                className="group w-full p-5 text-left rounded border transition-all duration-150"
-                            >
+                        <motion.button
+                            key={option.id}
+                            initial={{ opacity: 0, x: -5 }}
+                            animate={{
+                                opacity: 1,
+                                x: 0,
+                                backgroundColor: isSelected ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.02)',
+                                borderColor: isSelected ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.05)'
+                            }}
+                            whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', borderColor: 'rgba(255, 255, 255, 0.1)' }}
+                            onClick={() => handleOptionClick(option)}
+                            className="group w-full p-5 text-left rounded border transition-none duration-0 active:scale-95 touch-manipulation"
+                        >
                                 <span className={`text-base transition-colors ${isSelected ? 'text-white' : 'text-gray-400 group-hover:text-gray-200'}`}>
                                     {option.text}
                                 </span>

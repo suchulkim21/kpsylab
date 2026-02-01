@@ -4,6 +4,19 @@ import { analyzeServiceDirection } from '@/lib/analytics/analysisEngine';
 
 export const dynamic = 'force-dynamic';
 
+const emptyAnalytics = {
+  totalVisits: 0,
+  todayVisits: 0,
+  uniqueVisitorsToday: 0,
+  uniqueVisitorsTotal: 0,
+  referrers: [] as { referrer: string; count: number }[],
+  topPages: [] as { pagePath: string; viewCount: number; pageType?: string }[],
+  serviceUsage: [] as { serviceName: string; usageCount: number; avgDuration: number }[],
+  blogPostViews: [] as { postId: number; title: string; viewCount: number }[],
+  deviceTypes: [] as { deviceType: string; count: number }[],
+  dailyTrend: [] as { date: string; visits: number; uniqueVisitors: number }[],
+};
+
 // GET: 관리자용 분석 데이터
 export async function GET(request: Request) {
   try {
@@ -18,10 +31,13 @@ export async function GET(request: Request) {
       }
     }
 
-    // 통계 데이터 조회
-    const analytics = await getAnalyticsStats();
+    let analytics = emptyAnalytics;
+    try {
+      analytics = await getAnalyticsStats();
+    } catch (e) {
+      console.warn('getAnalyticsStats failed (visits/page_views may not exist):', e);
+    }
 
-    // 종합 분석
     const analysis = analyzeServiceDirection(analytics);
 
     return NextResponse.json({

@@ -5,6 +5,7 @@
 
 import { NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/db/supabase';
+import { logServiceUsage } from '@/lib/db/analytics';
 import { scoreDarkNature, buildInterpretation, DarkAnswer } from '@/lib/mnps/darkNatureScoring';
 
 export const dynamic = 'force-dynamic';
@@ -265,6 +266,9 @@ export async function POST(request: Request) {
       console.error('Results metadata 저장 실패:', metadataError);
       // 치명적이지 않으면 로그만 남기고 성공 처리 (결과는 assessments에 이미 반영됨)
     }
+
+    // 서비스 이용 기록 (관리자 대시보드용)
+    logServiceUsage(null, 'mnps', 'complete', responseTimeMs ? Math.round(responseTimeMs / 1000) : undefined).catch(() => {});
 
     const redirectUrl = `/mnps/result?assessmentId=${assessmentId}`;
     return NextResponse.json({

@@ -131,29 +131,21 @@ export default function TestPage() {
 
     // Phase 1 종료(Q14) → 중간 휴식 화면
     if (currentIndex === PHASE_1_END_INDEX) {
-      setTimeout(() => {
-        setInterstitialPhase(1);
-        setViewMode("interstitial");
-      }, 200);
+      setInterstitialPhase(1);
+      setViewMode("interstitial");
       return;
     }
-    // Phase 2 종료(Q28) → 중간 휴식 화면
     if (currentIndex === PHASE_2_END_INDEX) {
-      setTimeout(() => {
-        setInterstitialPhase(2);
-        setViewMode("interstitial");
-      }, 200);
+      setInterstitialPhase(2);
+      setViewMode("interstitial");
       return;
     }
-    // 그 외: 다음 문항으로 이동
     if (currentIndex < MNPS_QUESTIONS.length - 1) {
-      setTimeout(() => setCurrentIndex((prev) => prev + 1), 200);
+      setCurrentIndex((prev) => prev + 1);
       return;
     }
 
-    // 마지막 문항이면 테스트 완료 처리
-    setTimeout(async () => {
-      // DB에 완료 처리 및 결과 저장
+    const finalize = async () => {
       if (assessmentId) {
         try {
           const allResponses = Object.entries(newAnswers).map(([questionId, score]) => ({
@@ -161,7 +153,6 @@ export default function TestPage() {
             score,
           }));
 
-          // 서버 주도 채점: responses만 전송. 네트워크/5xx 시 재시도(최대 3회), 멱등성으로 중복 제출 시에도 저장 결과 반환
           const completeResponse = await fetchWithRetry(
             '/api/mnps/complete',
             {
@@ -178,7 +169,6 @@ export default function TestPage() {
 
           const completeData = await completeResponse.json();
           if (completeData.success) {
-            // 최종 결과는 서버에 저장됨(또는 이미 완료된 경우 멱등 응답). 결과 페이지는 API fetch로 표시
             sessionStorage.setItem('mnpsAssessmentId', assessmentId);
             router.push(`/mnps/result?assessmentId=${assessmentId}`);
             return;
@@ -188,7 +178,6 @@ export default function TestPage() {
         }
       }
 
-      // DB 저장 실패 시에만 sessionStorage에 미리보기용 결과 저장 (fallback)
       const resultData = {
         result,
         interpretation: buildInterpretation(result),
@@ -196,7 +185,9 @@ export default function TestPage() {
       };
       sessionStorage.setItem('darkNatureResult', JSON.stringify(resultData));
       router.push('/mnps/result');
-    }, 300);
+    };
+
+    finalize();
   };
 
   const handlePrev = () => {
@@ -225,7 +216,7 @@ export default function TestPage() {
   };
 
   return (
-    <main className="page">
+    <main className="page mobile-safe-container one-screen-fit">
       <div className="page-container max-w-3xl py-12 space-y-8">
         <header className="space-y-2 text-center">
           <h1 className="text-4xl font-bold">MNPS 다크 테스트</h1>
@@ -289,7 +280,7 @@ export default function TestPage() {
                       <button
                         key={option.value}
                         onClick={() => handleSelect(option.value)}
-                        className={`w-full text-left px-4 py-3 rounded-xl border transition-all ${
+                        className={`w-full text-left px-4 py-3 rounded-xl border transition-none duration-0 active:scale-95 touch-manipulation ${
                           checked
                             ? "border-cyan-400 bg-cyan-500/10 text-cyan-200 shadow-lg shadow-cyan-500/20"
                             : "border-gray-700 bg-gray-900/30 text-gray-200 hover:border-gray-500 hover:bg-gray-900/50"

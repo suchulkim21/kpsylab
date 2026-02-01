@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { adaptModule2 } from "@/lib/adapters/report-adapter";
+import { isDirty, clearDirty, updateM2Global } from "@/lib/store/userGlobalVector";
 import UnifiedReportCard from "@/components/report/UnifiedReportCard";
 import type { UnifiedReportData } from "@/types/report";
 import { Module2Engine } from "@growth-roadmap/lib/module2/analysisEngine";
@@ -26,6 +27,7 @@ const buildAdviceTodos = (items: ResultItem[]) =>
 export default function Module2ResultPage() {
   const [reportData, setReportData] = useState<UnifiedReportData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showRetestBanner, setShowRetestBanner] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("sg_module2_result");
@@ -55,8 +57,18 @@ export default function Module2ResultPage() {
 
       const engine = new Module2Engine({ scores });
       const results = engine.generateResults();
-      const typeCode = determineTypeCode(normalized);
+      // 이렇게 중괄호 { } 를 사용해 변수 이름을 맞춰줘야 합니다.
+      const typeCode = determineTypeCode({
+        p: normalized.proactivity,
+        a: normalized.adaptability,
+        sd: normalized.socialDistance,
+      });
       const typeName = getKoreanTypeName(typeCode);
+
+      updateM2Global({
+        typeCode,
+        scores: { p: normalized.proactivity, a: normalized.adaptability, sd: normalized.socialDistance },
+      });
 
       setReportData(
         adaptModule2({
@@ -74,6 +86,8 @@ export default function Module2ResultPage() {
           },
         })
       );
+      setShowRetestBanner(isDirty("m2"));
+      if (isDirty("m2")) clearDirty("m2");
     } catch (err) {
       console.error("Module2 result parsing failed", err);
       setError("분석 데이터를 해석하는 동안 오류가 발생했습니다.");
@@ -102,6 +116,11 @@ export default function Module2ResultPage() {
   return (
     <div className="min-h-screen bg-black text-white py-10 px-4">
       <div className="max-w-4xl mx-auto space-y-6">
+        {showRetestBanner && (
+          <div className="p-4 rounded-lg border border-blue-500/30 bg-blue-500/5 text-blue-200 text-sm">
+            M1 재검사로 인해 관점이 갱신되었을 수 있습니다. 통합 리포트에서 최신 데이터를 확인하세요.
+          </div>
+        )}
         <UnifiedReportCard data={reportData} />
         <div className="report-actions">
           <Link href="/growth-roadmap/module2" className="report-btn-secondary">

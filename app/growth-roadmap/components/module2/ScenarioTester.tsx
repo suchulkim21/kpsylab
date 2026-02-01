@@ -106,6 +106,11 @@ export default function ScenarioTester() {
                     phaseSelections: finalPhaseSelections
                 };
                 localStorage.setItem('sg_module2_result', JSON.stringify(resultData));
+                fetch('/api/analytics/service-usage', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ serviceName: 'mind-architect-m2', actionType: 'complete' }),
+                }).catch(() => {});
                 router.push('/growth-roadmap/module2/result');
             });
         }

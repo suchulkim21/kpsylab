@@ -24,4 +24,12 @@ export interface UnifiedReportData {
 
   chartData: ChartData[]; // 차트용 데이터
   advice?: AdviceItem; // (선택) 조언/솔루션
+  /** SNS 공유용 희귀도 배지 (예: "상위 3% 전략가 유형") */
+  rarityBadge?: string;
+  /** 모듈 간 충돌 시 '심리적 역동' 인사이트 (동적 비교 섹션) */
+  conflictInsight?: string;
+  /** 나만의 심리 지도: 문장형 로그 (당신이 걸어온 심리적 궤적) */
+  scriptureLog?: string;
+  /** 여정 서사: "A를 통과해 B로 나아가는 중" */
+  journeySummary?: string;
 }

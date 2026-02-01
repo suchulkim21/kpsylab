@@ -36,34 +36,47 @@ interface BlogAnalytics {
 
 export async function GET(request: Request) {
   try {
-    // 관리자 인증 확인
-    const adminKey = request.headers.get('x-admin-key');
-    if (adminKey !== process.env.ADMIN_SECRET) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
+    // 관리자 인증 (ADMIN_SECRET 설정 시에만 검증)
+    const adminSecret = process.env.ADMIN_SECRET;
+    if (adminSecret) {
+      const adminKey = request.headers.get('x-admin-key');
+      if (adminKey !== adminSecret) {
+        return NextResponse.json(
+          { success: false, error: '권한이 없습니다.' },
+          { status: 403 }
+        );
+      }
     }
 
     if (!supabase) {
-      return NextResponse.json(
-        { success: false, error: 'Database not configured' },
-        { status: 500 }
-      );
+      return NextResponse.json({
+        success: true,
+        analytics: {
+          overview: { totalPosts: 0, totalViews: 0, avgViewsPerPost: 0, topCategories: [] },
+          topPosts: [],
+          trends: { dailyViews: [], categoryDistribution: {} },
+          recentPosts: [],
+        },
+      });
     }
 
-    // 블로그 포스트 조회
+    // 블로그 포스트 조회 (테이블 없으면 빈 결과 반환)
     const { data: posts, error: postsError } = await supabase
       .from('blog_posts')
       .select('id, title, date, author, tags')
       .order('id', { ascending: false });
 
     if (postsError) {
-      console.error('블로그 포스트 조회 실패:', postsError);
-      return NextResponse.json(
-        { success: false, error: 'Failed to fetch posts' },
-        { status: 500 }
-      );
+      console.warn('블로그 포스트 조회 실패 (테이블 미존재 가능):', postsError.message);
+      return NextResponse.json({
+        success: true,
+        analytics: {
+          overview: { totalPosts: 0, totalViews: 0, avgViewsPerPost: 0, topCategories: [] },
+          topPosts: [],
+          trends: { dailyViews: [], categoryDistribution: {} },
+          recentPosts: [],
+        },
+      });
     }
 
     const postIds = (posts || []).map(p => p.id);

@@ -92,16 +92,14 @@ export async function logPageView(pagePath: string, pageType?: string, resourceI
   }
 }
 
-// 서비스 사용 기록
+// 서비스 사용 기록 (Supabase 미설정 또는 테이블 없으면 조용히 스킵)
 export async function logServiceUsage(
   userId: number | null,
   serviceName: string,
   actionType?: string,
   durationSeconds?: number
 ): Promise<void> {
-  if (!supabase) {
-    throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
-  }
+  if (!supabase) return;
 
   const { error } = await supabase.from('service_usage').insert({
     user_id: userId || null,

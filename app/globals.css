@@ -301,3 +301,25 @@ body {
     background: rgb(229 231 235);
   }
 }
+
+@layer utilities {
+  /* 모바일 환경 강제 최적화 */
+  .mobile-safe-container {
+    @apply min-h-[100dvh] w-full max-w-md mx-auto px-4 py-6 flex flex-col justify-between overflow-x-hidden;
+  }
+
+  .mobile-text-fix {
+    @apply break-keep leading-relaxed text-base md:text-lg;
+  }
+
+  .one-screen-fit {
+    @apply h-[100dvh] overflow-hidden flex flex-col;
+  }
+}
+
+/* 터치 지연 제거 */
+button,
+a {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}

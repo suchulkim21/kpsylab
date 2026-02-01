@@ -107,13 +107,29 @@ function pickVariant(phase: InterstitialPhase): PhaseVariant {
   return variants[Math.floor(Math.random() * variants.length)];
 }
 
+const LOADING_MESSAGES = [
+  "무의식 패턴 대조 중...",
+  "방어 기제 시뮬레이션 중...",
+  "정신 역동 분석 중...",
+];
+
 export default function InterstitialView({ phase, onContinue }: InterstitialViewProps) {
   const [showContent, setShowContent] = useState(false);
+  const [msgIndex, setMsgIndex] = useState(0);
   const content = useMemo(() => pickVariant(phase), [phase]);
 
   useEffect(() => {
-    const t = setTimeout(() => setShowContent(true), 1800);
-    return () => clearTimeout(t);
+    const msgInterval = setInterval(() => {
+      setMsgIndex((i) => (i + 1) % LOADING_MESSAGES.length);
+    }, 600);
+    const t = setTimeout(() => {
+      clearInterval(msgInterval);
+      setShowContent(true);
+    }, 3500);
+    return () => {
+      clearTimeout(t);
+      clearInterval(msgInterval);
+    };
   }, [phase]);
 
   return (
@@ -141,7 +157,7 @@ export default function InterstitialView({ phase, onContinue }: InterstitialView
               className="w-12 h-12 rounded-full border-2 border-cyan-500 border-t-transparent"
             />
             <p className="text-cyan-400/90 font-medium tracking-wide">
-              데이터 분석 중...
+              {LOADING_MESSAGES[msgIndex]}
             </p>
             <p className="text-xs text-gray-500">
               당신의 응답 패턴을 심층 분석하고 있습니다.

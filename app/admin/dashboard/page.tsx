@@ -287,13 +287,34 @@ export default function AdminDashboard() {
               마지막 업데이트: {lastRefresh.toLocaleTimeString('ko-KR')}
             </p>
           </div>
-          <button
-            onClick={() => fetchAllData()}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
-          >
-            <RefreshCw className="w-4 h-4" />
-            새로고침
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={async () => {
+                try {
+                  const res = await fetch('/api/admin/export-system-data', {
+                    method: 'POST',
+                    headers: { 'x-admin-secret': adminKey },
+                  });
+                  const data = await res.json();
+                  if (data.success) alert(data.message || '저장되었습니다.');
+                  else alert(data.error || '저장 실패');
+                } catch (e) {
+                  alert('저장 실패');
+                }
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors text-sm font-medium"
+            >
+              <Download className="w-4 h-4" />
+              시스템 업그레이드용 데이터 저장
+            </button>
+            <button
+              onClick={() => fetchAllData()}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+            >
+              <RefreshCw className="w-4 h-4" />
+              새로고침
+            </button>
+          </div>
         </div>
 
         {/* 핵심 메트릭 카드 */}

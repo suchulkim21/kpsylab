@@ -22,7 +22,6 @@ export default function AssessmentPage() {
         ideal: { stability: 0, growth: 0, relation: 0, autonomy: 0 },
         potential: { stability: 0, growth: 0, relation: 0, autonomy: 0 }
     });
-    const [isTransitioning, setIsTransitioning] = useState(false);
 
     useEffect(() => {
         const stored = localStorage.getItem('sg_module3_result');
@@ -38,7 +37,7 @@ export default function AssessmentPage() {
     // INTRO VIEW
     if (viewState === 'intro') {
         return (
-            <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
+            <div className="mobile-safe-container one-screen-fit min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
 
                 <div className="max-w-2xl w-full text-center z-10 animate-fade-in-up">
                     <div className="mb-10">
@@ -106,32 +105,21 @@ export default function AssessmentPage() {
 
     const handlePhaseComplete = () => {
         if (phase === 'ideal') {
-            setIsTransitioning(true);
-            setTimeout(() => {
-                setPhase('potential');
-                setCurrentIndex(0);
-                setIsTransitioning(false);
-            }, 1000);
+            setPhase('potential');
+            setCurrentIndex(0);
         } else {
-            // Finish - Save to LocalStorage and push to result
             localStorage.setItem('sg_module3_result', JSON.stringify(scores));
+            fetch('/api/analytics/service-usage', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ serviceName: 'mind-architect-m3', actionType: 'complete' }),
+            }).catch(() => {});
             router.push('/growth-roadmap/assessment/result');
         }
     };
 
-    if (isTransitioning) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-black text-white">
-                <div className="text-center animate-pulse">
-                    <h2 className="text-3xl font-bold mb-4 text-glow-purple">단계 완료</h2>
-                    <p className="font-mono text-gray-500">잠재력 분석 엔진 가동 중...</p>
-                </div>
-            </div>
-        );
-    }
-
     return (
-        <div className="min-h-screen bg-black text-white flex flex-col items-center py-10 px-4 relative">
+        <div className="mobile-safe-container one-screen-fit min-h-screen bg-black text-white flex flex-col items-center py-10 px-4 relative">
 
             {/* Header / HUD */}
             <div className="w-full max-w-2xl mb-12 flex justify-between items-end border-b border-gray-800 pb-4 z-10">
@@ -161,7 +149,7 @@ export default function AssessmentPage() {
                         <button
                             key={idx}
                             onClick={() => handleOptionSelect(opt)}
-                            className="group w-full p-6 text-left glass-panel hover:bg-white/10 transition-all duration-300 border border-white/5 hover:border-white/20 rounded-lg flex items-center justify-between"
+                            className="group w-full p-6 text-left glass-panel hover:bg-white/10 transition-none duration-0 active:scale-95 touch-manipulation border border-white/5 hover:border-white/20 rounded-lg flex items-center justify-between"
                         >
                             <span className="text-lg text-gray-300 group-hover:text-white transition-colors">{opt.text}</span>
                             <span className={`text-xs font-mono px-2 py-1 rounded border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity ${phase === 'ideal' ? 'text-purple-400' : 'text-blue-400'}`}>
