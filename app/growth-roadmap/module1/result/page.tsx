@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { analyzeInterference } from "@growth-roadmap/lib/module1/analysisEngine";
 import { adaptModule1 } from "@/lib/adapters/report-adapter";
 import UnifiedReportCard from "@/components/report/UnifiedReportCard";
 import type { UnifiedReportData } from "@/types/report";
@@ -16,10 +17,16 @@ export default function Module1ResultPage() {
         if (stored) {
             try {
                 const raw = JSON.parse(stored);
-                const adapted = adaptModule1({
-                    dominantType: raw.dominantType,
-                    vector: raw.vector,
-                });
+                // Legacy: shadowData만 있으면 analyzeInterference로 계산
+                let dominantType = raw.dominantType;
+                let vector = raw.vector;
+                const dataArray = Array.isArray(raw) ? raw : (raw.shadowData || []);
+                if (Array.isArray(dataArray) && dataArray.length > 0 && (!vector || !dominantType)) {
+                    const analysis = analyzeInterference(dataArray.map((x: any) => typeof x === "string" ? x : x?.id).filter(Boolean));
+                    vector = vector ?? analysis.vector;
+                    dominantType = dominantType ?? analysis.dominantType;
+                }
+                const adapted = adaptModule1({ dominantType, vector });
                 setReportData(adapted);
             } catch (e) {
                 console.error("Result parsing failed", e);
