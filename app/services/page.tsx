@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Brain, Zap, BarChart3, ArrowRight, TestTube2, Sparkles } from "lucide-react";
+import { MIND_ARCHITECT_ENABLED } from "@/lib/constants/featureFlags";
 
 export default function ServicesPage() {
   return (
@@ -17,12 +18,12 @@ export default function ServicesPage() {
             서비스 소개
           </h1>
           <p className="text-gray-400 text-lg md:text-xl font-light tracking-widest uppercase">
-            통합 심리 분석 서비스
+            통합 심리 분석 아키텍처
           </p>
           <p className="text-gray-300 text-base max-w-2xl mx-auto mt-6">
-            심리 분석 및 측정 서비스를 통해 자신의 내면을 탐구하고,
+            당신의 내면 데이터를 구조적으로 재구성하고,
             <br />
-            새로운 성장의 가능성을 발견하세요.
+            경로 탐색을 위한 정교한 이정표를 얻으세요.
           </p>
         </header>
 
@@ -37,7 +38,7 @@ export default function ServicesPage() {
               <div>
                 <h2 className="text-4xl font-bold tracking-tight">MNPS</h2>
                 <p className="text-blue-400 text-sm uppercase tracking-wider mt-1">
-                  다크 테트라드 분석 플랫폼
+                  당신의 그림자가 빛이 되는 지점: 다크 테트라드에 숨겨진 잠재력 발견
                 </p>
               </div>
             </div>
@@ -47,15 +48,16 @@ export default function ServicesPage() {
               <div className="space-y-6">
                 <div>
                   <h3 className="text-2xl font-bold mb-4 text-blue-400">
-                    내 안의 어둠을 과학적으로 탐구하다
+                    시스템 공학적 관점으로 풀어낸 내면의 본성 지도
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    MNPS(Multidimensional Nature Profiling System)는 다크 테트라드(Dark Tetrad) 이론을 기반으로
-                    당신의 내면에 숨겨진 본성을 정밀하게 측정하고 분석합니다.
+                    MNPS(Multidimensional Nature Profiling System)는 다크 테트라드(Dark Tetrad)를
+                    독자적 논리 모델(Proprietary Logic Model)로 재해석하여, 당신의 내면 데이터를
+                    다차원 큐레이션으로 탐색합니다.
                   </p>
                   <p className="text-gray-400 leading-relaxed mt-4">
-                    위로나 공감 대신, <strong className="text-white">냉철한 데이터와 과학적 근거</strong>를 통해
-                    당신의 진짜 모습을 마주하게 합니다.
+                    위로나 공감 대신, <strong className="text-white">시스템적 논리 구조와 데이터 패턴</strong>을 통해
+                    당신의 복잡함을 질서 있게 배열합니다.
                   </p>
                 </div>
 
@@ -65,27 +67,27 @@ export default function ServicesPage() {
                     <li className="flex items-start gap-3">
                       <Brain className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
                       <div>
-                        <strong className="text-white">과학적 타당성:</strong>
+                        <strong className="text-white">시스템적 논리 구조:</strong>
                         <span className="text-gray-400 ml-2">
-                          학계에서 검증된 연구를 기반으로 설계된 정밀한 분석 시스템
+                          현대 심리 가설의 구조적 재해석을 바탕으로 설계된 독자적 분석 모델
                         </span>
                       </div>
                     </li>
                     <li className="flex items-start gap-3">
                       <BarChart3 className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
                       <div>
-                        <strong className="text-white">다차원 분석:</strong>
+                        <strong className="text-white">다차원 데이터 큐레이션:</strong>
                         <span className="text-gray-400 ml-2">
-                          120문항의 하이브리드 질문 시스템으로 4가지 특성을 종합 분석
+                          120문항 하이브리드 질문으로 4가지 특성 패턴 발견 및 종합 재구성
                         </span>
                       </div>
                     </li>
                     <li className="flex items-start gap-3">
                       <Zap className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
                       <div>
-                        <strong className="text-white">프리미엄 인사이트:</strong>
+                        <strong className="text-white">전략적 방향성 제안:</strong>
                         <span className="text-gray-400 ml-2">
-                          단순한 점수가 아닌, 실질적인 활용 전략과 깊이 있는 해석 제공
+                          단순 점수가 아닌, 시스템이 제안하는 활용 전략과 구조적 해석 제공
                         </span>
                       </div>
                     </li>
@@ -130,7 +132,7 @@ export default function ServicesPage() {
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="text-blue-400 mt-1">✓</span>
-                      <span>심리학적 통찰을 통해 성장하고 싶은 분</span>
+                      <span>내면 데이터의 구조적 재구성을 통해 경로를 탐색하고 싶은 분</span>
                     </li>
                   </ul>
                 </div>
@@ -149,136 +151,145 @@ export default function ServicesPage() {
             </div>
           </section>
 
-          {/* 마인드 아키텍터 서비스 */}
-          <section className="space-y-8">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 rounded-full bg-purple-500/10 flex items-center justify-center">
-                <Sparkles className="w-8 h-8 text-purple-400" />
-              </div>
-              <div>
-                <h2 className="text-4xl font-bold tracking-tight">마인드 아키텍터</h2>
-                <p className="text-purple-400 text-sm uppercase tracking-wider mt-1">
-                  전략적 심리 분석 시스템
-                </p>
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-8">
-              {/* 설명 */}
-              <div className="space-y-6">
+          {/* 마인드 아키텍터 서비스 (MIND_ARCHITECT_ENABLED 시에만 노출) */}
+          {MIND_ARCHITECT_ENABLED && (
+            <section className="space-y-8">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-16 h-16 rounded-full bg-purple-500/10 flex items-center justify-center">
+                  <Sparkles className="w-8 h-8 text-purple-400" />
+                </div>
                 <div>
-                  <h3 className="text-2xl font-bold mb-4 text-purple-400">
-                    새로운 도약을 위한 전략적 심리 분석
-                  </h3>
-                  <p className="text-gray-300 leading-relaxed text-lg">
-                    마인드 아키텍터는 3가지 모듈을 통해 당신의 성장 저해 요인, 현재 상태, 그리고 이상향을
-                    종합적으로 분석하여 새로운 시작의 전략을 제시합니다.
+                  <h2 className="text-4xl font-bold tracking-tight">마인드 아키텍터</h2>
+                  <p className="text-purple-400 text-sm uppercase tracking-wider mt-1">
+                    전략적 심리 분석 시스템
                   </p>
-                  <p className="text-gray-400 leading-relaxed mt-4">
-                    과거와 현재를 분석하고, <strong className="text-white">미래로 나아가는 구체적인 로드맵</strong>을
-                    제공합니다.
-                  </p>
-                </div>
-
-                {/* 3가지 모듈 */}
-                <div className="space-y-4">
-                <div className="card border-red-500/20 p-5">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center">
-                        <span className="text-red-400 font-bold text-sm">1</span>
-                      </div>
-                      <h4 className="text-lg font-semibold text-white">성장 저해 요인</h4>
-                    </div>
-                    <p className="text-gray-400 text-sm ml-11">
-                      내면의 방해 요인과 패턴을 분석하여 성장을 가로막는 요소를 파악합니다.
-                    </p>
-                  </div>
-
-                <div className="card border-blue-500/20 p-5">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center">
-                        <span className="text-blue-400 font-bold text-sm">2</span>
-                      </div>
-                      <h4 className="text-lg font-semibold text-white">현 상태 분석</h4>
-                    </div>
-                    <p className="text-gray-400 text-sm ml-11">
-                      사회적 아키타입을 통해 현재 자신의 위치와 역할을 명확히 인식합니다.
-                    </p>
-                  </div>
-
-                <div className="card border-purple-500/20 p-5">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center">
-                        <span className="text-purple-400 font-bold text-sm">3</span>
-                      </div>
-                      <h4 className="text-lg font-semibold text-white">이상향 및 잠재력</h4>
-                    </div>
-                    <p className="text-gray-400 text-sm ml-11">
-                      이상과 현실의 차이를 분석하여 잠재력을 실현할 수 있는 전략을 도출합니다.
-                    </p>
-                  </div>
                 </div>
               </div>
 
-              {/* 활용 방법 */}
-              <div className="space-y-6">
-                <div className="card bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 p-6">
-                  <h4 className="text-xl font-semibold text-white mb-4">이런 분께 추천합니다</h4>
-                  <ul className="space-y-3 text-gray-300">
-                    <li className="flex items-start gap-3">
-                      <span className="text-purple-400 mt-1">✓</span>
-                      <span>전환점을 맞이하여 새로운 시작을 준비하는 분</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="text-purple-400 mt-1">✓</span>
-                      <span>현재 상태를 객관적으로 파악하고 싶은 분</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="text-purple-400 mt-1">✓</span>
-                      <span>성장 방향과 전략을 수립하고 싶은 분</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="text-purple-400 mt-1">✓</span>
-                      <span>통합적인 자기 이해와 변화 계획이 필요한 분</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <div className="card bg-purple-500/10 border-purple-500/20 p-6">
-                  <h4 className="text-lg font-semibold text-purple-400 mb-3">분석 프로세스</h4>
-                  <div className="space-y-3 text-sm text-gray-300">
-                    <div className="flex items-center gap-3">
-                      <span className="text-purple-400">1단계</span>
-                      <span>성장 저해 요인 모듈 완료</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-purple-400">2단계</span>
-                      <span>현 상태 분석 모듈 완료</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-purple-400">3단계</span>
-                      <span>이상향 및 잠재력 모듈 완료</span>
-                    </div>
-                    <div className="flex items-center gap-3 pt-2 border-t border-purple-500/20">
-                      <span className="text-purple-400 font-semibold">최종</span>
-                      <span className="font-semibold text-white">통합 리포트 생성</span>
-                    </div>
-                  </div>
-                </div>
-
-                <Link
-                  href="/growth-roadmap"
-                  className="group flex items-center justify-between rounded-xl border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 hover:border-purple-500/50 p-6 transition-all duration-300"
-                >
+              <div className="grid md:grid-cols-2 gap-8">
+                {/* 설명 */}
+                <div className="space-y-6">
                   <div>
-                    <div className="text-purple-400 font-semibold text-lg mb-1">마인드 아키텍터 시작하기</div>
-                    <div className="text-gray-400 text-sm">3개 모듈 순차 진행</div>
+                    <h3 className="text-2xl font-bold mb-4 text-purple-400">
+                      통합 심리 분석 아키텍처: 경로 탐색과 최적화
+                    </h3>
+                    <p className="text-gray-300 leading-relaxed text-lg">
+                      마인드 아키텍터는 3가지 모듈을 통해 시스템 병목·현재 아키텍처·타겟 컨피그레이션을
+                      데이터 큐레이션으로 재구성하고, 시스템이 제안하는 전략적 방향성을 제시합니다.
+                    </p>
+                    <p className="text-gray-400 leading-relaxed mt-4">
+                      과거와 현재를 재구성하고, <strong className="text-white">미래 경로 탐색을 위한 이정표</strong>를
+                      제공합니다.
+                    </p>
                   </div>
-                  <ArrowRight className="w-6 h-6 text-purple-400 group-hover:translate-x-2 transition-transform" />
-                </Link>
+
+                  {/* 3가지 모듈 */}
+                  <div className="space-y-4">
+                  <div className="card border-red-500/20 p-5">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center">
+                          <span className="text-red-400 font-bold text-sm">1</span>
+                        </div>
+                        <h4 className="text-lg font-semibold text-white">과거의 족쇄 · 시스템 병목 분석</h4>
+                      </div>
+                      <p className="text-gray-400 text-sm ml-11">
+                        내면의 방해 요인과 패턴을 큐레이션하여 경로를 가로막는 요소를 탐색합니다.
+                      </p>
+                    </div>
+
+                  <div className="card border-blue-500/20 p-5">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center">
+                          <span className="text-blue-400 font-bold text-sm">2</span>
+                        </div>
+                        <h4 className="text-lg font-semibold text-white">현재의 투쟁 · 현재 아키텍처 맵</h4>
+                      </div>
+                      <p className="text-gray-400 text-sm ml-11">
+                        사회적 아키타입을 통해 현재 자신의 위치와 역할을 명확히 인식합니다.
+                      </p>
+                    </div>
+
+                  <div className="card border-purple-500/20 p-5">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center">
+                          <span className="text-purple-400 font-bold text-sm">3</span>
+                        </div>
+                        <h4 className="text-lg font-semibold text-white">미래의 도약 · 타겟 컨피그레이션</h4>
+                      </div>
+                      <p className="text-gray-400 text-sm ml-11">
+                        이상과 현실의 차이를 분석하여 잠재력을 실현할 수 있는 전략을 도출합니다.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 활용 방법 */}
+                <div className="space-y-6">
+                  <div className="card bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 p-6">
+                    <h4 className="text-xl font-semibold text-white mb-4">이런 분께 추천합니다</h4>
+                    <ul className="space-y-3 text-gray-300">
+                      <li className="flex items-start gap-3">
+                        <span className="text-purple-400 mt-1">✓</span>
+                        <span>전환점을 맞이하여 새로운 시작을 준비하는 분</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="text-purple-400 mt-1">✓</span>
+                        <span>현재 상태를 객관적으로 파악하고 싶은 분</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="text-purple-400 mt-1">✓</span>
+                        <span>경로 탐색과 최적화 방향을 수립하고 싶은 분</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="text-purple-400 mt-1">✓</span>
+                        <span>통합적인 자기 이해와 변화 계획이 필요한 분</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="card bg-purple-500/10 border-purple-500/20 p-6">
+                    <h4 className="text-lg font-semibold text-purple-400 mb-3">분석 프로세스</h4>
+                    <div className="space-y-3 text-sm text-gray-300">
+                      <div className="flex items-center gap-3">
+                        <span className="text-purple-400">1단계</span>
+                        <span>시스템 병목 분석 모듈 완료</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-purple-400">2단계</span>
+                        <span>현재 아키텍처 맵 모듈 완료</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-purple-400">3단계</span>
+                        <span>타겟 컨피그레이션 모듈 완료</span>
+                      </div>
+                      <div className="flex items-center gap-3 pt-2 border-t border-purple-500/20">
+                        <span className="text-purple-400 font-semibold">최종</span>
+                        <span className="font-semibold text-white">시스템 통합 블루프린트 발행</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Link
+                    href="/growth-roadmap"
+                    className="group flex items-center justify-between rounded-xl border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 hover:border-purple-500/50 p-6 transition-all duration-300"
+                  >
+                    <div>
+                      <div className="text-purple-400 font-semibold text-lg mb-1">마인드 아키텍터 시작하기</div>
+                      <div className="text-gray-400 text-sm">3개 모듈 순차 진행</div>
+                    </div>
+                    <ArrowRight className="w-6 h-6 text-purple-400 group-hover:translate-x-2 transition-transform" />
+                  </Link>
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
+          )}
+        </div>
+
+        {/* G3 시대 · 지능 자산 */}
+        <div className="text-center py-16 px-4">
+          <p className="text-xl md:text-2xl text-emerald-400/90 font-medium italic max-w-2xl mx-auto">
+            AI와 기술 패권의 시대, 가장 강력한 자산은 &apos;나&apos;라는 지능의 설계도입니다
+          </p>
         </div>
 
         {/* 하단 CTA */}
@@ -292,12 +303,14 @@ export default function ServicesPage() {
             >
               MNPS 시작하기
             </Link>
-            <Link
-              href="/growth-roadmap"
-              className="btn btn-secondary px-8"
-            >
-              마인드 아키텍터 시작하기
-            </Link>
+            {MIND_ARCHITECT_ENABLED && (
+              <Link
+                href="/growth-roadmap"
+                className="btn btn-secondary px-8"
+              >
+                마인드 아키텍터 시작하기
+              </Link>
+            )}
           </div>
         </div>
       </main>

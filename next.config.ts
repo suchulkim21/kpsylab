@@ -55,6 +55,11 @@ const nextConfig: NextConfig = {
         destination: '/growth-roadmap/:path*',
         permanent: true,
       },
+      {
+        source: '/mnps',
+        destination: '/mnps/test',
+        permanent: false,
+      },
     ];
   },
   // 헤더 최적화

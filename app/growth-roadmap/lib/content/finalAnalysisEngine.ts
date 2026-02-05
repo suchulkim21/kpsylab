@@ -96,7 +96,7 @@ export class FinalAnalysisEngine {
         const blocks: TextBlock[] = [
             {
                 id: 'intro',
-                content: "**[종합 진단 보고서: 종합 요약]**\n\n본 시스템은 귀하의 심층 데이터를 분석하여, 단순한 현상 진단을 넘어 삶을 재설계하기 위한 구체적인 **전술 프로토콜**을 최우선으로 제시합니다."
+                content: "**[시스템 통합 블루프린트: 종합 요약]**\n\n본 시스템은 귀하의 심층 데이터를 분석하여, 단순한 현상 분석을 넘어 삶을 재설계하기 위한 구체적인 **전술 프로토콜**을 최우선으로 제시합니다."
             },
             { id: 'roadmap_confrontation', content: this.generateConfrontation() },
             { id: 'roadmap_deconstruction', content: this.generateDeconstruction() },

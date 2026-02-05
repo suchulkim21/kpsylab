@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/db/supabase';
+import { BLOG_ENABLED } from '@/lib/constants/featureFlags';
 
 // HTML 태그 제거
 function stripHtml(html: string): string {
@@ -29,7 +30,7 @@ export async function GET() {
 
   let items = '';
 
-  if (supabase) {
+  if (BLOG_ENABLED && supabase) {
     try {
       const { data: posts, error } = await supabase
         .from('blog_posts')

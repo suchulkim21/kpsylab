@@ -29,6 +29,7 @@ import {
 import BlogScheduleManager from '@/components/BlogScheduleManager';
 import BlogAnalyticsCharts from '@/components/BlogAnalyticsCharts';
 import BlogPostEditor from '@/components/BlogPostEditor';
+import { BLOG_ENABLED } from '@/lib/constants/featureFlags';
 
 interface AnalyticsData {
   totalVisits: number;
@@ -165,13 +166,15 @@ export default function AdminDashboard() {
         return;
       }
 
-      // 블로그 분석 데이터
-      const blogAnalyticsResponse = await fetch('/api/admin/blog/analytics', {
-        headers: keyToUse ? { 'x-admin-key': keyToUse } : undefined,
-      });
-      const blogAnalyticsData = await blogAnalyticsResponse.json();
-      if (blogAnalyticsData.success) {
-        setBlogAnalytics(blogAnalyticsData.analytics);
+      // 블로그 분석 데이터 (BLOG_ENABLED일 때만)
+      if (BLOG_ENABLED) {
+        const blogAnalyticsResponse = await fetch('/api/admin/blog/analytics', {
+          headers: keyToUse ? { 'x-admin-key': keyToUse } : undefined,
+        });
+        const blogAnalyticsData = await blogAnalyticsResponse.json();
+        if (blogAnalyticsData.success) {
+          setBlogAnalytics(blogAnalyticsData.analytics);
+        }
       }
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -352,12 +355,14 @@ export default function AdminDashboard() {
             <p className="text-xs text-gray-500 mt-2">오늘 가입: {stats?.todaySignups || 0}명</p>
           </div>
 
-          <div className="bg-gradient-to-br from-yellow-900/20 to-yellow-800/10 border border-yellow-700/50 rounded-xl p-6">
-            <FileText className="w-8 h-8 text-yellow-400 mb-4" />
-            <p className="text-gray-400 text-sm mb-1">블로그 포스트</p>
-            <p className="text-3xl font-bold text-white">{(stats?.totalBlogPosts ?? 0).toLocaleString()}</p>
-            <p className="text-xs text-gray-500 mt-2">인기 포스트 조회수 추적 중</p>
-          </div>
+          {BLOG_ENABLED && (
+            <div className="bg-gradient-to-br from-yellow-900/20 to-yellow-800/10 border border-yellow-700/50 rounded-xl p-6">
+              <FileText className="w-8 h-8 text-yellow-400 mb-4" />
+              <p className="text-gray-400 text-sm mb-1">블로그 포스트</p>
+              <p className="text-3xl font-bold text-white">{(stats?.totalBlogPosts ?? 0).toLocaleString()}</p>
+              <p className="text-xs text-gray-500 mt-2">인기 포스트 조회수 추적 중</p>
+            </div>
+          )}
         </section>
 
         {/* 종합 분석 인사이트 */}
@@ -570,7 +575,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* 블로그 분석 섹션 */}
-        {blogAnalytics && (
+        {BLOG_ENABLED && blogAnalytics && (
           <section className="mb-12">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-3xl font-bold text-white flex items-center gap-2">
@@ -767,14 +772,14 @@ export default function AdminDashboard() {
         )}
 
         {/* 블로그 일정 관리 */}
-        {adminKey && (
+        {BLOG_ENABLED && adminKey && (
           <section className="mb-12">
             <BlogScheduleManager adminKey={adminKey} />
           </section>
         )}
 
         {/* 블로그 포스트 에디터 */}
-        {showPostEditor && (
+        {BLOG_ENABLED && showPostEditor && (
           <BlogPostEditor
             adminKey={adminKey}
             onSave={() => {
@@ -789,7 +794,7 @@ export default function AdminDashboard() {
         )}
 
         {/* 인기 블로그 포스트 (기존) */}
-        {analytics && analytics.blogPostViews.length > 0 && (
+        {BLOG_ENABLED && analytics && analytics.blogPostViews.length > 0 && (
           <section className="mb-12">
             <h3 className="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
               <FileText className="w-6 h-6 text-blue-400" />

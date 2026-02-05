@@ -10,7 +10,7 @@ const inter = Inter({
 
 export const metadata = {
   title: 'MNPS - KPSY LAB',
-  description: '다크 테트라드 심리 분석 서비스 - KPSY LAB',
+  description: 'MNPS: 다크 테트라드 독자적 논리 모델 - KPSY LAB',
 };
 
 export default function MnpsLayout({ children }: { children: React.ReactNode }) {

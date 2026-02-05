@@ -174,7 +174,7 @@ export default function IntermediateResult({ phase, result, onNext }: Intermedia
                     <div className="mb-6 p-5 bg-purple-900/20 border border-purple-700/30 rounded-xl">
                         <h4 className="text-lg font-bold text-purple-300 mb-3 flex items-center gap-2">
                             <span className="text-xl">⚗️</span>
-                            <span>신경과학적 인사이트</span>
+                            <span>시스템 관점 인사이트</span>
                         </h4>
                         <p className="text-gray-300 leading-relaxed text-base">
                             {result.neurologicalInsights}

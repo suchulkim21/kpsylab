@@ -65,8 +65,12 @@ export async function GET(request: Request) {
       );
     }
 
-    // 보안: Bad Report는 서버 측에서만 결제 여부 확인 후 반환
+    // 보안: Bad Report는 서버 측에서만 결제 여부 확인 후 반환. 미결제 시 앞 250자만 badTeaser로 반환
     const badReport = assessment.is_paid ? metadata.bad_report_json : null;
+    const badTeaser =
+      !assessment.is_paid && metadata.bad_report_json != null
+        ? String(metadata.bad_report_json).slice(0, 250)
+        : null;
 
     // 서버 저장 결과 우선 (result_snapshot). 없으면 레거시: radar_chart_data에서 traitScores 구성
     const snap = metadata.result_snapshot as Record<string, unknown> | null;
@@ -79,6 +83,7 @@ export async function GET(request: Request) {
           sadism: Number(radar[3]?.value) ?? 0,
         }
       : undefined);
+    const archetype = snap?.archetype ?? undefined;
     const subFactorScores = snap?.subFactorScores;
     const analysisAccuracy = snap?.analysisAccuracy ?? undefined;
     const rawDTotal = assessment.raw_d_total ?? snap?.rawDTotal;
@@ -93,6 +98,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       success: true,
       result: {
+        archetype,
         dTotal: assessment.total_d_score,
         rawDTotal,
         isExtremeTop: !!isExtremeTop,
@@ -104,6 +110,7 @@ export async function GET(request: Request) {
         percentileAtCreation,
         goodReport: metadata.good_report_json,
         badReport,
+        badTeaser: badTeaser ?? undefined,
         radarChartData: metadata.radar_chart_data,
       },
       isPaid: assessment.is_paid,

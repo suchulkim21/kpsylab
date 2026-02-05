@@ -16,7 +16,7 @@ export interface AdviceItem {
 /** MNPS, 마인드 아키텍터 모두 이 형태로 변환됩니다. */
 export interface UnifiedReportData {
   theme: "cyan" | "purple"; // cyan(MNPS), purple(마인드 아키텍터)
-  moduleTitle: string; // 예: "성장 저해 요인 분석"
+  moduleTitle: string; // 예: "시스템 병목 분석 (마인드 아키텍터 M1)"
   coreTypeTitle: string; // 예: "완벽주의적 통제형"
   summary: string; // 한 줄 요약
   detailText: string; // 상세 설명
@@ -32,4 +32,6 @@ export interface UnifiedReportData {
   scriptureLog?: string;
   /** 여정 서사: "A를 통과해 B로 나아가는 중" */
   journeySummary?: string;
+  /** 마스터 벡터 동기화율 (0-100). 2개 이상 모듈 완료 시 표시 */
+  syncPercentage?: number;
 }

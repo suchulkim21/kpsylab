@@ -6,14 +6,14 @@ import LegalPageShell, {
 
 export const metadata: Metadata = {
   title: '이용약관 | MNPS - KPSY LAB',
-  description: 'MNPS 다크 테스트 이용약관',
+  description: 'MNPS 테스트 이용약관',
 };
 
 export default function MnpsTermsPage() {
   return (
     <LegalPageShell
       title="이용약관"
-      subtitle="MNPS 다크 테스트"
+      subtitle="MNPS 테스트"
       backLabel="MNPS로 돌아가기"
     >
       {/* 베타 서비스 안내 */}

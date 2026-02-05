@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import WebVitalsTracker from "@/components/WebVitalsTracker";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -20,13 +21,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "KPSY LAB - 심리 분석 서비스 통합 플랫폼",
-  description: "MNPS, 마인드 아키텍터 등 심리 분석 서비스를 제공하는 통합 플랫폼",
-  keywords: ["심리 분석", "심리 측정", "다크 테트라드", "MNPS", "마인드 아키텍터", "KPSY LAB"],
+  title: "KPSY LAB - 내면 데이터 구조적 재구성 플랫폼",
+  description: "MNPS, 마인드 아키텍터 등 데이터 큐레이션 기반 통합 심리 분석 아키텍처",
+  keywords: ["심리 분석", "데이터 큐레이션", "다크 테트라드", "MNPS", "마인드 아키텍터", "KPSY LAB"],
   authors: [{ name: "KPSY LAB" }],
   openGraph: {
-    title: "KPSY LAB - 심리 분석 서비스 통합 플랫폼",
-    description: "MNPS, 마인드 아키텍터 등 심리 분석 서비스를 제공하는 통합 플랫폼",
+    title: "KPSY LAB - 내면 데이터 구조적 재구성 플랫폼",
+    description: "MNPS, 마인드 아키텍터 등 데이터 큐레이션 기반 통합 심리 분석 아키텍처",
     url: "https://www.kpsylab.com",
     siteName: "KPSY LAB",
     locale: "ko_KR",
@@ -34,8 +35,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "KPSY LAB - 심리 분석 서비스 통합 플랫폼",
-    description: "MNPS, 마인드 아키텍터 등 심리 분석 서비스를 제공하는 통합 플랫폼",
+    title: "KPSY LAB - 내면 데이터 구조적 재구성 플랫폼",
+    description: "MNPS, 마인드 아키텍터 등 데이터 큐레이션 기반 통합 심리 분석 아키텍처",
   },
   metadataBase: new URL("https://www.kpsylab.com"),
   alternates: {
@@ -64,6 +65,7 @@ export default function RootLayout({
           <Navigation />
           <ToastContainer />
           <main id="main-content">{children}</main>
+          <Footer />
         </ErrorBoundary>
       </body>
     </html>

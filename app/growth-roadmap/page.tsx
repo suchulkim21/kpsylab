@@ -18,20 +18,20 @@ interface ModuleStatus {
 function getM1Teaser(type: string | null): string | null {
     if (!type) return null;
     const map: Record<string, string> = {
-        A: "당신의 성장을 막는 가장 큰 적은 '완벽주의'입니다.",
-        B: "당신의 성장을 막는 가장 큰 적은 '타인의 인정에 대한 갈망'입니다.",
-        C: "당신의 성장을 막는 가장 큰 적은 '감정 차단'입니다.",
-        D: "당신의 성장을 막는 가장 큰 적은 '회피 습관'입니다."
+        A: "당신의 경로를 막는 가장 큰 요인은 '완벽주의'입니다.",
+        B: "당신의 경로를 막는 가장 큰 요인은 '타인의 인정에 대한 갈망'입니다.",
+        C: "당신의 경로를 막는 가장 큰 요인은 '감정 차단'입니다.",
+        D: "당신의 경로를 막는 가장 큰 요인은 '회피 습관'입니다."
     };
     return map[type] || null;
 }
 
 function getProgressMessage(completed: number): { main: string; sub: string } {
     switch (completed) {
-        case 0: return { main: "첫 번째 모듈을 완료하면 인사이트를 확인할 수 있어요", sub: "지금 바로 시작해보세요" };
-        case 1: return { main: "1단계 완료! 다음 모듈에서 더 깊은 분석을 만나보세요", sub: "2단계 완료 시 두 번째 인사이트 공개" };
-        case 2: return { main: "거의 다 왔어요! 마지막 모듈을 완료하면 통합 리포트가 열립니다", sub: "3단계 완료 시 최종 아키텍처 확인" };
-        default: return { main: "모든 분석이 완료되었습니다. 통합 리포트에서 종합 결과를 확인하세요", sub: "" };
+        case 0: return { main: "데이터 스캔 대기 중", sub: "1단계 완료 시 시스템 병목 분석 결과 확인" };
+        case 1: return { main: "아키텍처 구성 중", sub: "2단계 완료 시 현재 아키텍처 맵 공개" };
+        case 2: return { main: "데이터 동기화 중", sub: "3단계 완료 시 통합 블루프린트 발행" };
+        default: return { main: "시스템 통합 블루프린트 준비 완료", sub: "생애 최적화 도면에서 종합 결과를 확인하세요" };
     }
 }
 
@@ -193,8 +193,8 @@ export default function Home() {
                             <div className={`mb-6 p-4 rounded-full transition-colors ${results.m1 ? "bg-red-500/20" : "bg-gray-800 group-hover:bg-red-900/20"}`}>
                                 <Activity size={32} className={results.m1 ? "text-red-500" : "text-gray-400 group-hover:text-red-500"} />
                             </div>
-                            <h2 className="text-2xl font-bold mb-1">성장 저해 요인</h2>
-                            <p className="text-xs text-gray-500 mb-2">내가 왜 자꾸 같은 실패를 반복하는지 알 수 있어요</p>
+                            <h2 className="text-2xl font-bold mb-1">시스템 병목 분석</h2>
+                            <p className="text-xs text-gray-500 mb-2">비효율적 사고 루프·핵심 병목 지점을 데이터로 식별</p>
                             {results.m1 && getM1Teaser(results.m1Type) ? (
                                 <p className="text-sm text-red-400/90 mb-4 font-medium italic">&quot;{getM1Teaser(results.m1Type)}&quot;</p>
                             ) : (
@@ -229,7 +229,7 @@ export default function Home() {
                             <div className={`mb-6 p-4 rounded-full transition-colors ${results.m2 ? "bg-blue-500/20" : "bg-gray-800 group-hover:bg-blue-900/20"}`}>
                                 <Brain size={32} className={results.m2 ? "text-blue-500" : "text-gray-400 group-hover:text-blue-500"} />
                             </div>
-                            <h2 className="text-2xl font-bold mb-1">현 상태 분석</h2>
+                            <h2 className="text-2xl font-bold mb-1">현재 아키텍처 맵</h2>
                             <p className="text-xs text-gray-500 mb-2">사회에서 나를 어떻게 인식하는지 객관적으로 볼 수 있어요</p>
                             <p className="text-sm text-gray-400 mb-4">남들이 보는 나의 모습 분석하기</p>
                             <span className={`text-sm px-3 py-1 rounded border font-bold ${results.m2 ? "border-blue-500 text-blue-400 bg-blue-500/5" : "border-gray-700 text-gray-500"}`}>
@@ -261,9 +261,9 @@ export default function Home() {
                             <div className={`mb-6 p-4 rounded-full transition-colors ${results.m3 ? "bg-purple-500/20" : "bg-gray-800 group-hover:bg-purple-900/20"}`}>
                                 <BarChart3 size={32} className={results.m3 ? "text-purple-500" : "text-gray-400 group-hover:text-purple-500"} />
                             </div>
-                            <h2 className="text-2xl font-bold mb-1">이상향 및 잠재력</h2>
-                            <p className="text-xs text-gray-500 mb-2">꿈과 현실의 격차를 줄이는 실천 전략을 얻을 수 있어요</p>
-                            <p className="text-sm text-gray-400 mb-4">원하는 미래로 가는 길 찾기</p>
+                            <h2 className="text-2xl font-bold mb-1">타겟 컨피그레이션</h2>
+                            <p className="text-xs text-gray-500 mb-2">지향하는 최적 상태를 설계 목표치로 정의·격차 전략 도출</p>
+                            <p className="text-sm text-gray-400 mb-4">자원을 가장 효율적으로 배분할 목표 설계 수립</p>
                             <span className={`text-sm px-3 py-1 rounded border font-bold ${results.m3 ? "border-purple-500 text-purple-400 bg-purple-500/5" : "border-gray-700 text-gray-500"}`}>
                                 {results.m3 || "분석 시작"}
                             </span>

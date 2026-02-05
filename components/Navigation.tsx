@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Shield } from 'lucide-react';
+import { BLOG_ENABLED, MIND_ARCHITECT_ENABLED, MNPS_ENABLED } from '@/lib/constants/featureFlags';
 
 export default function Navigation() {
   return (
@@ -28,24 +29,30 @@ export default function Navigation() {
         >
           서비스 소개
         </Link>
-        <Link
-          href="/mnps"
-          className="text-cyan-300 hover:text-cyan-200 transition-colors text-sm"
-        >
-          MNPS
-        </Link>
-        <Link
-          href="/growth-roadmap"
-          className="text-purple-300 hover:text-purple-200 transition-colors text-sm"
-        >
-          마인드 아키텍터
-        </Link>
-        <Link
-          href="/blog"
-          className="text-white hover:text-gray-200 transition-colors text-sm"
-        >
-          블로그
-        </Link>
+        {MNPS_ENABLED && (
+          <Link
+            href="/mnps/test"
+            className="text-cyan-300 hover:text-cyan-200 transition-colors text-sm"
+          >
+            MNPS
+          </Link>
+        )}
+        {MIND_ARCHITECT_ENABLED && (
+          <Link
+            href="/growth-roadmap"
+            className="text-purple-300 hover:text-purple-200 transition-colors text-sm"
+          >
+            마인드 아키텍터
+          </Link>
+        )}
+        {BLOG_ENABLED && (
+          <Link
+            href="/blog"
+            className="text-white hover:text-gray-200 transition-colors text-sm"
+          >
+            블로그
+          </Link>
+        )}
         <Link
           href="/board"
           className="text-white hover:text-gray-200 transition-colors text-sm"

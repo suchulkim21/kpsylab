@@ -210,7 +210,7 @@ export function generateSynthesizedItems(type: string): ResultItem[] {
 
     const depthBlock = {
         id: "m1_syn_depth",
-        title: "[심층 진단] 무의식 구조와 그림자 자아",
+        title: "[심층 분석] 무의식 구조와 그림자 자아",
         content: ([
             `**핵심 기제**: ${TYPE_DEFINITIONS[t]}`,
             `**심층 정신 역동**: ${DEEP_ANALYSIS[t]}`,
@@ -237,7 +237,7 @@ export function generateSynthesizedItems(type: string): ResultItem[] {
 
     const prognosisBlock = {
         id: "m1_syn_prognosis",
-        title: "[미래 예후] 성장 저해 요인 및 리스크",
+        title: "[미래 예후] 시스템 병목 및 리스크",
         content: GROWTH_IMPACT[t]
     };
 

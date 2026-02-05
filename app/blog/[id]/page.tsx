@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
+import { BLOG_ENABLED } from '@/lib/constants/featureFlags';
 import { Calendar, User, ArrowLeft, Tag } from 'lucide-react';
 import { supabase } from '@/lib/db/supabase';
 
@@ -114,6 +115,10 @@ function generateStructuredData(post: BlogPost) {
 }
 
 export default async function BlogPostPage({ params }: { params: Promise<{ id: string }> }) {
+  if (!BLOG_ENABLED) {
+    redirect('/');
+  }
+
   const { id } = await params;
   const postId = parseInt(id, 10);
 

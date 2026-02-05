@@ -123,8 +123,11 @@ export default function Module1Page() {
                         </div>
                         <h1 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight text-gray-100">무의식 방해 요인 분석</h1>
                         <p className="text-gray-400 text-base leading-relaxed max-w-lg mx-auto">
-                            성장을 가로막는 무의식적 패턴과 인지 편향을 진단합니다.<br />
+                            경로를 가로막는 무의식적 패턴과 인지 편향을 탐색합니다.<br />
                             응답 패턴에 따라 분석이 조기에 종료될 수 있습니다.
+                        </p>
+                        <p className="text-gray-500 text-xs italic max-w-lg mx-auto mt-4">
+                            이 결과는 당신의 정답이 아닌, 참고할 수 있는 정교한 시스템 도면입니다.
                         </p>
                     </div>
 

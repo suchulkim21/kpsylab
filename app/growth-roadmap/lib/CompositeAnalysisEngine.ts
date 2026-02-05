@@ -37,7 +37,7 @@ export class CompositeAnalysisEngine {
             { title: "3단계: 재구성 분석", items: m3Results },
         ];
 
-        let report = "**[종합 진단 보고서]**\n\n";
+        let report = "**[시스템 통합 블루프린트]**\n\n";
         for (const sec of sections) {
             report += `--- ${sec.title} ---\n`;
             for (const item of sec.items) {

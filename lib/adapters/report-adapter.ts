@@ -108,9 +108,14 @@ export function adaptModule1(
         })
       : undefined;
 
+  const syncPercentage =
+    context?.m2Data && context.consistencyScore != null
+      ? Math.round((context.consistencyScore ?? 0) * 100)
+      : undefined;
+
   return {
     theme: "purple",
-    moduleTitle: "성장 저해 요인 (마인드 아키텍터 M1)",
+    moduleTitle: "시스템 병목 분석 (마인드 아키텍터 M1)",
     coreTypeTitle: template.title,
     totalScore: score,
     summary: `${template.title} + ${subDominant ? `보조 ${subDominant[0]}` : "단일 성향"}`,
@@ -127,6 +132,7 @@ export function adaptModule1(
       todos: template.actionPlan,
     },
     conflictInsight,
+    syncPercentage,
   };
 }
 
@@ -157,10 +163,10 @@ export function adaptMNPS(data: {
 
   return {
     theme: "cyan",
-    moduleTitle: "MNPS (다크 테트라드 분석)",
+    moduleTitle: "MNPS: 당신의 그림자가 빛이 되는 지점",
     coreTypeTitle: template.title,
     totalScore: dTotal,
-    summary: "내면의 어두운 본성 프로파일링 결과",
+    summary: "다크 테트라드 패턴 발견 — 자기 탐색을 위한 이정표",
     detailText: template.desc,
     rarityBadge,
     chartData: [
@@ -258,7 +264,7 @@ export function adaptModule3(data: Module3Input): UnifiedReportData {
 
   return {
     theme: "purple",
-    moduleTitle: "이상향 vs 잠재력 재구성 (모듈 3)",
+    moduleTitle: "타겟 컨피그레이션 (모듈 3)",
     coreTypeTitle: `${strategy} 전략`,
     totalScore: alignScore,
     rarityBadge: `상위 ${percentile}% 벡터 정렬 유형`,

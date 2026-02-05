@@ -86,7 +86,7 @@ export async function POST(request: Request) {
             currency: MNPS_CURRENCY,
             unit_amount: MNPS_AMOUNT,
             product_data: {
-              name: 'MNPS: Dark Nature Test - Bad Report 잠금 해제',
+              name: 'MNPS 테스트 - 어두운 이면 잠금 해제',
               description: '어두운 이면(가공 없는 분석) 및 최종 리스크 시나리오 전체 공개',
               images: [],
             },

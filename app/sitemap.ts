@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next';
 import { supabase } from '@/lib/db/supabase';
+import { BLOG_ENABLED } from '@/lib/constants/featureFlags';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kpsylab.com';
@@ -50,10 +51,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // 블로그 포스트 동적 생성
+  // 블로그 포스트 동적 생성 (BLOG_ENABLED일 때만)
   let blogPages: MetadataRoute.Sitemap = [];
 
-  if (supabase) {
+  if (BLOG_ENABLED && supabase) {
     try {
       const { data: posts, error } = await supabase
         .from('blog_posts')

@@ -48,7 +48,15 @@ export default function UnifiedReportCard({ data }: { data: UnifiedReportData })
       <div ref={cardRef} className="bg-[#0f1115] border border-gray-800 rounded-3xl overflow-hidden shadow-2xl relative">
         <div className={`h-1 w-full ${accentBg}`} />
         <div className="p-6 md:p-10">
+          <p className="text-center text-xs text-gray-500 mb-6 px-2 italic">
+            이 리포트는 당신의 정답이 아닌, 당신이 참고할 수 있는 정교한 시스템 도면입니다.
+          </p>
           <div className="text-center mb-8">
+            {data.syncPercentage != null && (
+              <p className="text-sm text-emerald-400/90 mb-3">
+                현재 당신의 데이터는 <strong className="text-white">{data.syncPercentage}%</strong> 동기화되었습니다
+              </p>
+            )}
             <span className={`inline-block py-1 px-3 rounded-full text-xs font-bold tracking-wider uppercase bg-gray-900 border border-gray-700 ${accentText} mb-4`}>
               {data.moduleTitle}
             </span>
@@ -73,7 +81,7 @@ export default function UnifiedReportCard({ data }: { data: UnifiedReportData })
           <div className="bg-gray-900/50 rounded-2xl p-6 mb-8 border border-gray-800">
             <div className="flex flex-col md:flex-row items-center gap-8">
               <div className="flex-1 text-center border-b md:border-b-0 md:border-r border-gray-800 pb-6 md:pb-0 md:pr-6 w-full">
-                <span className="text-gray-500 text-sm font-medium block mb-2">종합 진단 점수</span>
+                <span className="text-gray-500 text-sm font-medium block mb-2">종합 분석 점수</span>
                 <div className="text-6xl font-black text-white tracking-tight">
                   {data.totalScore}
                   <span className="text-2xl text-gray-600 font-normal">/100</span>
@@ -171,8 +179,11 @@ export default function UnifiedReportCard({ data }: { data: UnifiedReportData })
           )}
 
           <div className="mt-8 text-center border-t border-gray-800 pt-6">
+            <p className="text-gray-400 text-sm mb-4 italic">
+              이 결과는 당신의 고정된 운명이 아닙니다. 당신의 시스템을 더 나은 방향으로 재설계하기 위한 기초 도면입니다.
+            </p>
             <p className="text-gray-500 text-xs tracking-widest uppercase">
-              Psychological Analysis by <span className="text-white font-bold">KPSY LAB</span>
+              심리 분석 · <span className="text-white font-bold">KPSY LAB</span>
             </p>
             <p className="text-gray-600 text-[10px] mt-1">kpsylab.com</p>
           </div>

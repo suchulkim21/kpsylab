@@ -22,10 +22,10 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 
   return {
     title: 'MNPS 결과 | KPSY LAB',
-    description: 'MNPS 다크 테스트 - 나의 다크 테트라드 프로필 결과',
+    description: 'MNPS 테스트 - 나의 다크 테트라드 프로필 결과',
     openGraph: {
       title: 'MNPS: 나의 다크 테트라드 결과',
-      description: 'MNPS 다크 테스트 - 나의 다크 테트라드 프로필 결과',
+      description: 'MNPS 테스트 - 나의 다크 테트라드 프로필 결과',
       images: [{ url: ogImageUrl, width: 1200, height: 630, alt: 'MNPS 결과' }],
     },
     twitter: {

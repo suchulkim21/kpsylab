@@ -1,15 +1,46 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MNPS_QUESTIONS, MNPS_OPTIONS, DarkNatureQuestion } from "./questions";
-import { scoreDarkNature, buildInterpretation, DarkAnswer } from "@/lib/mnps/darkNatureScoring";
+import { scoreDarkNature, buildInterpretation, assembleReport, DarkAnswer } from "@/lib/mnps/darkNatureScoring";
 import InterstitialView from "./InterstitialView";
 
 const QUESTIONS_PER_PHASE = 14;
 const PHASE_1_END_INDEX = 13;  // Q14 답변 후 휴식
 const PHASE_2_END_INDEX = 27;   // Q28 답변 후 휴식
+
+const MNPS_SESSION_KEY = 'mnps_session_id';
+const MNPS_RESULTS_LIST_KEY = 'mnps_results_list';
+
+function appendResultToList(item: { id: string; completedAt: string; totalDScore: number | null }) {
+  try {
+    const raw = sessionStorage.getItem(MNPS_RESULTS_LIST_KEY);
+    const list: { id: string; completedAt: string; totalDScore: number | null }[] = raw ? JSON.parse(raw) : [];
+    list.unshift(item);
+    sessionStorage.setItem(MNPS_RESULTS_LIST_KEY, JSON.stringify(list));
+  } catch {
+    sessionStorage.setItem(MNPS_RESULTS_LIST_KEY, JSON.stringify([item]));
+  }
+}
+
+function getOrCreateSessionId(): string {
+  if (typeof window === 'undefined') return '';
+  const stored = sessionStorage.getItem(MNPS_SESSION_KEY);
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (stored && uuidRegex.test(stored)) return stored;
+  const newId = typeof crypto !== 'undefined' && crypto.randomUUID
+    ? crypto.randomUUID()
+    : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+        const r = (Math.random() * 16) | 0;
+        const v = c === 'x' ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      });
+  sessionStorage.setItem(MNPS_SESSION_KEY, newId);
+  return newId;
+}
 
 /** 네트워크 오류·5xx 시 재시도(지수 백오프). 2xx·4xx는 재시도하지 않고 즉시 반환. */
 async function fetchWithRetry(
@@ -52,26 +83,26 @@ export default function TestPage() {
       : currentIndex < QUESTIONS_PER_PHASE * 2
         ? 2
         : 3;
-  const overallProgress = (currentIndex + 1) / MNPS_QUESTIONS.length;
+  // 단계별 진행률 (각 단계 1~14문항)
+  const phase1Progress = currentPhase === 1 ? (currentIndex + 1) / QUESTIONS_PER_PHASE : currentPhase > 1 ? 1 : 0;
+  const phase2Progress = currentPhase === 2 ? (currentIndex - PHASE_1_END_INDEX) / QUESTIONS_PER_PHASE : currentPhase > 2 ? 1 : 0;
+  const phase3Progress = currentPhase === 3 ? (currentIndex - PHASE_2_END_INDEX) / QUESTIONS_PER_PHASE : 0;
 
-  // 테스트 시작 시 assessment 생성 및 시작 시각 기록 (실패 시 sessionStorage만 사용)
+  // 테스트 시작 시 assessment 생성 및 시작 시각 기록 (sessionId는 저장해 두어 이전 결과 보기에서 사용)
   useEffect(() => {
     setTestStartedAt(new Date().toISOString());
     async function createAssessment() {
       try {
-        const sessionId = typeof crypto !== 'undefined' && crypto.randomUUID
-          ? crypto.randomUUID()
-          : `anon_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+        const sessionId = getOrCreateSessionId();
         const response = await fetch('/api/mnps/assessments', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: null, sessionId }), // 익명 시 session_id로 RLS 식별
+          body: JSON.stringify({ userId: null, sessionId }),
         });
         const data = await response.json();
         if (data.success) {
           setAssessmentId(data.assessment.id);
         }
-        // 503(DB 미설정) 또는 500이어도 sessionStorage로 계속 진행
       } catch {
         // 네트워크 오류 등 → sessionStorage만 사용
       }
@@ -170,6 +201,11 @@ export default function TestPage() {
           const completeData = await completeResponse.json();
           if (completeData.success) {
             sessionStorage.setItem('mnpsAssessmentId', assessmentId);
+            appendResultToList({
+              id: assessmentId,
+              completedAt: new Date().toISOString(),
+              totalDScore: Math.round(result.dTotal),
+            });
             router.push(`/mnps/result?assessmentId=${assessmentId}`);
             return;
           }
@@ -178,13 +214,24 @@ export default function TestPage() {
         }
       }
 
+      const report = assembleReport(result, true);
       const resultData = {
         result,
         interpretation: buildInterpretation(result),
         answers: darkAnswers,
+        goodReportFull: report.goodReport,
+        badReportFull: report.fullBadReport ?? report.badTeaser,
+        badTeaserFull: report.badTeaser,
       };
       sessionStorage.setItem('darkNatureResult', JSON.stringify(resultData));
-      router.push('/mnps/result');
+      const localId = `local-${Date.now()}`;
+      sessionStorage.setItem(`mnps_result_local_${localId}`, JSON.stringify(resultData));
+      appendResultToList({
+        id: localId,
+        completedAt: new Date().toISOString(),
+        totalDScore: Math.round(result.dTotal),
+      });
+      router.push(`/mnps/result?localId=${encodeURIComponent(localId)}`);
     };
 
     finalize();
@@ -219,12 +266,15 @@ export default function TestPage() {
     <main className="page mobile-safe-container one-screen-fit">
       <div className="page-container max-w-3xl py-12 space-y-8">
         <header className="space-y-2 text-center">
-          <h1 className="text-4xl font-bold">MNPS 다크 테스트</h1>
+          <h1 className="text-4xl font-bold">MNPS 테스트</h1>
           <p className="text-gray-400">
-            42문항으로 당신의 다크 테트라드 성향을 측정합니다.
+            독자적 논리 모델을 통해 다크 테트라드를 탐색합니다.
           </p>
           <p className="text-xs text-amber-400/90">
-            원활한 분석을 위해 시작 후 24시간 이내에 완료해 주세요.
+            원활한 분석을 위해 테스트 시작 후 24시간 이내에 완료해 주세요.
+          </p>
+          <p className="text-xs text-gray-500 italic max-w-md mx-auto mt-3">
+            이 결과는 정답이 아닌, 참고할 수 있는 정교한 시스템 도면입니다.
           </p>
         </header>
 
@@ -259,16 +309,43 @@ export default function TestPage() {
                   {getCategoryLabel(current)}
                 </span>
                 <span className="font-medium text-cyan-400">
-                  Step {currentPhase}/3
+                  단계 {currentPhase}/3
                 </span>
               </div>
-              <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
-                <motion.div
-                  className="h-full bg-cyan-500 rounded-full"
-                  initial={false}
-                  animate={{ width: `${overallProgress * 100}%` }}
-                  transition={{ duration: 0.35, ease: "easeOut" }}
-                />
+              <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-1">
+                  <span className="text-[10px] text-gray-500 block">단계 1</span>
+                  <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full bg-cyan-500 rounded-full"
+                      initial={false}
+                      animate={{ width: `${phase1Progress * 100}%` }}
+                      transition={{ duration: 0.35, ease: "easeOut" }}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] text-gray-500 block">단계 2</span>
+                  <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full bg-cyan-500 rounded-full"
+                      initial={false}
+                      animate={{ width: `${phase2Progress * 100}%` }}
+                      transition={{ duration: 0.35, ease: "easeOut" }}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] text-gray-500 block">단계 3</span>
+                  <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full bg-cyan-500 rounded-full"
+                      initial={false}
+                      animate={{ width: `${phase3Progress * 100}%` }}
+                      transition={{ duration: 0.35, ease: "easeOut" }}
+                    />
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -293,7 +370,7 @@ export default function TestPage() {
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 justify-between">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 <button
                   onClick={handlePrev}
                   disabled={currentIndex === 0}
@@ -301,11 +378,17 @@ export default function TestPage() {
                 >
                   이전
                 </button>
-                <div className="text-xs text-gray-500 text-center sm:text-left">
+                <Link
+                  href="/mnps/results"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full border border-cyan-500/40 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 text-sm font-medium transition-colors"
+                >
+                  이전 결과 보기
+                </Link>
+                <span className="text-xs text-gray-500">
                   {currentPhase === 1 && "1단계: 기본 성향을 파악하고 있습니다."}
                   {currentPhase === 2 && "2단계: 심층 패턴을 분석하고 있습니다."}
-                  {currentPhase === 3 && "마지막 단계입니다. 끝까지 답변해주세요."}
-                </div>
+                  {currentPhase === 3 && "마지막 단계입니다. 끝까지 답변해 주세요."}
+                </span>
               </div>
             </motion.section>
           )}
@@ -313,7 +396,7 @@ export default function TestPage() {
 
         {viewMode === "question" && (
           <div className="text-center text-sm text-gray-500">
-            * 답변을 선택하면 자동으로 다음 문항으로 이동합니다.
+            답변을 선택하시면 자동으로 다음 문항으로 이동합니다.
           </div>
         )}
       </div>

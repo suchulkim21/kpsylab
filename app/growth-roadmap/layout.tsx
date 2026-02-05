@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "마인드 아키텍터",
-  description: "통합 심리 분석 아키텍처 - 고급 심리 분석 시스템",
+  description: "통합 심리 분석 아키텍처 - 경로 탐색 및 데이터 큐레이션",
 };
 
 export default function GrowthRoadmapLayout({

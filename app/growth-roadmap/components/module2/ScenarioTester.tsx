@@ -127,7 +127,7 @@ export default function ScenarioTester() {
     }
 
     const currentScenario = phaseScenarios[currentScenarioIdx];
-    if (!currentScenario) return <div>Loading...</div>;
+    if (!currentScenario) return <div>로딩 중...</div>;
 
     // Calculate progress for current phase
     const progress = Math.round(((currentScenarioIdx + 1) / phaseScenarios.length) * 100);

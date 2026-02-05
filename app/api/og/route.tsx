@@ -106,7 +106,7 @@ export async function GET(request: Request) {
       percentile = null;
     }
     const topN = percentile != null ? (100 - percentile).toFixed(1) : null;
-    const subText = topN != null ? `상위 ${topN}%의 위험한 본성` : 'MNPS 다크 테스트';
+    const subText = topN != null ? `상위 ${topN}%의 위험한 본성` : 'MNPS 테스트';
 
     return new ImageResponse(
       (
@@ -171,7 +171,7 @@ export async function GET(request: Request) {
               fontWeight: 600,
             }}
           >
-            MNPS 다크 테스트
+            MNPS 테스트
           </div>
         </div>
       ),

@@ -60,9 +60,9 @@ const GrowthAdvice: React.FC<GrowthAdviceProps> = ({ result }) => {
                 </p>
             </section>
 
-            {/* 헛점 진단 */}
+            {/* 헛점 분석 */}
             <section>
-                <h3 className="text-lg font-bold mb-2">헛점 진단</h3>
+                <h3 className="text-lg font-bold mb-2">헛점 분석</h3>
                 <p className="text-gray-300">
                     가장 큰 격차는 <strong>{dimName(result.dimensions.dominantGap)}</strong> 영역이며, 이는 현재 행동 패턴이 목표와 크게 어긋나 있음을 의미합니다.
                     해당 영역을 집중적으로 개선하는 것이 전체 성장에 가장 큰 영향을 미칩니다.

@@ -222,6 +222,7 @@ export async function POST(request: Request) {
     }
 
     const resultSnapshot = {
+      archetype: result.archetype,
       traitScores: result.traitScores,
       subFactorScores: result.subFactorScores,
       dTotal: result.dTotal,

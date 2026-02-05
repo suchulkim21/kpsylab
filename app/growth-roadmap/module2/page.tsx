@@ -43,7 +43,10 @@ export default function Module2Page() {
                         </div>
                         <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight">대인 관계 및 행동</h1>
                         <p className="text-gray-400 text-lg leading-relaxed max-w-lg mx-auto">
-                            현실적인 시나리오 시뮬레이션을 통해 당신의 행동 패턴과 의사결정 스타일을 진단합니다.
+                            현실적인 시나리오 시뮬레이션을 통해 당신의 행동 패턴과 의사결정 스타일을 탐색합니다.
+                        </p>
+                        <p className="text-gray-500 text-xs italic max-w-lg mx-auto mt-4">
+                            이 결과는 당신의 정답이 아닌, 참고할 수 있는 정교한 시스템 도면입니다.
                         </p>
                     </div>
 

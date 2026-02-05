@@ -14,16 +14,9 @@ export function parseMarkdown(text: string): React.ReactNode {
     const trimmed = para.trim();
     if (!trimmed) return null;
 
-    // ### 헤딩
-    if (trimmed.startsWith('### ')) {
-      return (
-        <h4
-          key={pIdx}
-          className="text-base font-semibold text-zinc-100 mt-4 mb-2 border-l-4 border-cyan-500 pl-3"
-        >
-          {trimmed.slice(4)}
-        </h4>
-      );
+    // 구분선
+    if (trimmed === '---' || trimmed === '***' || trimmed === '___') {
+      return <hr key={pIdx} className="my-6 border-zinc-600" />;
     }
 
     // ## 헤딩
@@ -31,17 +24,48 @@ export function parseMarkdown(text: string): React.ReactNode {
       return (
         <h3
           key={pIdx}
-          className="text-lg font-bold text-zinc-50 mt-5 mb-3"
+          className="text-lg font-bold text-zinc-50 mt-8 mb-3 first:mt-2"
         >
           {trimmed.slice(3)}
         </h3>
       );
     }
 
+    // ### 헤딩
+    if (trimmed.startsWith('### ')) {
+      return (
+        <h4
+          key={pIdx}
+          className="text-base font-semibold text-zinc-100 mt-6 mb-2 first:mt-2 border-l-4 border-cyan-500 pl-3"
+        >
+          {trimmed.slice(4)}
+        </h4>
+      );
+    }
+
+    // 리스트: 줄이 "- " 또는 "* "로 시작
+    const lines = trimmed.split('\n').map((l) => l.trim()).filter(Boolean);
+    const listItems = lines.filter((l) => l.startsWith('- ') || l.startsWith('* '));
+    if (listItems.length > 0 && listItems.length >= lines.length - 1) {
+      return (
+        <ul key={pIdx} className="list-none space-y-2 my-4 pl-0">
+          {listItems.map((line, i) => {
+            const content = line.replace(/^[-*]\s+/, '');
+            return (
+              <li key={i} className="flex items-start gap-2.5 text-zinc-300 leading-relaxed">
+                <span className="text-cyan-400 mt-1.5 shrink-0" aria-hidden>•</span>
+                <span>{parseInline(content)}</span>
+              </li>
+            );
+          })}
+        </ul>
+      );
+    }
+
     // 일반 단락: **bold**, *italic* 처리
     const parsed = parseInline(trimmed);
     return (
-      <p key={pIdx} className="mb-3 leading-relaxed">
+      <p key={pIdx} className="mb-4 leading-loose text-zinc-300">
         {parsed}
       </p>
     );

@@ -16,8 +16,8 @@ export default function DisclaimerBanner() {
         <p className="text-xs text-zinc-500 leading-relaxed max-w-2xl mx-auto">
           <strong className="text-zinc-400">면책 조항</strong>
           <br />
-          본 테스트 결과는 <strong>의학적·임상적 진단이 아니며</strong>, 전문적인 상담을 대체할 수 없습니다.
-          오락 및 자기 성찰 목적으로만 사용해야 합니다.
+          본 테스트 결과는 <strong>의학적·임상적 진단이 아니며</strong>, 전문 상담을 대체할 수 없습니다.
+          오락 및 자기 성찰 목적으로만 이용해 주시기 바랍니다.
         </p>
         {/* 추가 법적 안내 */}
         <p className="text-[11px] text-zinc-600 leading-relaxed max-w-2xl mx-auto">
