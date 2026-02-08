@@ -223,7 +223,7 @@ export const potentialQuestions: Question[] = [
         dimension: "relation",
         options: [
             { id: "A", text: "새로운 사람들을 만날 생각에 설렌다.", value: { relation: 10 } },
-            { id: "B", text: "어색하고 불편해서 핑계를 대고 빠진다.", value: { autonomy: 10 } },
+            { id: "B", text: "어색하고 불편해서 핑계를 대고 참석하지 않는다.", value: { autonomy: 10 } },
             { id: "C", text: "새로운 경험으로 성장할 기회로 본다.", value: { growth: 10 } },
             { id: "D", text: "익숙한 사람이 함께 가면 간다.", value: { stability: 10 } }
         ]
@@ -355,7 +355,7 @@ export const potentialQuestions: Question[] = [
 export const obstacleQuestions: Question[] = [
     {
         id: 1,
-        text: "당신이 현재 직면하고 있는 가장 큰 외적 장애물은 무엇입니까?",
+        text: "현재 가장 큰 외적 장애물은 무엇이라고 느끼십니까?",
         dimension: "stability",
         options: [
             { id: "A", text: "환경적 제약(예: 자원 부족, 시간 압박)", value: { stability: 10 } },
@@ -366,7 +366,7 @@ export const obstacleQuestions: Question[] = [
     },
     {
         id: 2,
-        text: "당신의 성장을 방해하는 내적 요인은 무엇입니까?",
+        text: "성장을 방해하는 내적 요인으로 무엇이 가장 크다고 느끼십니까?",
         dimension: "stability",
         options: [
             { id: "A", text: "두려움과 불안 (실패에 대한 공포)", value: { stability: 10 } },

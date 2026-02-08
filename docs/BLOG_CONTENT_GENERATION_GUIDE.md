@@ -2,6 +2,8 @@
 
 AI를 사용하여 블로그 포스트를 자동으로 생성하는 방법을 안내합니다.
 
+**발행 전 톤·품격 점검**: 새 포스트나 결과 문구를 배포하기 전 [CONTENT_TONE_CHECKLIST_AND_EMOTION_FRAMEWORK.md](./CONTENT_TONE_CHECKLIST_AND_EMOTION_FRAMEWORK.md)의 체크리스트(철학·맥락, 톤·품격, 결과 전용)를 한 번 확인하는 것을 권장합니다.
+
 ## 🚀 빠른 시작
 
 ### 1. 환경 변수 설정

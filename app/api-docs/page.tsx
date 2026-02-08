@@ -8,11 +8,12 @@ const SwaggerUI = dynamic(() => import('swagger-ui-react'), { ssr: false });
 
 // Swagger UI CSS (클라이언트에서만 로드)
 if (typeof window !== 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- CSS는 ESM 동적 import로 로드 불가
   require('swagger-ui-react/swagger-ui.css');
 }
 
 export default function APIDocsPage() {
-  const [spec, setSpec] = useState<any>(null);
+  const [spec, setSpec] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

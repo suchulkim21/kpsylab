@@ -3,11 +3,37 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FileText, ChevronRight } from 'lucide-react';
+import { EMPTY_STATE } from '@/lib/constants/copy';
 
 const MNPS_SESSION_KEY = 'mnps_session_id';
 const MNPS_RESULTS_LIST_KEY = 'mnps_results_list';
 
 type ResultItem = { id: string; completedAt: string | null; totalDScore: number | null };
+
+function readLocalResults(): ResultItem[] {
+  if (typeof window === "undefined") return [];
+  const parseList = (raw: string | null) => {
+    if (!raw) return [];
+    try {
+      const list = JSON.parse(raw) as ResultItem[];
+      return Array.isArray(list) ? list : [];
+    } catch {
+      return [];
+    }
+  };
+  const fromSession = parseList(sessionStorage.getItem(MNPS_RESULTS_LIST_KEY));
+  if (fromSession.length > 0) {
+    try {
+      if (!localStorage.getItem(MNPS_RESULTS_LIST_KEY)) {
+        localStorage.setItem(MNPS_RESULTS_LIST_KEY, JSON.stringify(fromSession));
+      }
+    } catch {
+      // ignore
+    }
+    return fromSession;
+  }
+  return parseList(localStorage.getItem(MNPS_RESULTS_LIST_KEY));
+}
 
 export default function MnpsResultsListPage() {
   const [results, setResults] = useState<ResultItem[]>([]);
@@ -21,17 +47,8 @@ export default function MnpsResultsListPage() {
     setApiError(null);
 
     if (!sessionId) {
-      const localRaw = sessionStorage.getItem(MNPS_RESULTS_LIST_KEY);
-      if (localRaw) {
-        try {
-          const localList = JSON.parse(localRaw) as ResultItem[];
-          if (Array.isArray(localList) && localList.length > 0) {
-            setResults(localList);
-          }
-        } catch {
-          // ignore
-        }
-      }
+      const localList = readLocalResults();
+      if (localList.length > 0) setResults(localList);
       setLoading(false);
       return;
     }
@@ -49,33 +66,19 @@ export default function MnpsResultsListPage() {
         if (data.success && Array.isArray(data.results)) {
           setResults(data.results);
         } else {
-          const localRaw = sessionStorage.getItem(MNPS_RESULTS_LIST_KEY);
-          if (localRaw) {
-            try {
-              const localList = JSON.parse(localRaw) as ResultItem[];
-              if (Array.isArray(localList) && localList.length > 0) {
-                setResults(localList);
-                setApiError(null);
-              }
-            } catch {
-              // ignore
-            }
+          const localList = readLocalResults();
+          if (localList.length > 0) {
+            setResults(localList);
+            setApiError(null);
           }
         }
       })
       .catch(() => {
         setApiError('네트워크 오류로 목록을 불러오지 못했습니다.');
-        const localRaw = sessionStorage.getItem(MNPS_RESULTS_LIST_KEY);
-        if (localRaw) {
-          try {
-            const localList = JSON.parse(localRaw) as ResultItem[];
-            if (Array.isArray(localList) && localList.length > 0) {
-              setResults(localList);
-              setApiError(null);
-            }
-          } catch {
-            // ignore
-          }
+        const localList = readLocalResults();
+        if (localList.length > 0) {
+          setResults(localList);
+          setApiError(null);
         }
       })
       .finally(() => setLoading(false));
@@ -129,9 +132,7 @@ export default function MnpsResultsListPage() {
           <div className="card p-8 text-center">
             <FileText className="w-12 h-12 text-zinc-500 mx-auto mb-4" />
             <p className="text-gray-400 mb-2">
-              {hasSession
-                ? '완료한 테스트 결과가 없습니다.'
-                : '이 기기에서 완료한 테스트 결과가 없습니다.'}
+              {hasSession ? EMPTY_STATE.mnpsNoResults : EMPTY_STATE.mnpsNoResultsLocal}
             </p>
             <p className="text-gray-500 text-sm mb-6">
               MNPS 테스트를 완료하면 여기서 이전 결과를 볼 수 있습니다.
@@ -158,11 +159,6 @@ export default function MnpsResultsListPage() {
                       <p className="text-white font-medium">
                         {formatDate(r.completedAt)}
                       </p>
-                      {r.totalDScore != null && (
-                        <p className="text-xs text-gray-500">
-                          D 점수 {r.totalDScore}
-                        </p>
-                      )}
                     </div>
                   </div>
                   <ChevronRight className="w-5 h-5 text-gray-500 flex-shrink-0" />

@@ -2,6 +2,7 @@
  * MNPS 규준 보정: 분포 분석 + NORM_CONFIG 권장값 API
  * - GET: get_mnps_norm_distribution() RPC 호출 후 권장 Config JSON 반환
  * - Admin 페이지 버튼 클릭 또는 주기적 실행 시 사용. x-admin-secret 헤더 권장.
+ * - 절차: docs/MNPS_NORMING_PROCEDURE.md
  */
 
 import { NextResponse } from 'next/server';

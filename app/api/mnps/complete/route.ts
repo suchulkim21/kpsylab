@@ -152,10 +152,12 @@ export async function POST(request: Request) {
       })
       .filter((a): a is NonNullable<typeof a> => a !== null);
 
-    // 검증 문항(v1~v8) 추출 → 분석 정확도 계산용
+    // 검증 문항: baseId(v1,v3,v4,v7)로 정규화 → 문제 은행 랜덤 출제(v1_v2 등) 대응
+    const getBaseId = (id: string) => id.replace(/_v\d+$/, '') || id;
     const validationScores: Record<string, number> = {};
     for (const r of normalizedResponses) {
-      if (['v1', 'v3', 'v4', 'v7'].includes(r.questionId)) validationScores[r.questionId] = r.score;
+      const baseId = getBaseId(r.questionId);
+      if (['v1', 'v3', 'v4', 'v7'].includes(baseId)) validationScores[baseId] = r.score;
     }
 
     // 5. 패턴 분석용: 문항 표시 순서대로 응답 값 배열 (LSI·지그재그 감지)
@@ -202,7 +204,7 @@ export async function POST(request: Request) {
 
     const assessmentUpdate: Record<string, unknown> = {
       status: 'COMPLETED',
-      total_d_score: result.dTotal,
+      total_d_score: Math.round(result.dTotal),
       completed_at: new Date().toISOString(),
     };
     if (result.rawDTotal != null) (assessmentUpdate as Record<string, number>).raw_d_total = result.rawDTotal;

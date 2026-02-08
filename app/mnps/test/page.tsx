@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MNPS_QUESTIONS, MNPS_OPTIONS, DarkNatureQuestion } from "./questions";
+import { MNPS_OPTIONS, getRandomQuestionSet, getConsistencyBaseId, type DarkNatureQuestion } from "./questions";
 import { scoreDarkNature, buildInterpretation, assembleReport, DarkAnswer } from "@/lib/mnps/darkNatureScoring";
 import InterstitialView from "./InterstitialView";
 
@@ -16,14 +16,19 @@ const MNPS_SESSION_KEY = 'mnps_session_id';
 const MNPS_RESULTS_LIST_KEY = 'mnps_results_list';
 
 function appendResultToList(item: { id: string; completedAt: string; totalDScore: number | null }) {
-  try {
-    const raw = sessionStorage.getItem(MNPS_RESULTS_LIST_KEY);
-    const list: { id: string; completedAt: string; totalDScore: number | null }[] = raw ? JSON.parse(raw) : [];
-    list.unshift(item);
-    sessionStorage.setItem(MNPS_RESULTS_LIST_KEY, JSON.stringify(list));
-  } catch {
-    sessionStorage.setItem(MNPS_RESULTS_LIST_KEY, JSON.stringify([item]));
-  }
+  if (typeof window === "undefined") return;
+  const save = (storage: Storage) => {
+    try {
+      const raw = storage.getItem(MNPS_RESULTS_LIST_KEY);
+      const list: { id: string; completedAt: string; totalDScore: number | null }[] = raw ? JSON.parse(raw) : [];
+      list.unshift(item);
+      storage.setItem(MNPS_RESULTS_LIST_KEY, JSON.stringify(list));
+    } catch {
+      storage.setItem(MNPS_RESULTS_LIST_KEY, JSON.stringify([item]));
+    }
+  };
+  save(sessionStorage);
+  save(localStorage);
 }
 
 function getOrCreateSessionId(): string {
@@ -68,8 +73,15 @@ async function fetchWithRetry(
 
 type ViewMode = "question" | "interstitial";
 
+/** 이 세션에 출제된 42문항 (문제 은행에서 슬롯당 랜덤 1문항). 마운트 시 1회 생성 */
+function useSessionQuestions(): DarkNatureQuestion[] {
+  const [questions, setQuestions] = useState<DarkNatureQuestion[]>(() => getRandomQuestionSet());
+  return questions;
+}
+
 export default function TestPage() {
   const router = useRouter();
+  const sessionQuestions = useSessionQuestions();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [assessmentId, setAssessmentId] = useState<string | null>(null);
@@ -110,11 +122,11 @@ export default function TestPage() {
     createAssessment();
   }, []);
 
-  const current = MNPS_QUESTIONS[currentIndex];
+  const current = sessionQuestions[currentIndex];
 
-  // 답변을 DarkAnswer 형식으로 변환하여 채점 (trait 또는 subFactor가 있는 문항 = 32문항, 시나리오 포함)
+  // 답변을 DarkAnswer 형식으로 변환하여 채점 (이 세션 42문항 중 trait/subFactor 있는 문항)
   const darkAnswers: DarkAnswer[] = useMemo(() => {
-    return MNPS_QUESTIONS.filter(
+    return sessionQuestions.filter(
       (q) => (q.trait || q.subFactor) && answers[q.id] != null,
     ).map((q) => ({
       questionId: q.id,
@@ -122,17 +134,19 @@ export default function TestPage() {
       subFactor: q.subFactor,
       value: q.isReverse ? 6 - answers[q.id] : answers[q.id], // 역문항 처리
     }));
-  }, [answers]);
+  }, [sessionQuestions, answers]);
 
-  // 검증 문항(v1~v8) 점수는 채점 합산에는 넣지 않고, 일관성·방어적 응답 지표로만 사용
+  // 검증 문항: baseId(v1,v3,v4,v7) 기준으로 채점 엔진에 전달 (문제 은행 랜덤 출제 대응)
   const validationScores = useMemo(() => {
-    const v = {
-      v1: answers.v1, v2: answers.v2, v3: answers.v3, v4: answers.v4,
-      v5: answers.v5, v6: answers.v6, v7: answers.v7, v8: answers.v8,
-    };
-    if (v.v1 == null || v.v2 == null || v.v3 == null || v.v4 == null) return undefined;
-    return v as Record<string, number>;
-  }, [answers.v1, answers.v2, answers.v3, answers.v4, answers.v5, answers.v6, answers.v7, answers.v8]);
+    const v: Record<string, number> = {};
+    sessionQuestions.forEach((q) => {
+      if (q.category !== 'validation') return;
+      const baseId = getConsistencyBaseId(q.id);
+      if (answers[q.id] != null) v[baseId] = answers[q.id];
+    });
+    if (v.v1 == null || v.v3 == null || v.v4 == null || v.v7 == null) return undefined;
+    return v;
+  }, [sessionQuestions, answers]);
 
   const result = useMemo(
     () => scoreDarkNature(darkAnswers, { validationScores }),
@@ -171,7 +185,7 @@ export default function TestPage() {
       setViewMode("interstitial");
       return;
     }
-    if (currentIndex < MNPS_QUESTIONS.length - 1) {
+    if (currentIndex < sessionQuestions.length - 1) {
       setCurrentIndex((prev) => prev + 1);
       return;
     }
@@ -224,8 +238,10 @@ export default function TestPage() {
         badTeaserFull: report.badTeaser,
       };
       sessionStorage.setItem('darkNatureResult', JSON.stringify(resultData));
+      localStorage.setItem('darkNatureResult', JSON.stringify(resultData));
       const localId = `local-${Date.now()}`;
       sessionStorage.setItem(`mnps_result_local_${localId}`, JSON.stringify(resultData));
+      localStorage.setItem(`mnps_result_local_${localId}`, JSON.stringify(resultData));
       appendResultToList({
         id: localId,
         completedAt: new Date().toISOString(),
@@ -274,7 +290,7 @@ export default function TestPage() {
             원활한 분석을 위해 테스트 시작 후 24시간 이내에 완료해 주세요.
           </p>
           <p className="text-xs text-gray-500 italic max-w-md mx-auto mt-3">
-            이 결과는 정답이 아닌, 참고할 수 있는 정교한 시스템 도면입니다.
+            이 결과는 정답이 아닌, 참고할 수 있는 정교한 한 장의 지도입니다.
           </p>
         </header>
 
@@ -303,7 +319,7 @@ export default function TestPage() {
             >
               <div className="flex items-center justify-between text-sm text-gray-400">
                 <span>
-                  문항 {currentIndex + 1} / {MNPS_QUESTIONS.length}
+                  문항 {currentIndex + 1} / {sessionQuestions.length}
                 </span>
                 <span className="text-xs px-2 py-1 rounded bg-zinc-800 text-cyan-300">
                   {getCategoryLabel(current)}

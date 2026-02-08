@@ -49,10 +49,10 @@ export function applyRetestAndPropagate(context: RetestContext): AuditOutput {
     : { typeChanged: false, prevType: "", newType: context.newResult.type };
 
   // 전역 프로필 갱신
-  updateM1Global(context.newResult, {
-    isRetest: context.isRetest,
-    previousType: context.previousResult?.type,
-  });
+  updateM1Global(
+    { dominantType: context.newResult.type, vector: context.newResult.vector },
+    { isRetest: context.isRetest, previousType: context.previousResult?.type }
+  );
 
   // 진화 내러티브
   const evolutionNarrative = buildEvolutionNarrative(delta, context);

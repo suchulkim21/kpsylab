@@ -9,6 +9,13 @@ export type AnalysisVector = {
 
 export type StrategyType = 'Alignment' | 'Expansion' | 'Correction' | 'Pivot';
 
+/** 전략 판별 임계값 (alignmentScore 0~100). 문서/튜닝 시 한 곳만 수정 */
+export const STRATEGY_THRESHOLDS = {
+    alignmentMin: 80,
+    expansionMin: 60,
+    correctionMin: 40
+} as const;
+
 // GapDetail provides additional insight for UI
 export type GapDetail = {
     gapScore: number; // total gap (0-400)
@@ -48,15 +55,16 @@ export function calculateGapAnalysis(ideal: AnalysisVector, potential: AnalysisV
     const alignmentScore = Math.max(0, Math.round(((maxGap - totalGap) / maxGap) * 100));
 
     // 4. Determine Strategy
+    const { alignmentMin, expansionMin, correctionMin } = STRATEGY_THRESHOLDS;
     let strategy: StrategyType = 'Alignment';
-    if (alignmentScore >= 80) {
-        strategy = 'Alignment'; // 일치: 가속화
-    } else if (alignmentScore >= 60) {
-        strategy = 'Expansion'; // 확장: 잠재력 강화
-    } else if (alignmentScore >= 40) {
-        strategy = 'Correction'; // 보정: 방향 수정
+    if (alignmentScore >= alignmentMin) {
+        strategy = 'Alignment';
+    } else if (alignmentScore >= expansionMin) {
+        strategy = 'Expansion';
+    } else if (alignmentScore >= correctionMin) {
+        strategy = 'Correction';
     } else {
-        strategy = 'Pivot'; // 전환: 전면 재검토
+        strategy = 'Pivot';
     }
 
     // 5. Identify Key Dimensions

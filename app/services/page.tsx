@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Brain, Zap, BarChart3, ArrowRight, TestTube2, Sparkles } from "lucide-react";
-import { MIND_ARCHITECT_ENABLED } from "@/lib/constants/featureFlags";
+import { MIND_ARCHITECT_ENABLED, MNPS_ENABLED } from "@/lib/constants/featureFlags";
+import { PHILOSOPHY_PREMISE, SCIENCE_DISCLAIMER } from "@/lib/constants/copy";
 
 export default function ServicesPage() {
   return (
@@ -12,8 +13,11 @@ export default function ServicesPage() {
       </div>
 
       <main className="page-container relative z-10 py-24 md:py-32">
-        {/* Header */}
+        {/* 철학 선행 + 질서(여정) */}
         <header className="text-center mb-20 space-y-4">
+          <p className="text-emerald-400/90 font-medium text-base md:text-lg max-w-xl mx-auto">
+            {PHILOSOPHY_PREMISE.weDoNotDefine}
+          </p>
           <h1 className="text-5xl md:text-7xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500">
             서비스 소개
           </h1>
@@ -21,15 +25,14 @@ export default function ServicesPage() {
             통합 심리 분석 아키텍처
           </p>
           <p className="text-gray-300 text-base max-w-2xl mx-auto mt-6">
-            당신의 내면 데이터를 구조적으로 재구성하고,
-            <br />
-            경로 탐색을 위한 정교한 이정표를 얻으세요.
+            MNPS와 마인드 아키텍터는 한 연구소 아래, <strong className="text-white">자기 탐구의 여정</strong>을 이루는 두 개의 출발점입니다. 어둠 속 패턴을 읽는 것과, 성과를 가로막는 간섭과 잠재력을 읽는 것은 같은 당신의 내면을 다른 맥락으로 그리는 일입니다.
           </p>
         </header>
 
         {/* 서비스 목록 */}
         <div className="space-y-32 mb-32">
-          {/* MNPS 서비스 */}
+          {/* MNPS 서비스 (MNPS_ENABLED 시에만 노출) */}
+          {MNPS_ENABLED && (
           <section className="space-y-8">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center">
@@ -48,16 +51,13 @@ export default function ServicesPage() {
               <div className="space-y-6">
                 <div>
                   <h3 className="text-2xl font-bold mb-4 text-blue-400">
-                    시스템 공학적 관점으로 풀어낸 내면의 본성 지도
+                    다크 테트라드: 맥락으로 읽는 패턴, 한 장의 지도
                   </h3>
                   <p className="text-gray-300 leading-relaxed text-lg">
-                    MNPS(Multidimensional Nature Profiling System)는 다크 테트라드(Dark Tetrad)를
-                    독자적 논리 모델(Proprietary Logic Model)로 재해석하여, 당신의 내면 데이터를
-                    다차원 큐레이션으로 탐색합니다.
+                    MNPS는 검증된 다크 테트라드(Dark Tetrad)·D요인 이론을 바탕으로, 당신의 응답이 그리는 무늬를 <strong className="text-white">한 시점의 맥락</strong>으로 펼쳐 보여줍니다. 그 맥락에서 관찰되는 패턴과 관계를 한 장의 지도로 투영합니다.
                   </p>
-                  <p className="text-gray-400 leading-relaxed mt-4">
-                    위로나 공감 대신, <strong className="text-white">시스템적 논리 구조와 데이터 패턴</strong>을 통해
-                    당신의 복잡함을 질서 있게 배열합니다.
+                  <p className="text-gray-400 leading-relaxed mt-4 text-sm">
+                    {SCIENCE_DISCLAIMER.unified}
                   </p>
                 </div>
 
@@ -67,18 +67,18 @@ export default function ServicesPage() {
                     <li className="flex items-start gap-3">
                       <Brain className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
                       <div>
-                        <strong className="text-white">시스템적 논리 구조:</strong>
+                        <strong className="text-white">검증된 심리학 기반 구조:</strong>
                         <span className="text-gray-400 ml-2">
-                          현대 심리 가설의 구조적 재해석을 바탕으로 설계된 독자적 분석 모델
+                          검증된 심리 이론을 과학적 방법으로 구조화한 분석 모델
                         </span>
                       </div>
                     </li>
                     <li className="flex items-start gap-3">
                       <BarChart3 className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
                       <div>
-                        <strong className="text-white">다차원 데이터 큐레이션:</strong>
+                        <strong className="text-white">다차원 패턴 큐레이션:</strong>
                         <span className="text-gray-400 ml-2">
-                          120문항 하이브리드 질문으로 4가지 특성 패턴 발견 및 종합 재구성
+                          42문항 구조화 질문으로 4가지 특성 패턴 발견 및 맥락적 재구성
                         </span>
                       </div>
                     </li>
@@ -124,7 +124,7 @@ export default function ServicesPage() {
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="text-blue-400 mt-1">✓</span>
-                      <span>데이터 기반의 객관적인 자기 이해를 원하는 분</span>
+                      <span>맥락 기반의 자기 이해를 깊이고 싶은 분</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="text-blue-400 mt-1">✓</span>
@@ -132,13 +132,13 @@ export default function ServicesPage() {
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="text-blue-400 mt-1">✓</span>
-                      <span>내면 데이터의 구조적 재구성을 통해 경로를 탐색하고 싶은 분</span>
+                      <span>내면의 배치를 통해 경로를 탐색하고 싶은 분</span>
                     </li>
                   </ul>
                 </div>
 
                 <Link
-                  href="/mnps"
+                  href="/mnps/test"
                   className="group flex items-center justify-between rounded-xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 hover:border-blue-500/50 p-6 transition-all duration-300"
                 >
                   <div>
@@ -150,6 +150,7 @@ export default function ServicesPage() {
               </div>
             </div>
           </section>
+          )}
 
           {/* 마인드 아키텍터 서비스 (MIND_ARCHITECT_ENABLED 시에만 노출) */}
           {MIND_ARCHITECT_ENABLED && (
@@ -169,19 +170,17 @@ export default function ServicesPage() {
               <div className="grid md:grid-cols-2 gap-8">
                 {/* 설명 */}
                 <div className="space-y-6">
-                  <div>
-                    <h3 className="text-2xl font-bold mb-4 text-purple-400">
-                      통합 심리 분석 아키텍처: 경로 탐색과 최적화
-                    </h3>
-                    <p className="text-gray-300 leading-relaxed text-lg">
-                      마인드 아키텍터는 3가지 모듈을 통해 시스템 병목·현재 아키텍처·타겟 컨피그레이션을
-                      데이터 큐레이션으로 재구성하고, 시스템이 제안하는 전략적 방향성을 제시합니다.
-                    </p>
-                    <p className="text-gray-400 leading-relaxed mt-4">
-                      과거와 현재를 재구성하고, <strong className="text-white">미래 경로 탐색을 위한 이정표</strong>를
-                      제공합니다.
-                    </p>
-                  </div>
+                <div>
+                  <h3 className="text-2xl font-bold mb-4 text-purple-400">
+                    잠재력 = 실행력 − 방해 요인: 맥락으로 읽는 간섭과 잠재력
+                  </h3>
+                  <p className="text-gray-300 leading-relaxed text-lg">
+                    마인드 아키텍터는 성과를 가로막는 간섭(Interference)과 현재 심리 아키텍처를 <strong className="text-white">맥락</strong>으로 삼아, 이상향과의 격차를 한 장의 지도로 그립니다. 3단계 모듈은 한 번의 진단이 아니라, 당신이 서 있는 지점과 나아갈 방향을 맥락적으로 잇는 이정표입니다.
+                  </p>
+                  <p className="text-gray-400 leading-relaxed mt-4">
+                    결과는 고정된 정답이 아니라, <strong className="text-white">현재 맥락에서의 전략적 방향 제안</strong>이며 참고용으로 활용해 주세요.
+                  </p>
+                </div>
 
                   {/* 3가지 모듈 */}
                   <div className="space-y-4">
@@ -294,15 +293,17 @@ export default function ServicesPage() {
 
         {/* 하단 CTA */}
         <div className="text-center space-y-6 pt-16 border-t border-zinc-800">
-          <h3 className="text-2xl font-bold text-white">원하는 서비스를 선택해 시작하세요</h3>
-          <p className="text-gray-400">각 서비스는 독립적으로 이용 가능하며, 함께 이용 시 더욱 깊이 있는 분석을 받을 수 있습니다.</p>
+          <h3 className="text-2xl font-bold text-white">자기 탐구의 여정: 출발점을 선택하세요</h3>
+          <p className="text-gray-400">두 도구는 같은 연구소 아래 서로 다른 맥락을 그립니다. 하나만 써도 되고, 둘 다 쓸 때는 당신의 내면을 여러 각도에서 연결해 읽을 수 있습니다.</p>
           <div className="flex gap-4 justify-center flex-wrap">
-            <Link
-              href="/mnps"
-              className="btn btn-primary px-8"
-            >
-              MNPS 시작하기
-            </Link>
+            {MNPS_ENABLED && (
+              <Link
+                href="/mnps/test"
+                className="btn btn-primary px-8"
+              >
+                MNPS 시작하기
+              </Link>
+            )}
             {MIND_ARCHITECT_ENABLED && (
               <Link
                 href="/growth-roadmap"
@@ -310,6 +311,9 @@ export default function ServicesPage() {
               >
                 마인드 아키텍터 시작하기
               </Link>
+            )}
+            {!MNPS_ENABLED && !MIND_ARCHITECT_ENABLED && (
+              <p className="text-gray-400 text-sm">테스트 서비스는 준비 중입니다.</p>
             )}
           </div>
         </div>

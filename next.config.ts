@@ -87,7 +87,7 @@ let finalConfig = nextConfig;
 
 try {
   // require를 사용하여 런타임에만 평가 (정적 import와 달리 패키지가 없어도 에러 없음)
-  // @ts-ignore - 동적 require는 타입 체크를 우회
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- 선택적 의존성
   const sentryModule = require('@sentry/nextjs');
   
   if (process.env.NEXT_PUBLIC_SENTRY_DSN && sentryModule.withSentryConfig) {

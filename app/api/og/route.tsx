@@ -108,6 +108,14 @@ export async function GET(request: Request) {
     const topN = percentile != null ? (100 - percentile).toFixed(1) : null;
     const subText = topN != null ? `상위 ${topN}%의 위험한 본성` : 'MNPS 테스트';
 
+    const traitLabels: { key: keyof TraitScores; label: string }[] = [
+      { key: 'machiavellianism', label: '마키아벨리즘' },
+      { key: 'narcissism', label: '나르시시즘' },
+      { key: 'psychopathy', label: '사이코패시' },
+      { key: 'sadism', label: '가학성' },
+    ];
+    const traitValues = traitLabels.map(({ key }) => Math.round(Number(traitScores[key]) ?? 0));
+
     return new ImageResponse(
       (
         <div
@@ -156,6 +164,32 @@ export async function GET(request: Request) {
               }}
             >
               {subText}
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                gap: 24,
+                marginTop: 16,
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+                maxWidth: 900,
+              }}
+            >
+              {traitLabels.map(({ label }, i) => (
+                <div
+                  key={label}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 4,
+                  }}
+                >
+                  <span style={{ fontSize: 14, color: '#a3a3a3', fontWeight: 600 }}>{label}</span>
+                  <span style={{ fontSize: 20, color: '#fafafa', fontWeight: 700 }}>{traitValues[i] ?? 0}</span>
+                </div>
+              ))}
             </div>
           </div>
           <div

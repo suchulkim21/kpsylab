@@ -10,6 +10,12 @@ import { MODULE1_TEMPLATES, MNPS_TEMPLATES } from "@/lib/constants/report-templa
 import { getGrowthStrategy } from "@/app/growth-roadmap/lib/module1/analysisEngine";
 import { calculateGapAnalysis } from "@/app/growth-roadmap/lib/analysis";
 import { generateModule3Content } from "@/app/growth-roadmap/lib/content/module3";
+import {
+  generateIntegratedReportContent,
+  type M1Input,
+  type M2Input,
+  type M3Input,
+} from "@/app/growth-roadmap/lib/content/finalIntegratedReport";
 import { getConflictInsight } from "@/lib/services/conflictInsight";
 import { generatePsychologicalMapLog } from "@/lib/services/psychologicalMap";
 
@@ -131,7 +137,7 @@ export function adaptModule1(
       title: "실천 솔루션",
       todos: template.actionPlan,
     },
-    conflictInsight,
+    conflictInsight: conflictInsight ?? undefined,
     syncPercentage,
   };
 }
@@ -241,11 +247,13 @@ export function adaptModule3(data: Module3Input): UnifiedReportData {
   const analysis = calculateGapAnalysis(ideal, potential);
   const strategy = data.strategy ?? analysis.strategy;
   const dominantGap = data.dominantGap ?? analysis.dimensions.dominantGap;
+  const strongestPotential = analysis.dimensions.strongestPotential;
   const detailText = generateModule3Content({
     ideal,
     potential,
     strategy,
     dominantGap,
+    strongestPotential,
   });
   const chartData = [
     { label: "안정성", value: Math.round((ideal.stability + potential.stability) / 2) },
@@ -253,10 +261,16 @@ export function adaptModule3(data: Module3Input): UnifiedReportData {
     { label: "관계성", value: Math.round((ideal.relation + potential.relation) / 2) },
     { label: "자율성", value: Math.round((ideal.autonomy + potential.autonomy) / 2) },
   ];
+  // 이상향에만 집중: 요약·제언을 이상향 기준으로
+  const idealEntries = Object.entries(ideal) as [keyof typeof ideal, number][];
+  const topDim = idealEntries.sort(([, a], [, b]) => b - a)[0]?.[0];
+  const idealDimLabel = GAP_DIMENSIONS[topDim ?? "growth"] ?? "이상향";
+  const potentialDimLabel = GAP_DIMENSIONS[strongestPotential] ?? strongestPotential;
   const adviceTodos = [
-    `Alignment 점수 ${analysis.alignmentScore}% – ${analysis.causeExplanation || "내면 벡터 간 불일치 집중 확인"}`,
-    `집중 조정 차원: ${GAP_DIMENSIONS[dominantGap] ?? dominantGap}`,
-    `전략 제언: ${strategy}`,
+    `당신의 이상향(${idealDimLabel} 중시)에 맞춘 전략: ${strategy}`,
+    `현재 잠재력이 높은 영역: ${potentialDimLabel} – 이상향 달성 시 이 강점 활용`,
+    `격차가 큰 영역: ${GAP_DIMENSIONS[dominantGap] ?? dominantGap} – ${analysis.causeExplanation || "이상향 달성 시 집중 조정"}`,
+    `Alignment ${analysis.alignmentScore}% – 이상향과의 정렬도`,
   ];
 
   const alignScore = analysis.alignmentScore;
@@ -264,16 +278,51 @@ export function adaptModule3(data: Module3Input): UnifiedReportData {
 
   return {
     theme: "purple",
-    moduleTitle: "타겟 컨피그레이션 (모듈 3)",
-    coreTypeTitle: `${strategy} 전략`,
+    moduleTitle: "이상향과 잠재력 (모듈 3)",
+    coreTypeTitle: `이상향 중심 · ${strategy} 전략`,
     totalScore: alignScore,
-    rarityBadge: `상위 ${percentile}% 벡터 정렬 유형`,
-    summary: `벡터 격차 ${Math.round(analysis.totalGap)}점 / Alignment ${analysis.alignmentScore}%`,
+    rarityBadge: `이상향 대비 정렬 ${alignScore}%`,
+    summary: `당신의 이상향(${idealDimLabel})에 맞춘 분석입니다. 격차 ${Math.round(analysis.totalGap)}점, 정렬 ${analysis.alignmentScore}%.`,
     detailText,
     chartData,
     advice: {
-      title: "전략적 제언",
+      title: "이상향에 맞춘 제언",
       todos: adviceTodos,
+    },
+  };
+}
+
+/** 최종 통합 리포트: 질의 1·2·3 종합, 이상향 달성에 도움이 되는 조언 */
+export function adaptFinalReport(m1: M1Input | null, m2: M2Input | null, m3: Module3Input): UnifiedReportData {
+  const ideal = m3.ideal ?? { stability: 0, growth: 0, relation: 0, autonomy: 0 };
+  const potential = m3.potential ?? { stability: 0, growth: 0, relation: 0, autonomy: 0 };
+  const analysis = calculateGapAnalysis(ideal, potential);
+  const m3WithStrategy: M3Input = {
+    ideal,
+    potential,
+    strategy: m3.strategy ?? analysis.strategy,
+    dominantGap: m3.dominantGap ?? analysis.dimensions.dominantGap,
+    strongestPotential: analysis.dimensions.strongestPotential,
+  };
+  const integrated = generateIntegratedReportContent(m1, m2, m3WithStrategy);
+  const chartData = [
+    { label: "안정성", value: Math.round((ideal.stability + potential.stability) / 2) },
+    { label: "성장성", value: Math.round((ideal.growth + potential.growth) / 2) },
+    { label: "관계성", value: Math.round((ideal.relation + potential.relation) / 2) },
+    { label: "자율성", value: Math.round((ideal.autonomy + potential.autonomy) / 2) },
+  ];
+  return {
+    theme: "purple",
+    moduleTitle: "마인드 아키텍터 최종 리포트",
+    coreTypeTitle: integrated.coreTypeTitle,
+    totalScore: analysis.alignmentScore,
+    rarityBadge: `이상향 대비 정렬 ${analysis.alignmentScore}%`,
+    summary: integrated.summary,
+    detailText: integrated.detailText,
+    chartData,
+    advice: {
+      title: "이상향 달성을 위한 종합 조언",
+      todos: integrated.adviceTodos,
     },
   };
 }

@@ -251,9 +251,11 @@ export function updateM2Global(data: {
   });
   profile.master_vector = latentToMasterVector(synthesizeMasterVector(contributions));
   const m1 = profile.m1;
-  const m1Vec = m1 ? Object.fromEntries(Object.entries(m1.vector).map(([k, v]) => [k, Number(v) || 0])) as Record<string, number> : undefined;
+  const m1Vec = m1?.vector
+    ? (Object.fromEntries(Object.entries(m1.vector).map(([k, v]) => [k, Number(v) || 0])) as Record<string, number>)
+    : undefined;
   profile.consistency_score = computeConsistencyScore(
-    m1 ? { dominantType: m1.dominantType, vector: m1Vec } : undefined,
+    m1 && m1Vec ? { dominantType: m1.dominantType, vector: m1Vec } : undefined,
     { typeCode: data.typeCode, scores: data.scores }
   );
   save(profile);

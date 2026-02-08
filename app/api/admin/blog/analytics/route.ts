@@ -82,7 +82,7 @@ export async function GET(request: Request) {
     const postIds = (posts || []).map(p => p.id);
 
     // 조회수 정보 조회
-    let viewCounts: Record<number, number> = {};
+    const viewCounts: Record<number, number> = {};
     if (postIds.length > 0) {
       try {
         const { data: views } = await supabase

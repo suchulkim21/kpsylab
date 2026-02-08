@@ -60,7 +60,7 @@ export async function GET(request: Request) {
 
       // 조회수 정보 가져오기
       const postIds = (posts || []).map(p => p.id);
-      let viewCounts: Record<number, number> = {};
+      const viewCounts: Record<number, number> = {};
       
       if (postIds.length > 0) {
         try {
@@ -114,7 +114,7 @@ export async function GET(request: Request) {
         .select('id, title, date, tags');
 
       const postIds = (posts || []).map(p => p.id);
-      let viewCounts: Record<number, number> = {};
+      const viewCounts: Record<number, number> = {};
       
       if (postIds.length > 0) {
         try {

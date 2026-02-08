@@ -41,7 +41,7 @@ function parseMarkdownFile(filePath: string): BlogPostData | null {
     let tags = '';
     let image = '';
     let contentStart = false;
-    let contentLines: string[] = [];
+    const contentLines: string[] = [];
     
     for (const line of lines) {
       if (line.startsWith('## 제목')) {
@@ -77,17 +77,17 @@ function parseMarkdownFile(filePath: string): BlogPostData | null {
 
 async function createBlogPost(data: BlogPostData) {
   try {
-    const { error } = await supabase
-      .from('blog_posts')
-      .insert({
+    const row: Record<string, unknown> = {
         title: data.title,
         author: data.author,
         date: data.date,
         tags: data.tags.split(',').map(t => t.trim()),
-        image: data.image,
+        image: data.image || null,
         content: data.content,
-        published: true,
-      });
+      };
+    const { error } = await supabase
+      .from('blog_posts')
+      .insert(row);
 
     if (error) {
       console.error('❌ 포스트 저장 실패:', error);

@@ -192,7 +192,7 @@ export default function BoardPage() {
           </div>
         ) : posts.length === 0 ? (
           <div className="text-center py-20 card">
-            <p className="text-gray-400 text-lg">아직 작성된 글이 없습니다.</p>
+            <p className="text-gray-400 text-lg">아직 이 맥락에서 작성된 글이 없습니다.</p>
             <Link
               href="/board/write"
               className="btn btn-primary mt-4"

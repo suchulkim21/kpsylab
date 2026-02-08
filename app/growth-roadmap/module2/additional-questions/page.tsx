@@ -191,7 +191,7 @@ export default function AdditionalQuestionsPage() {
 
                 {/* Helper Text */}
                 <div className="mt-8 pt-6 border-t border-gray-800">
-                    <p className="text-gray-500 text-sm text-center">
+                    <p className="text-gray-400 text-sm text-center">
                         💡 <span className="text-gray-400">솔직한 답변이 더 정확한 분석 결과를 제공합니다.</span>
                     </p>
                 </div>

@@ -64,13 +64,13 @@ export default function IntermediateResult({ phase, result, onNext }: Intermedia
                     <span>분석 지점 도달</span>
                 </div>
                 <h2 className="text-3xl md:text-4xl font-bold mb-2">{titles[phase]}</h2>
-                <p className="text-sm text-gray-500 font-mono tracking-widest">{subtitles[phase]}</p>
+                <p className="text-sm text-gray-400 font-mono tracking-widest">{subtitles[phase]}</p>
             </div>
 
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-gray-900/50 border border-gray-700 p-6 md:p-8 rounded-2xl mb-6 relative overflow-hidden space-y-6"
+                className="glass-panel p-6 md:p-8 rounded-xl mb-6 relative overflow-hidden space-y-6"
             >
                 <div className="absolute top-0 right-0 p-4 opacity-5">
                     <CheckCircle size={120} />

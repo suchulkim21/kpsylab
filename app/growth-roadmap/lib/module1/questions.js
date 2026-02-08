@@ -240,3 +240,7 @@ export const questions = [
         ]
     }
 ];
+
+/** 정확도 향상: 분석에 사용할 12문항만 선별. A=성취지향 B=내면결핍 C=감정회피 D=현실도피 변별력 높은 문항 */
+const CURATED_12_INDICES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+export const questionsMin12 = CURATED_12_INDICES.map((i) => questions[i]);

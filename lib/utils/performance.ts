@@ -77,6 +77,6 @@ export function preloadResource(href: string, as: string): void {
 export async function lazyLoad<T>(
   importFn: () => Promise<{ default: T }>
 ): Promise<T> {
-  const module = await importFn();
-  return module.default;
+  const loaded = await importFn();
+  return loaded.default;
 }

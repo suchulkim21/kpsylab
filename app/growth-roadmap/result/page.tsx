@@ -11,6 +11,7 @@ import {
     ResponsiveContainer
 } from "recharts";
 import { calculateGapAnalysis, GapAnalysisResult } from "@growth-roadmap/lib/analysis";
+import { getDimName, getResultVariantIndex, getStrategyDetail, getStrategyActions } from "@growth-roadmap/lib/content/resultContent";
 import GrowthAdvice from "./GrowthAdvice";
 
 // Simple PDF export using browser APIs (placeholder implementation)
@@ -60,23 +61,15 @@ export default function ResultPage() {
                 result.strategy === 'Correction' ? '#f97316' : // Orange
                     '#ef4444'; // Red
 
-    // Helper to get Korean dimension name
-    const dimName = (key: string) => {
-        switch (key) {
-            case 'stability': return '안정';
-            case 'growth': return '성장';
-            case 'relation': return '관계';
-            case 'autonomy': return '자율';
-            default: return key;
-        }
-    };
+    const dimName = getDimName;
+    const variantIndex = getResultVariantIndex(result);
 
     return (
         <div id="result-page" className="min-h-screen bg-black text-white p-6 animate-fade-in-up relative overflow-hidden font-sans">
             <div className="max-w-4xl mx-auto pt-10 pb-20 relative z-10">
                 {/* Header */}
                 <header className="mb-10 text-center">
-                    <span className="text-gray-500 font-mono text-xs tracking-widest border border-gray-800 bg-gray-900/50 px-3 py-1 rounded-full mb-4 inline-block">
+                    <span className="text-gray-400 font-mono text-xs tracking-widest border border-gray-800 bg-gray-900/50 px-3 py-1 rounded-full mb-4 inline-block">
                         분석 완료
                     </span>
                     <h1 className="text-3xl md:text-4xl font-bold mb-3 text-gray-100">
@@ -102,7 +95,7 @@ export default function ResultPage() {
                 </div>
 
                 {/* Tab Navigation */}
-                <nav className="flex justify-center space-x-4 mb-8">
+                <nav className="flex flex-wrap justify-center gap-2 mb-8">
                     <button
                         className={`px-4 py-2 rounded ${activeTab === 'insight' ? 'bg-white text-black' : 'bg-gray-800 text-gray-300'}`}
                         onClick={() => setActiveTab('insight')}
@@ -111,6 +104,10 @@ export default function ResultPage() {
                         className={`px-4 py-2 rounded ${activeTab === 'strategy' ? 'bg-white text-black' : 'bg-gray-800 text-gray-300'}`}
                         onClick={() => setActiveTab('strategy')}
                     >전략</button>
+                    <button
+                        className={`px-4 py-2 rounded ${activeTab === 'action' ? 'bg-white text-black' : 'bg-gray-800 text-gray-300'}`}
+                        onClick={() => setActiveTab('action')}
+                    >실행</button>
                     <button
                         className={`px-4 py-2 rounded ${activeTab === 'advice' ? 'bg-white text-black' : 'bg-gray-800 text-gray-300'}`}
                         onClick={() => setActiveTab('advice')}
@@ -125,18 +122,28 @@ export default function ResultPage() {
                             <h3 className="text-lg font-bold mb-2 flex items-center gap-2">
                                 <span>⚡</span> 핵심 통찰
                             </h3>
-                            <p className="text-gray-300 mb-2">
-                                당신은 <strong>{dimName(result.dimensions.dominantGap)}</strong> 영역에서 가장 큰 괴리감을 느끼고 있습니다.
-                                이는 현재 행동 패턴이 목표와 크게 어긋나 있음을 의미합니다. 구체적으로는 해당 차원의 점수가 평균보다 20~30점 낮게 나타나며, 이는
-                                <em>잠재력 발휘에 제약을 주는 주요 요인</em>으로 작용합니다. 이를 극복하기 위해서는 일상적인 습관을 재점검하고, 해당 영역에 집중적인 훈련을
-                                적용하는 것이 필요합니다. 예를 들어, <strong>안정성</strong>이 낮다면 일정 관리와 루틴 확립을, <strong>성장성</strong>이 낮다면 새로운 도전 과제를 설정하는 것이 도움이 됩니다.
-                            </p>
-                            <p className="text-gray-300">
-                                반면, <strong>{dimName(result.dimensions.strongestPotential)}</strong> 영역은 이미 충분한 잠재력을 보유하고 있습니다.
-                                이 영역은 현재 점수가 평균보다 15~25점 높게 나타나며, 자연스럽게 강점으로 작용하고 있습니다. 해당 강점을 활용해 다른 차원의
-                                개선을 촉진할 수 있습니다. 예를 들어, <strong>관계성</strong>이 강점이라면 팀 협업이나 네트워킹을 통해 성장성 향상을 도모하는 전략을
-                                설계할 수 있습니다.
-                            </p>
+                            {result.strategy === 'Alignment' ? (
+                                <>
+                                    <p className="text-gray-300 mb-3">
+                                        이상향과 잠재력의 정합도가 약 {result.alignmentScore}%로 <strong>높은 편</strong>입니다. 원하는 방향과 지금 할 수 있는 것이 잘 맞는 상태이므로, 큰 괴리를 메우기보다 <strong>현재 궤도의 유지와 소폭 가속</strong>에 초점을 두는 것이 좋습니다.
+                                    </p>
+                                    <p className="text-gray-300 mb-2">
+                                        네 가지 차원 중 상대적으로 더 신경 쓸 만한 영역은 <strong>{dimName(result.dimensions.dominantGap)}</strong>이고, 현재 강점으로 활용할 수 있는 영역은 <strong>{dimName(result.dimensions.strongestPotential)}</strong>입니다. 강점을 유지하면서, 필요하다면 {dimName(result.dimensions.dominantGap)} 영역에 작은 습관 하나만 추가하는 식으로 균형을 유지하십시오.
+                                    </p>
+                                </>
+                            ) : (
+                                <>
+                                    <p className="text-gray-300 mb-3">
+                                        {result.causeExplanation}
+                                    </p>
+                                    <p className="text-gray-300 mb-2">
+                                        <strong>{dimName(result.dimensions.dominantGap)}</strong> 영역의 괴리를 줄이기 위해 일상 습관 재점검과 해당 영역에 맞는 훈련이 우선입니다. <strong>{dimName(result.dimensions.strongestPotential)}</strong> 영역은 현재 강점이므로, 이 영역을 활용해 다른 차원의 개선을 끌어올리는 전략을 추천합니다.
+                                    </p>
+                                    <p className="text-gray-300 text-sm text-gray-400">
+                                        이상향과 잠재력의 정합도는 약 {result.alignmentScore}%로, 현재 분석 기준 <strong>{result.strategy === 'Expansion' ? '확장' : result.strategy === 'Correction' ? '보정' : '전환'}</strong> 전략 구간에 해당합니다.
+                                    </p>
+                                </>
+                            )}
                         </div>
                     )}
 
@@ -144,8 +151,8 @@ export default function ResultPage() {
                     {activeTab === 'strategy' && (
                         <div className="glass-panel p-6 rounded-xl">
                             <h3 className="text-lg font-bold mb-2">전략 요약</h3>
-                            <p className="text-gray-300 overflow-y-auto max-h-[600px]">
-                                전략 요약: {strategyMap[result.strategy]} 전략은 현재 상황에 가장 적합한 방향을 제시합니다. 이 전략은 사용자의 현재 상태와 목표 사이의 격차를 메우기 위해 설계되었습니다. 첫 번째 단계는 현재 상황을 정확히 파악하는 것입니다. 데이터 분석 결과를 기반으로 강점과 약점을 식별하고, 각각에 대한 구체적인 사례와 개선 방안을 제시합니다. 두 번째 단계는 목표 설정이며, 현실적인 단기 목표와 장기 비전을 구분하여 명확히 정의합니다. 세 번째 단계는 실행 계획으로, 구체적인 행동 항목, 일정, 필요한 자원 및 책임자를 명시합니다. 네 번째 단계는 모니터링 및 피드백으로, 진행 상황을 정기적으로 점검하고 필요한 조정을 수행합니다. 다섯 번째 단계는 지속 가능한 성장 전략으로, 장기적인 유지 관리와 개선 방안을 포함합니다. 이러한 전략적 접근은 사용자가 목표를 달성하고 지속 가능한 성장과 변화를 이끌어내는 데 도움을 줍니다. 각 단계마다 상세한 가이드와 실천 팁을 제공하므로, 사용자는 자신에게 맞는 전략을 선택하고 실행할 수 있습니다. 또한, 전략 실행 과정에서 발생할 수 있는 위험 요소와 대응 방안을 사전에 제시하여 성공 확률을 높입니다.
+                            <p className="text-gray-300 overflow-y-auto max-h-[600px] whitespace-pre-line">
+                                {getStrategyDetail(result.strategy, variantIndex).replace(/\*\*(.*?)\*\*/g, '$1')}
                             </p>
                         </div>
                     )}
@@ -155,7 +162,7 @@ export default function ResultPage() {
                         <div className="glass-panel p-6 rounded-xl">
                             <h3 className="text-lg font-bold mb-2">실행 권고</h3>
                             <ul className="list-disc list-inside space-y-2 text-gray-300">
-                                {['타협 불가한 원칙을 재정의하십시오.', '지금 즉시 한계를 시험하십시오.', '연결을 끊고 본질에 집중하십시오.'].map((action, i) => (
+                                {getStrategyActions(result.strategy, variantIndex).map((action, i) => (
                                     <li key={i}>{action}</li>
                                 ))}
                             </ul>

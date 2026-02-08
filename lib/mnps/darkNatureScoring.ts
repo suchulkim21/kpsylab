@@ -114,6 +114,7 @@ const SUBFACTOR_WEIGHTS = D_SCORE_CONFIG.subFactorWeights;
  *    - dTotalCritical → raw_d_total.p90 (상위 10% 근처). 예: Math.round(result.raw_d_total.p90)
  *    - dTotalHigh    → raw_d_total.p80 (상위 20%). 예: Math.round(result.raw_d_total.p80)
  * 3) 적용: 값은 0~100으로 clamp 후 정수로 반올림. 샘플 수(n)가 10건 미만이면 보정 보류 권장.
+ * 상세 절차: apps/portal/docs/MNPS_NORMING_PROCEDURE.md
  */
 export const NORM_CONFIG = {
   /** high 구간 하한 (0~100). 질문이 매운맛으로 조정되어 고득점이 어려워짐 → 70으로 하향 */
@@ -142,19 +143,26 @@ function normalizeLikert(avg: number): number {
 const VALIDATION_IDS = ['v1', 'v3', 'v4', 'v7'] as const;
 /** 역코딩 적용할 검증 문항 ID (v3: 바람직성, v7: 비난받을 생각 숨김) */
 const VALIDATION_REVERSE_IDS = new Set<string>(['v3', 'v7']);
+/** 검증 문항 가중치 (MNPS_ACCURACY_95_RESEARCH §3.5): 정직·실제반영·역문 강조 → 질의·응답만으로 95% 기여 */
+const VALIDATION_WEIGHTS: Record<string, number> = {
+  v1: 1.2,  // 정직
+  v3: 1.2,  // 사회적 바람직성 역문
+  v4: 1.2,  // 실제 반영
+  v7: 1.0,  // 비난받을 생각 숨김 역문
+};
 
 /** 일관성 쌍 문항 (동의어: 같은 구인 다른 표현). 쌍별 |답1−답2|로 분석 정확도 반영 */
 const CONSISTENCY_PAIRS: [string, string][] = [['n1', 'n1b'], ['m1', 'm1b']];
 
-/** 문항당 최소 소요 시간(ms). 이보다 짧으면 분석 정확도 -30 페널티 */
-const MIN_MS_PER_QUESTION = 800;
-
-/** 불성실 응답 패턴 감지: Longstring Index. 동일 응답이 이 횟수 이상 연속이면 기둥 세우기 의심 */
-const LSI_THRESHOLD = 6;
-/** 극단 지그재그(1-5 또는 5-1) 비율. (연속 쌍 중 이 비율 이상이면 지그재그 의심) */
-const ALTERNATING_RATIO_THRESHOLD = 0.28;
-/** 패턴 감지 시 analysisAccuracy 추가 패널티 */
-const PATTERN_PENALTY = 10;
+/** 분석 엔진 상수 (QUERY_RESPONSE_ANALYSIS_REPORT.md §4 참조) */
+const MIN_MS_PER_QUESTION = 800;       // 문항당 최소 소요(ms). 미달 시 analysisAccuracy -30
+const LSI_THRESHOLD = 6;               // 동일 응답 연속 횟수 → 기둥 세우기 의심
+const ALTERNATING_RATIO_THRESHOLD = 0.28; // 극단 지그재그(1-5/5-1) 비율 임계
+const PATTERN_PENALTY = 10;            // 불성실 패턴 감지 시 analysisAccuracy 패널티
+const ANALYSIS_ACCURACY_BASE = 80;     // 분석 정확도 기본점
+const ANALYSIS_ACCURACY_VALIDATION_CAP = 20; // 검증 보너스 상한
+const CONSISTENCY_PENALTY_MAX = 20;    // spread 평탄 시 최대 패널티
+const CONSISTENCY_SPREAD_THRESHOLD = 20; // spread < 이 값이면 평탄 응답으로 패널티
 
 /**
  * 연속 동일 값 최대 길이 (Longstring Index)
@@ -342,21 +350,21 @@ export function scoreDarkNature(
     Math.max(traitScores.machiavellianism, traitScores.narcissism, traitScores.psychopathy, traitScores.sadism) -
     Math.min(traitScores.machiavellianism, traitScores.narcissism, traitScores.psychopathy, traitScores.sadism);
 
-  // 검증 점수: 동적 계산 후 비선형 매핑 (1문항 실수/보통 허용, False Positive 완화)
+  // 검증 점수: 가중 평균 후 비선형 매핑 (정직·실제반영·역문 강조, 1문항 실수/보통 허용)
   let validationScore: number | undefined;
   if (options?.validationScores && typeof options.validationScores === 'object') {
     const vs = options.validationScores;
-    const validationIds = [...VALIDATION_IDS];
-    const maxPossibleValidation = validationIds.length * 5;
-    let currentValidationScore = 0;
-    validationIds.forEach((id) => {
-      let score = Number(vs[id]) || 3;
+    let weightedSum = 0;
+    let weightTotal = 0;
+    VALIDATION_IDS.forEach((id) => {
+      let score = Number(vs[id]) ?? 3;
       if (VALIDATION_REVERSE_IDS.has(id)) score = 6 - score;
-      currentValidationScore += Math.min(5, Math.max(1, score));
+      score = Math.min(5, Math.max(1, score));
+      const w = VALIDATION_WEIGHTS[id] ?? 1.0;
+      weightedSum += score * w;
+      weightTotal += 5 * w;
     });
-    const linearRatio = maxPossibleValidation > 0
-      ? currentValidationScore / maxPossibleValidation
-      : 0.5;
+    const linearRatio = weightTotal > 0 ? weightedSum / weightTotal : 0.5;
     validationScore = mapValidationRatioToDisplay(linearRatio);
   }
 
@@ -378,12 +386,13 @@ export function scoreDarkNature(
   }
   internalConsistencyBonus = Math.min(5, Math.round(internalConsistencyBonus));
 
-  // 일관성 쌍 문항: 쌍별 |답1−답2| 평균이 작을수록 보너스, 클수록 패널티 (최대 ±5)
+  // 일관성 쌍 문항: baseId 기준 매칭 (문제 은행 랜덤 출제 시 n1_v2·n1b_v3 등도 쌍으로 인정)
+  const getBaseId = (questionId: string) => questionId.replace(/_v\d+$/, '') || questionId;
   let pairConsistencyBonus = 0;
   const pairDiffs: number[] = [];
-  for (const [id1, id2] of CONSISTENCY_PAIRS) {
-    const a1 = answers.find((a) => a.questionId === id1)?.value;
-    const a2 = answers.find((a) => a.questionId === id2)?.value;
+  for (const [baseId1, baseId2] of CONSISTENCY_PAIRS) {
+    const a1 = answers.find((a) => getBaseId(a.questionId) === baseId1)?.value;
+    const a2 = answers.find((a) => getBaseId(a.questionId) === baseId2)?.value;
     if (a1 != null && a2 != null) pairDiffs.push(Math.abs(a1 - a2));
   }
   if (pairDiffs.length > 0) {
@@ -415,12 +424,14 @@ export function scoreDarkNature(
     }
   }
 
-  // 분석 정확도: Base 80 + ... + 패턴 페널티(불성실 응답 의심 시 -10). 50~99 범위.
-  const baseScore = 80;
+  // 분석 정확도: Base + 검증 보너스 − 일관성 패널티(검증 높을수록 완화) + … 50~99 범위
+  const baseScore = ANALYSIS_ACCURACY_BASE;
   const validationBonus =
-    validationScore != null ? (validationScore / 100) * 20 : 0;
+    validationScore != null ? (validationScore / 100) * ANALYSIS_ACCURACY_VALIDATION_CAP : 0;
   const rawConsistencyPenalty =
-    consistencySpread < 20 ? Math.min(20, 20 - consistencySpread) : 0;
+    consistencySpread < CONSISTENCY_SPREAD_THRESHOLD
+      ? Math.min(CONSISTENCY_PENALTY_MAX, CONSISTENCY_PENALTY_MAX - consistencySpread)
+      : 0;
   const consistencyPenalty =
     validationScore != null
       ? rawConsistencyPenalty * (1 - validationScore / 100)
@@ -563,17 +574,21 @@ export function buildInterpretation(result: DarkNatureResult): DarkNatureInterpr
     );
   }
 
-  // Summary 생성 (NORM_CONFIG.dTotalHigh, midCutoff 사용)
+  // Summary: 맥락 기반 서술(점수 미언급). 이번 응답에서 읽힌 패턴 강도로 구간 구분
   const { dTotalHigh } = NORM_CONFIG;
   let summary = '';
   if (dTotal >= NORM_CONFIG.dTotalCritical) {
-    summary = `당신의 Dark Nature 종합 점수는 약 ${Math.round(dTotal)}점으로, 매우 강한 전략적·지배적 성향을 보입니다. 이러한 특성은 리더십과 경쟁 상황에서 큰 강점으로 작용할 수 있습니다.`;
+    summary =
+      '이번 응답 맥락에서 **전략적·지배적 패턴**이 매우 강하게 읽혔습니다. 리더십, 경쟁, 고압 협상 같은 상황에서는 이 특성이 핵심 자산으로 작용할 수 있습니다.';
   } else if (dTotal >= dTotalHigh) {
-    summary = `당신의 Dark Nature 종합 점수는 약 ${Math.round(dTotal)}점으로, 높은 긴장감 속에서도 전략적으로 움직일 여지가 있는 프로파일입니다.`;
+    summary =
+      '이번 응답 맥락에서 전략적·지배적 패턴이 **높은 강도**로 관찰되었습니다. 긴장감이 높은 상황에서도 목표 지향적으로 움직일 수 있는 프로파일로 해석됩니다.';
   } else if (dTotal >= midCutoff) {
-    summary = `당신의 Dark Nature 종합 점수는 약 ${Math.round(dTotal)}점으로, 상황에 따라 전략적 사고를 발휘할 수 있는 균형 잡힌 프로파일입니다.`;
+    summary =
+      '이번 응답 맥락에서 **상황에 따른 전략적 사고**가 균형 있게 나타났습니다. 필요할 때는 계산적 판단을, 관계가 중요할 때는 협력을 선택할 수 있는 유연한 프로파일로 읽힙니다.';
   } else {
-    summary = `당신의 Dark Nature 종합 점수는 약 ${Math.round(dTotal)}점으로, 협력과 신뢰 기반의 관계를 중시하는 프로파일입니다.`;
+    summary =
+      '이번 응답 맥락에서 **협력과 신뢰**를 중시하는 패턴이 두드러졌습니다. 관계의 질과 장기적 파트너십을 우선하는 프로파일로 해석됩니다.';
   }
 
   const good: InterpretationBlock = {
@@ -693,17 +708,17 @@ export function buildInterpretation(result: DarkNatureResult): DarkNatureInterpr
     );
   }
 
-  // Summary 생성
+  // Bad Summary: 맥락·패턴 기반(점수 미언급)
   let badSummary = '';
   if (dTotal >= 80) {
     badSummary =
-      '이 보고서는 사회적·윤리적 관점에서 잠재적 위험과 갈등 요인을 직접적으로 다룹니다. 매우 높은 Dark Nature 점수는 장기적인 인간관계와 사회적 적응에 심각한 문제를 일으킬 수 있습니다. 전문가 상담을 권장합니다.';
+      '이 보고서는 사회적·윤리적 관점에서 **잠재적 위험과 갈등 요인**을 다룹니다. 이번 맥락에서 읽힌 패턴이 극단에 가깝다면, 장기적인 관계와 사회적 적응에서 반복적 갈등이 예상됩니다. 부담이 크다면 전문가 상담을 권합니다.';
   } else if (dTotal >= 60) {
     badSummary =
-      '이 보고서는 사회적·윤리적 관점에서 잠재적 위험과 갈등 요인을 직접적으로 다룹니다. 높은 Dark Nature 점수는 특정 상황에서 타인에게 해를 끼치거나 신뢰를 손상시킬 위험이 있습니다.';
+      '이 보고서는 사회적·윤리적 관점에서 **잠재적 위험과 갈등 요인**을 다룹니다. 이번 맥락에서 읽힌 패턴은 특정 상황(경쟁, 배신감, 스트레스)에서 타인에 대한 신뢰 손상이나 관계 갈등으로 이어질 수 있는 요인을 포함합니다.';
   } else {
     badSummary =
-      '이 보고서는 사회적·윤리적 관점에서 잠재적 위험과 갈등 요인을 직접적으로 다룹니다. 해석 내용에 따라 불편함을 느끼실 수 있습니다.';
+      '이 보고서는 사회적·윤리적 관점에서 **잠재적 위험과 갈등 요인**을 다룹니다. 해석 내용이 불편할 수 있으나, 맥락에 따라 다르게 읽힐 수 있습니다.';
   }
 
   const bad: InterpretationBlock = {
@@ -1294,6 +1309,10 @@ export function assembleReport(
   // 3. Good Report 어셈블리
   let goodReport = '';
 
+  // 맥락 안내 (해체·재구성 관점: 결과는 가변적 맥락의 산물)
+  goodReport +=
+    '이 결과는 **한 시점의 응답 맥락**에서 읽힌 패턴입니다. 동일한 점수라도 상황·관계·스트레스 수준에 따라 다르게 발현되며, "고정된 성격"이 아니라 **맥락에 따라 변하는 경향**으로 보는 것이 유용합니다.\n\n';
+
   // 매트릭스 아키타입 표기명 (세분화 유형)
   goodReport += `아키타입: **${archetypeDisplay}**\n\n`;
 
@@ -1345,7 +1364,7 @@ export function assembleReport(
   // Trait별 시드 (mach/narc/psych/sadism 순서로 0,3,6,9 → 프로필별·trait별 스니펫 분산)
   const traitSeedOffset: Record<TraitKey, number> = { mach: 0, narc: 3, psych: 6, sadism: 9 };
 
-  // Trait 스니펫 선택 (다중 후보: sum + subFactor + trait + 시너지 시드로 인덱스 결정 → 문장 중복·단조로움 감소)
+  // Trait 스니펫 선택: 개별 점수(m,n,p,s) 조합을 반영해 프로필마다 다른 스니펫이 나오도록 (합산만 쓰면 비슷한 총점에서 동일 문장 반복)
   const getTraitSnippet = (trait: TraitKey, level: TraitLevel, type: 'good' | 'bad', indexMod: number = 0): string => {
     const traitData = contentTraitScores[trait];
     if (!traitData) return '';
@@ -1353,9 +1372,9 @@ export function assembleReport(
     if (!snippets) return '';
     if (Array.isArray(snippets)) {
       if (snippets.length === 0) return '';
-      const base = Math.floor((m + n + p + s) / 100) || 0;
+      const profileHash = Math.abs(m * 7 + n * 11 + p * 13 + s * 17);
       const seed = traitSeedOffset[trait] + synergySeed + indexMod;
-      const idx = (base + seed + 100) % snippets.length;
+      const idx = (profileHash + seed + 100) % snippets.length;
       const chosen = snippets[idx];
       return chosen && typeof chosen[type] === 'string' ? chosen[type] : (snippets[0]?.[type] ?? '');
     }
@@ -1381,13 +1400,14 @@ export function assembleReport(
       '악의성(스파이트) 수준이 눈에 띄어, **경계와 자기방어**가 분명한 편입니다. 상대의 부당함에 대한 반응이 예리하므로, 관계에서 명확한 선을 그을 수 있습니다.\n\n';
   }
 
-  // 시너지 Good 텍스트
-  for (const key of synergyKeys) {
+  // 시너지 Good 텍스트 (여러 시너지 시 프로필 해시로 선택 → 응답마다 다른 문단 가능)
+  const profileHashForSynergy = Math.abs(m * 7 + n * 11 + p * 13 + s * 17);
+  if (synergyKeys.length > 0) {
+    const key = synergyKeys[profileHashForSynergy % synergyKeys.length]!;
     const synergies = synergyCombinations[key];
     if (synergies && Array.isArray(synergies) && synergies.length > 0) {
-      // 첫 번째 시너지의 good 텍스트 사용
-      goodReport += synergies[0].good + '\n\n';
-      break; // 첫 번째 시너지만
+      const synIdx = profileHashForSynergy % synergies.length;
+      goodReport += (synergies[synIdx]?.good ?? synergies[0]!.good) + '\n\n';
     }
   }
 

@@ -1,5 +1,12 @@
 import { Scenario } from "@growth-roadmap/types/module2";
 
+/** 정확도 향상: 3테마(자극통제·강화붕괴·사회아키텍처) 각 5문항 = 15문항 균형 선별 */
+export const SCENARIO_INDICES_15 = [
+    0, 1, 2, 3, 4,       // Theme 1: Stimulus Control
+    9, 10, 11, 12, 13,   // Theme 2: Extinction Burst
+    18, 19, 20, 21, 22,  // Theme 3: Social Archetype
+];
+
 export const SCENARIOS: Scenario[] = [
     // Theme 1: Stimulus Control (자극 통제) - 9 items
     {
@@ -277,3 +284,5 @@ export const SCENARIOS: Scenario[] = [
         ]
     }
 ];
+
+export const SCENARIOS_15 = SCENARIO_INDICES_15.map((i) => SCENARIOS[i]);

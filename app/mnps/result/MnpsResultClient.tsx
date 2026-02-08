@@ -424,7 +424,9 @@ async function fetchResult(assessmentId?: string | null, localId?: string | null
   isPaid?: boolean;
 }> {
   if (typeof window !== "undefined" && localId) {
-    const stored = sessionStorage.getItem(`mnps_result_local_${localId}`);
+    const stored =
+      sessionStorage.getItem(`mnps_result_local_${localId}`) ??
+      localStorage.getItem(`mnps_result_local_${localId}`);
     if (stored) {
       try {
         const parsed = JSON.parse(stored) as {
@@ -490,7 +492,7 @@ async function fetchResult(assessmentId?: string | null, localId?: string | null
           r.traitScores && typeof r.traitScores === "object"
             ? r.traitScores
             : Array.isArray(r.radarChartData) && r.radarChartData.length >= 4
-              ? {
+            ? {
                   machiavellianism: Number(r.radarChartData[0]?.value) ?? 0,
                   narcissism: Number(r.radarChartData[1]?.value) ?? 0,
                   psychopathy: Number(r.radarChartData[2]?.value) ?? 0,
@@ -501,7 +503,7 @@ async function fetchResult(assessmentId?: string | null, localId?: string | null
         const badReport = ensureMinLength(r.badReport ?? "", "bad") || null;
         return {
           data: {
-            archetype: r.archetype,
+          archetype: r.archetype,
             dTotal: r.dTotal ?? 0,
             rawDTotal: r.rawDTotal,
             isExtremeTop: r.isExtremeTop,
@@ -525,7 +527,9 @@ async function fetchResult(assessmentId?: string | null, localId?: string | null
   }
 
   if (typeof window !== "undefined") {
-    const stored = sessionStorage.getItem("darkNatureResult");
+    const stored =
+      sessionStorage.getItem("darkNatureResult") ??
+      localStorage.getItem("darkNatureResult");
     if (stored) {
       try {
         const parsed = JSON.parse(stored) as {
@@ -552,7 +556,7 @@ async function fetchResult(assessmentId?: string | null, localId?: string | null
           }
           good = ensureMinLength(good, "good");
           bad = ensureMinLength(bad, "bad");
-          return {
+      return {
             data: {
               archetype: r.archetype,
               dTotal: r.dTotal ?? 0,
@@ -634,7 +638,6 @@ export default function MnpsResultClient() {
     );
   }
 
-  const dTotal = result.dTotal ?? 0;
   const goodText =
     typeof result.goodReport === "string"
       ? result.goodReport
@@ -666,15 +669,14 @@ export default function MnpsResultClient() {
   return (
     <main className="min-h-screen bg-black text-white py-10 px-4">
       <div className="max-w-3xl mx-auto space-y-8">
-        {/* 상단: D점수, 극단 태그, 분석 정확도 */}
+        {/* 맥락 안내: 결과는 고정된 정답이 아닌 이번 응답 맥락에서의 한 도면임을 명시 */}
+        <p className="text-gray-400 text-sm text-center leading-relaxed">
+          이 결과는 당신의 <strong className="text-gray-300">현재 응답 맥락</strong>에서 나온 한 장의 지도입니다.
+          시점이나 상황이 바뀌면 다르게 읽힐 수 있으며, 진단이 아닌 참고용 해석입니다.
+          해석은 누적 응답 기반 규준(백분위)을 참고하며, 규준은 주기적으로 갱신될 수 있습니다.
+        </p>
+        {/* 상단: 극단 태그, 분석 정확도 */}
         <div className="flex flex-wrap items-center justify-center gap-4 text-center">
-          <div>
-            <span className="text-gray-500 text-sm block mb-1">종합 D 점수</span>
-            <span className="text-4xl font-black text-white tracking-tight">
-              {dTotal}
-              <span className="text-xl text-gray-500 font-normal">/100</span>
-            </span>
-          </div>
           {result.isExtremeTop && (
             <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40">
               (극단)

@@ -256,10 +256,10 @@ const DATA: Record<AnalysisType, ResultItem[]> = {
         { id: "M2_LIA_30", category: "임상 솔루션", title: "질문", content: "나는 특별해지려 하는가, 아니면 진실해지려 하는가?" }
     ],
     "LIP": [
-        { id: "M2_LIP_01", category: "심층 분석", title: "핵심 욕구", content: "내면의 안정을 지키고 침해받지 않는 것." },
-        { id: "M2_LIP_02", category: "심층 분석", title: "두려움", content: "세상의 압력, 갈등, 평온이 깨지는 것." },
-        { id: "M2_LIP_03", category: "심층 분석", title: "그림자 자아", content: "'게으름뱅이'. 아무것도 하지 않고 흘러가고 싶은 타성." },
-        { id: "M2_LIP_04", category: "심층 분석", title: "방어 기제", content: "마비. 스트레스를 받으면 멍해지거나 잠을 잡니다." },
+        { id: "M2_LIP_01", category: "심층 분석", title: "핵심 욕구", content: "내면의 안정을 지키고 침해받지 않는 것. 요구와 간섭이 없는 상태에서만 에너지가 회복되며, 그 경계가 무너질 때 강한 불안을 느낍니다." },
+        { id: "M2_LIP_02", category: "심층 분석", title: "두려움", content: "세상의 압력, 갈등, 평온이 깨지는 것. 그래서 '참여'보다 '거리 두기'를 선택하고, 기대와 요구가 쏟아지는 상황을 회피하려 합니다." },
+        { id: "M2_LIP_03", category: "심층 분석", title: "그림자 자아", content: "'게으름뱅이'. 아무것도 하지 않고 흘러가고 싶은 타성. 움직이지 않음이 안전이라 믿는 만큼, 작은 행동 개시가 가장 어려운 과제가 됩니다." },
+        { id: "M2_LIP_04", category: "심층 분석", title: "방어 기제", content: "마비. 스트레스를 받으면 멍해지거나 잠을 잡습니다. 감정을 처리하지 않고 꺼두거나 미루는 방식이 습관화되면, 행동력이 더 떨어질 수 있습니다." },
         { id: "M2_LIP_05", category: "심층 분석", title: "자아 분열", content: "세상과 연결되고 싶은 마음과 귀찮은 마음의 충돌." },
         { id: "M2_LIP_06", category: "심층 분석", title: "에너지 원천", content: "아무런 요구도 없는 상태에서의 완전한 휴식." },
         { id: "M2_LIP_07", category: "인지 프로세스", title: "정보 처리", content: "수동적으로 수용하며 거름망 없이 흘려보냅니다." },
@@ -289,10 +289,127 @@ const DATA: Record<AnalysisType, ResultItem[]> = {
     ]
 };
 
+// --- 유형별 시스템 해석 (도면용 2~3문장) ---
+const MODULE2_SYSTEM_SUMMARY: Record<AnalysisType, string> = {
+    "HLA": "이 유형은 **입력·처리·출력**이 모두 높은 축에 있어, 외부 정보를 넓게 받아들이고 논리로 정리한 뒤 주도적으로 실행합니다. '통제와 질서'를 통해 불안을 다스리며, 그만큼 주도권 상실과 무력감을 가장 경계합니다. 시스템 도면으로 보면, '모든 변수를 내가 설계해야 안전하다'는 전제가 동작의 핵심입니다.",
+    "HLP": "넓게 수용(입력)하고 냉철하게 분석(처리)하지만, 행동(출력)은 신중하게 잡는 유형입니다. '확실할 때만 움직인다'는 전략이 장점이자 함정이 되어, 관찰자에 머무르는 시간이 길어질 수 있습니다. 도면상으로는 **정보→판단** 구간은 발달해 있으나 **실행** 구간이 억제되어 있는 구조입니다.",
+    "HIA": "입력과 출력이 높고 처리(원칙·규칙)는 유연합니다. 직관과 행동이 강하게 연결되어 '일단 움직이면서 맞춘다'는 스타일이며, 반복·지루함·구속을 견디기 어렵습니다. 시스템은 **탐험과 실행**에 최적화되어 있고, '끝맺음'과 '일관성'은 의도적으로 보강할 필요가 있습니다.",
+    "HIP": "입력을 넓게 받아들이고, 처리·출력은 부드럽게 조율하는 유형입니다. 갈등보다 조화, 결론보다 관계를 중시하며, 타인의 감정에 쉽게 공명합니다. 도면상 **연결과 수용**이 강하고, '나 하나 희생해도 평화면 된다'는 전제가 내면에 있어, 경계 설정이 재설계 포인트입니다.",
+    "LLA": "입력은 선택적(필요한 것만), 처리와 출력은 강하게 밀어붙이는 구조입니다. 원칙과 신념에 따라 단호하게 행동하며, 간섭과 타협을 싫어합니다. '내가 옳다'는 확신이 시스템의 중심이므로, **정보의 다양성**과 **타인 시각 수용**을 의도적으로 넣으면 균형이 잡힙니다.",
+    "LLP": "입력·처리 모두 선택적이고 집중적이며, 출력은 낮아 행동보다 관찰·분석에 머무릅니다. 전문성과 완벽을 추구하나, 불확실할 때는 움직이지 않는 편입니다. 도면상 **깊이**는 있으나 **외부로의 방출**이 적어, '70% 확신이면 실행'이 재설계 레버입니다.",
+    "LIA": "입력은 선택적, 처리(직관)는 빠르고, 출력은 높아 '판단은 간단히, 행동은 과감히'입니다. 복잡한 분석보다 감각과 타협을 믿으며, 위기 시 빠르게 대응합니다. **반응 속도**가 강점이나, 충동과 일관성 부족이 그림자이므로 '한 번 멈추기'가 도면에 추가할 습관입니다.",
+    "LIP": "입력·처리·출력이 모두 '에너지 절약' 쪽에 가깝게 설계된 유형입니다. 외부 요구를 최소화하고, 내면의 평온을 지키려 하며, 행동은 필요 최소한으로 유지합니다. **안정과 휴식**이 시스템의 핵심 가치이나, 그 경계가 지나치면 '도피'와 '마비'로 고착될 수 있어, '작은 행동 개시'가 재설계의 첫 단계입니다.",
+};
+
+const CATEGORY_FOCUS: Record<ResultItem["category"], string> = {
+    "심층 분석": "내면의 동기와 방어가 드러나는 구간",
+    "인지 프로세스": "정보 처리와 판단의 규칙이 굳어지는 구간",
+    "행동 패턴": "행동 루틴이 결과를 고정하는 구간",
+    "사회적 역동": "관계에서 역할이 고착되는 구간",
+    "임상 솔루션": "행동을 재설계하는 실행 구간",
+};
+
+const TYPE_PROFILES: Record<AnalysisType, {
+    observation: string;
+    mechanism: string;
+    adjustment: string;
+    survival: string;
+}> = {
+    HLA: {
+        observation: "지시와 점검으로 질서를 유지하며, 불확실성이 커질수록 통제 강도가 상승합니다.",
+        mechanism: "불안이 커질수록 뇌가 ‘통제’를 안전장치로 쓰면서, 규칙과 점검이 과해집니다.",
+        adjustment: "잠재력 = 실행력 − 방해 요인에서 간섭은 과잉 통제입니다. 결정 기준 2가지만 남기고 위임 비율을 30%까지 올려 간섭을 줄이십시오.",
+        survival: "혼란 속에서 질서를 세우려는 생존 전략이었습니다.",
+    },
+    HLP: {
+        observation: "관찰과 분석에 몰입하며, 결정을 미루는 시간이 길어질수록 실행 에너지가 줄어듭니다.",
+        mechanism: "정보 수집이 안정감을 주다 보니, 행동 전환이 늦어지는 경향이 생깁니다.",
+        adjustment: "잠재력 = 실행력 − 방해 요인에서 간섭은 과잉 분석입니다. 70% 정보에서 프로토타입을 실행하고, 실행 후 피드백 1개만 수집해 루프를 닫으십시오.",
+        survival: "실수와 손상을 피하려는 생존 전략으로 굳어졌습니다.",
+    },
+    HIA: {
+        observation: "흥미와 자극이 높을 때 급가속하며, 마무리 국면에서 속도가 급격히 떨어집니다.",
+        mechanism: "새로움에 반응하는 보상 신호가 강하고, 반복 구간에서는 동력이 급격히 약해집니다.",
+        adjustment: "잠재력 = 실행력 − 방해 요인에서 간섭은 흥분의 소실입니다. 시작 전에 종료 조건 1개를 고정하고, 중간 이탈을 막는 체크포인트 2개를 배치하십시오.",
+        survival: "정체를 피하고 기회를 쫓는 생존 전략이었습니다.",
+    },
+    HIP: {
+        observation: "관계의 균형을 우선하며 갈등을 피하려다 의사결정이 흐려집니다.",
+        mechanism: "타인의 반응을 먼저 살피는 습관이 강해, 갈등 신호가 나오면 회피 쪽으로 기울어집니다.",
+        adjustment: "잠재력 = 실행력 − 방해 요인에서 간섭은 과도한 조율입니다. 요청을 받을 때 ‘예/아니오/보류’ 중 하나를 10초 안에 선택해 결정 지연을 끊으십시오.",
+        survival: "관계를 지키기 위한 생존 전략이었습니다.",
+    },
+    LLA: {
+        observation: "불필요한 입력을 차단하고 목표에 직진하며, 반대가 생기면 강하게 밀어붙입니다.",
+        mechanism: "위협을 느끼면 ‘빠른 결정’이 안전장치가 되어 타협 신호가 약해집니다.",
+        adjustment: "잠재력 = 실행력 − 방해 요인에서 간섭은 강압과 단절입니다. 반대 의견 1개를 요약해 재진술한 뒤 실행을 재개해 마찰 비용을 낮추십시오.",
+        survival: "위기에서 빠르게 장악하려는 생존 전략이었습니다.",
+    },
+    LLP: {
+        observation: "성과 기준이 높고 검증에 몰입하며, 실행보다 완성도를 우선합니다.",
+        mechanism: "오류를 피하려는 습관이 강해, 실행 전환이 늦어지는 경향이 있습니다.",
+        adjustment: "잠재력 = 실행력 − 방해 요인에서 간섭은 완벽주의입니다. 산출물의 1차 버전을 48시간 안에 공개해 피드백 루프를 강제로 시작하십시오.",
+        survival: "실패를 줄이기 위한 생존 전략으로 굳어졌습니다.",
+    },
+    LIA: {
+        observation: "판단은 빠르고 행동은 강하지만, 변동성이 커서 일관성이 흔들립니다.",
+        mechanism: "즉각 반응이 보상으로 연결되어, 멈추고 점검하는 시간이 줄어듭니다.",
+        adjustment: "잠재력 = 실행력 − 방해 요인에서 간섭은 충동입니다. 결정 직후 90초 정지 규칙을 넣고, 실행 전에 ‘리스크 1개/완충 1개’를 기록하십시오.",
+        survival: "빠른 대응으로 살아남아야 했던 전략의 흔적입니다.",
+    },
+    LIP: {
+        observation: "에너지 절약을 최우선으로 두고 최소 행동을 유지하며, 외부 요구를 회피합니다.",
+        mechanism: "자극이 많을 때 불안을 느껴, 뇌가 ‘정지’ 쪽을 안전한 선택으로 굳혀 버립니다.",
+        adjustment: "잠재력 = 실행력 − 방해 요인에서 간섭은 정지 상태입니다. 하루 3회 ‘3초 행동’을 강제로 넣어 개시 저항을 분산시키십시오.",
+        survival: "과자극 환경에서 자신을 보호하던 생존 전략이었습니다.",
+    },
+};
+
+/** 점수 구간별 입력/처리/출력 한 줄 해석 (리포트 상단용) */
+function interpretMetric(score: number, kind: "input" | "processing" | "output"): string {
+    const high = score >= 65;
+    const low = score <= 35;
+    if (kind === "input") {
+        if (high) return "외부 자극을 적극 수용하며, 타인의 감정과 변화를 예민하게 감지합니다.";
+        if (low) return "필요한 정보에만 집중하고 불필요한 노이즈를 차단하는 편입니다.";
+        return "상황에 따라 정보를 받아들이거나 걸러내는 조절이 가능합니다.";
+    }
+    if (kind === "processing") {
+        if (high) return "데이터와 원칙을 중시하며, 확실한 계획이 있을 때 안정을 느낍니다.";
+        if (low) return "고정된 규칙보다 상황에 맞는 답을 직관적으로 찾는 편입니다.";
+        return "원칙은 지키되 상황이 바뀌면 유연하게 대처합니다.";
+    }
+    if (kind === "output") {
+        if (high) return "상황을 이끌고 먼저 행동하는 리더형에 가깝습니다.";
+        if (low) return "흐름을 지켜보며 안전한 타이밍에 움직이는 편입니다.";
+        return "필요하면 리더가 되고, 아니면 조용히 제 몫을 합니다.";
+    }
+    return "";
+}
+
+export function getModule2SystemSummary(typeCode: string): string {
+    return MODULE2_SYSTEM_SUMMARY[typeCode as AnalysisType] ?? "이 유형의 대인 행동 시스템이 어떻게 작동하는지, 아래 심층 분석과 실행 가이드를 통해 재설계의 단서를 찾을 수 있습니다.";
+}
+
+export function getModule2MetricInterpretation(input: number, processing: number, output: number): string {
+    const i = interpretMetric(Math.round(input), "input");
+    const p = interpretMetric(Math.round(processing), "processing");
+    const o = interpretMetric(Math.round(output), "output");
+    return `**입력** ${i}\n\n**처리** ${p}\n\n**출력** ${o}`;
+}
+
 // --- Logic Helpers ---
 
 export function getModule2Content(code: string): ResultItem[] {
-    return DATA[code as AnalysisType] || DATA["HLA"];
+    const items = DATA[code as AnalysisType] || DATA["HLA"];
+    const profile = TYPE_PROFILES[code as AnalysisType] ?? TYPE_PROFILES.HLA;
+    return items.map((item) => {
+        // 임상 솔루션은 원문 그대로 유지 (미션/로드맵/확언/질문)
+        if (item.category === "임상 솔루션") return item;
+        // 나머지 카테고리: 원문 + 맥락 보충 (자연스러운 문장)
+        const contextLine = `이 패턴은 ${profile.survival} ${profile.adjustment}`;
+        return { ...item, content: `${item.content}\n\n${contextLine}` };
+    });
 }
 
 export function determineTypeCode(scores: { p: number, a: number, sd: number }): AnalysisType {

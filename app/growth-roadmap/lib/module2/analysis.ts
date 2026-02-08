@@ -30,18 +30,17 @@ interface EnhancedAnalysis {
     comparisonPercentiles?: { proactivity: number; adaptability: number; socialDistance: number };
 }
 
-// 4개 선택지 환경에서의 분석 상수
-const ANALYSIS_CONSTANTS = {
-    // Percentile 임계값 (4개 선택지 환경에서 분산 증가 반영)
-    HIGH_PERCENTILE_THRESHOLD: 55,    // 상위 30%
-    MID_PERCENTILE_THRESHOLD: 35,     // 중위 30-70%
-    
-    // 점수 정규화 계수 (27개 시나리오 × 4개 선택지 기준)
+/** 4개 선택지 환경 분석 상수 (문서/튜닝 시 한 곳만 수정). v2.2 레포트·엔진 정리 */
+export const ANALYSIS_CONSTANTS = {
+    /** Percentile 상위 임계값 (4개 선택지 분산 반영) */
+    HIGH_PERCENTILE_THRESHOLD: 55,
+    /** Percentile 중위 임계값 */
+    MID_PERCENTILE_THRESHOLD: 35,
+    /** 점수 정규화 계수 (27 시나리오 × 4 선택지) */
     NORMALIZATION_FACTOR: 1.0,
-    
-    // 최소 응답 수 (신뢰도 있는 분석을 위한)
-    MIN_SELECTIONS_FOR_ANALYSIS: 9
-};
+    /** 신뢰도 있는 분석을 위한 최소 응답 수 */
+    MIN_SELECTIONS_FOR_ANALYSIS: 9,
+} as const;
 
 /**
  * 선택된 옵션들로부터 분석 변수를 계산합니다.

@@ -13,35 +13,24 @@ export interface ConsistencyResult {
     recommendation: string; // 권장 사항
 }
 
-// 4개 선택지 환경에서의 최적화된 상수값
-const CONSTANTS = {
-    // 균등 분포 감지 범위 (4개 선택지 환경에서 확장)
+/** 4개 선택지 환경 일관성 검사 상수 (문서/튜닝 시 한 곳만 수정). v2.2 엔진 정리 */
+export const CONSISTENCY_CONSTANTS = {
     BALANCE_MIN_PERCENT: 23,
     BALANCE_MAX_PERCENT: 43,
-    
-    // Phase 간 점수 차이 임계값 (4개 선택지로 인해 점수 분산 증가)
     PHASE_SCORE_DIFF_THRESHOLD: 35,
-    
-    // 타입 분포 편차 임계값 (3개 type: thinking, feeling, acting)
-    // D 선택지 대부분 thinking → Detached Observer는 thinking 비중 높음 허용
     TYPE_DEVIATION_THRESHOLD: 0.85,
-    
-    // 점수 범위 임계값
-    // D 선택지: socialDistance 10~15, proactivity/adaptability 음수 → 극단 분산 정상
     RANGE_LOW_PERCENT: 8,
     RANGE_HIGH_PERCENT: 200,
-    
-    // 감점 기준
     PENALTY_BALANCED: 18,
     PENALTY_PHASE_INCONSISTENT: 12,
     PENALTY_TYPE_DEVIATION: 8,
     PENALTY_RANGE_LOW: 22,
     PENALTY_RANGE_HIGH: 8,
-    
-    // 일관성 레벨 임계값
     HIGH_RELIABILITY_THRESHOLD: 75,
-    MEDIUM_RELIABILITY_THRESHOLD: 50
-};
+    MEDIUM_RELIABILITY_THRESHOLD: 50,
+} as const;
+
+const CONSTANTS = CONSISTENCY_CONSTANTS;
 
 /**
  * 답변 일관성을 검증하고 신뢰도 점수를 계산합니다.

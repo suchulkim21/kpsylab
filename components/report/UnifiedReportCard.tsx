@@ -11,6 +11,25 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
+/** **bold** 구간을 <strong>으로 렌더링한 한 줄 */
+function renderLineWithBold(line: string, keyPrefix: string) {
+  const parts: (string | React.ReactNode)[] = [];
+  let lastIndex = 0;
+  const re = /\*\*(.*?)\*\*/g;
+  let match;
+  let i = 0;
+  while ((match = re.exec(line)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(line.slice(lastIndex, match.index));
+    }
+    parts.push(<strong key={`${keyPrefix}-b-${i}`} className="text-white font-semibold">{match[1]}</strong>);
+    lastIndex = match.index + match[0].length;
+    i += 1;
+  }
+  if (lastIndex < line.length) parts.push(line.slice(lastIndex));
+  return parts.length === 1 && typeof parts[0] === 'string' ? parts[0] : <>{parts}</>;
+}
+
 export default function UnifiedReportCard({ data }: { data: UnifiedReportData }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -48,13 +67,13 @@ export default function UnifiedReportCard({ data }: { data: UnifiedReportData })
       <div ref={cardRef} className="bg-[#0f1115] border border-gray-800 rounded-3xl overflow-hidden shadow-2xl relative">
         <div className={`h-1 w-full ${accentBg}`} />
         <div className="p-6 md:p-10">
-          <p className="text-center text-xs text-gray-500 mb-6 px-2 italic">
-            이 리포트는 당신의 정답이 아닌, 당신이 참고할 수 있는 정교한 시스템 도면입니다.
+          <p className="text-center text-xs text-gray-400 mb-6 px-2 italic">
+            이 리포트는 당신의 정답이 아닌, 당신이 참고할 수 있는 정교한 한 장의 지도입니다.
           </p>
           <div className="text-center mb-8">
             {data.syncPercentage != null && (
               <p className="text-sm text-emerald-400/90 mb-3">
-                현재 당신의 데이터는 <strong className="text-white">{data.syncPercentage}%</strong> 동기화되었습니다
+                현재 모듈 간 일치도는 <strong className="text-white">{Math.round(Number(data.syncPercentage) || 0)}%</strong>입니다
               </p>
             )}
             <span className={`inline-block py-1 px-3 rounded-full text-xs font-bold tracking-wider uppercase bg-gray-900 border border-gray-700 ${accentText} mb-4`}>
@@ -79,19 +98,7 @@ export default function UnifiedReportCard({ data }: { data: UnifiedReportData })
           </div>
 
           <div className="bg-gray-900/50 rounded-2xl p-6 mb-8 border border-gray-800">
-            <div className="flex flex-col md:flex-row items-center gap-8">
-              <div className="flex-1 text-center border-b md:border-b-0 md:border-r border-gray-800 pb-6 md:pb-0 md:pr-6 w-full">
-                <span className="text-gray-500 text-sm font-medium block mb-2">종합 분석 점수</span>
-                <div className="text-6xl font-black text-white tracking-tight">
-                  {data.totalScore}
-                  <span className="text-2xl text-gray-600 font-normal">/100</span>
-                </div>
-                <div className={`mt-2 text-sm font-medium ${accentText}`}>
-                  상위 {Math.max(1, 100 - data.totalScore)}% 수준
-                </div>
-              </div>
-
-              <div className="flex-1 w-full h-[200px] flex items-center justify-center">
+            <div className="w-full h-[200px] flex items-center justify-center">
                 {data.chartData.length > 4 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data.chartData}>
@@ -112,7 +119,7 @@ export default function UnifiedReportCard({ data }: { data: UnifiedReportData })
                       <div key={item.label}>
                         <div className="flex justify-between text-xs text-gray-400 mb-1">
                           <span>{item.label}</span>
-                          <span className="text-white font-bold">{item.value}</span>
+                          <span className="text-white font-bold">{typeof item.value === 'number' ? Math.round(item.value) : item.value}</span>
                         </div>
                         <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
                           <div
@@ -124,7 +131,6 @@ export default function UnifiedReportCard({ data }: { data: UnifiedReportData })
                     ))}
                   </div>
                 )}
-              </div>
             </div>
           </div>
 
@@ -134,9 +140,20 @@ export default function UnifiedReportCard({ data }: { data: UnifiedReportData })
               심층 분석 리포트
             </h3>
             <div className="prose prose-invert max-w-none text-gray-300 leading-7 text-base break-keep">
-              {data.detailText.split('\n').map((line, i) => (
-                <p key={i} className="mb-4">{line}</p>
-              ))}
+              {data.detailText && data.detailText.trim()
+                ? data.detailText.split('\n').filter((line) => line.trim()).map((line, i) => {
+                    const trimmed = line.trim();
+                    const isSectionTitle = /^\*\*\[/.test(trimmed);
+                    return isSectionTitle ? (
+                      <h4 key={i} className={`mt-8 mb-3 text-base font-bold ${data.theme === 'purple' ? 'text-purple-300' : 'text-cyan-300'}`}>
+                        {renderLineWithBold(trimmed, `detail-${i}`)}
+                      </h4>
+                    ) : (
+                      <p key={i} className="mb-4">{renderLineWithBold(trimmed, `detail-${i}`)}</p>
+                    );
+                  })
+                : <p className="text-gray-400 italic">분석 내용을 불러오는 중이거나 표시할 본문이 없습니다. 1·2·3단계를 모두 완료한 뒤 최종 리포트를 다시 열어 주세요.</p>
+              }
             </div>
           </div>
 
@@ -168,24 +185,35 @@ export default function UnifiedReportCard({ data }: { data: UnifiedReportData })
                 💡 실행 가이드: {data.advice.title}
               </h4>
               <ul className="space-y-3">
-                {data.advice.todos.map((todo, idx) => (
-                  <li key={idx} className="flex items-start text-gray-300 text-sm leading-relaxed">
-                    <span className={`mr-3 mt-1.5 w-1.5 h-1.5 rounded-full ${accentBg} flex-shrink-0`}></span>
-                    {todo}
-                  </li>
-                ))}
+                {data.advice.todos.map((todo, idx) => {
+                  const match = /^(미션|로드맵|확언|질문):\s*(.*)$/.exec(todo);
+                  if (match) {
+                    return (
+                      <li key={idx} className="flex items-start text-gray-300 text-sm leading-relaxed">
+                        <span className={`mr-2 font-semibold ${accentText} flex-shrink-0`}>{match[1]}:</span>
+                        <span>{match[2]}</span>
+                      </li>
+                    );
+                  }
+                  return (
+                    <li key={idx} className="flex items-start text-gray-300 text-sm leading-relaxed">
+                      <span className={`mr-3 mt-1.5 w-1.5 h-1.5 rounded-full ${accentBg} flex-shrink-0`}></span>
+                      {todo}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}
 
           <div className="mt-8 text-center border-t border-gray-800 pt-6">
             <p className="text-gray-400 text-sm mb-4 italic">
-              이 결과는 당신의 고정된 운명이 아닙니다. 당신의 시스템을 더 나은 방향으로 재설계하기 위한 기초 도면입니다.
+              이 결과는 당신의 고정된 운명이 아닙니다. 당신의 시스템을 더 나은 방향으로 재설계하기 위한 기초 지도입니다.
             </p>
-            <p className="text-gray-500 text-xs tracking-widest uppercase">
+            <p className="text-gray-400 text-xs tracking-widest uppercase">
               심리 분석 · <span className="text-white font-bold">KPSY LAB</span>
             </p>
-            <p className="text-gray-600 text-[10px] mt-1">kpsylab.com</p>
+            <p className="text-gray-500 text-[10px] mt-1">kpsylab.com</p>
           </div>
         </div>
       </div>
@@ -214,7 +242,7 @@ export default function UnifiedReportCard({ data }: { data: UnifiedReportData })
             </>
           )}
         </button>
-        <p className="text-gray-500 text-xs">
+        <p className="text-gray-400 text-xs">
           * 이미지를 저장하여 SNS에 공유해보세요.
         </p>
       </div>

@@ -201,6 +201,21 @@ const JOURNALING_PROMPTS: Record<string, string[]> = {
     ]
 };
 
+function toSentenceBlock(lines: string[], max = 2): string {
+    return lines.slice(0, max).map((line) => {
+        const trimmed = line.replace(/^\*\*.*?\*\*:\s*/, "");
+        return trimmed.endsWith(".") ? trimmed : `${trimmed}.`;
+    }).join(" ");
+}
+
+function tripleLayer(observation: string, mechanism: string, adjustment: string): string {
+    return [
+        `[관찰] ${observation}`,
+        `[이유] ${mechanism}`,
+        `[실행 팁] ${adjustment}`
+    ].join("\n\n");
+}
+
 export function generateModule1Content(type: string): string {
     return generateSynthesizedItems(type).map(item => `**${item.title}**\n\n${item.content}`).join("\n\n");
 }
@@ -211,50 +226,61 @@ export function generateSynthesizedItems(type: string): ResultItem[] {
     const depthBlock = {
         id: "m1_syn_depth",
         title: "[심층 분석] 무의식 구조와 그림자 자아",
-        content: ([
-            `**핵심 기제**: ${TYPE_DEFINITIONS[t]}`,
+        content: tripleLayer(
+            `**핵심 기제**: ${TYPE_DEFINITIONS[t]} **그림자 자아**는 ${SHADOW_SELF[t]}`,
             `**심층 정신 역동**: ${DEEP_ANALYSIS[t]}`,
-            `**그림자 자아**:\n${SHADOW_SELF[t]}`
-        ].join("\n\n"))
+            `잠재력 = 실행력 − 방해 요인 관점에서, 방해 요인은 과도한 경계와 회피입니다. ${toSentenceBlock(CLINICAL_RECOMMENDATION[t], 2)}`
+        )
     };
 
     const logicBlock = {
         id: "m1_syn_logic",
         title: "[인지 패턴] 사고 및 행동 메커니즘",
-        content: ([
-            `**인지적 왜곡**:\n${COGNITIVE_DISTORTION[t]}`,
-            `**정서적 시그니처**:\n${EMOTIONAL_SIGNATURE[t]}`,
-            `**대인 관계 역동**: \n${INTERPERSONAL_DYNAMICS[t]}`,
-            `**의사소통 스타일**: \n${COMMUNICATION_STYLE[t]}`
-        ].join("\n\n"))
+        content: tripleLayer(
+            `**인지적 왜곡**: ${COGNITIVE_DISTORTION[t]} **정서적 시그니처**: ${EMOTIONAL_SIGNATURE[t]}`,
+            `**대인 관계 역동**: ${INTERPERSONAL_DYNAMICS[t]} **의사소통 스타일**: ${COMMUNICATION_STYLE[t]}`,
+            `생각-감정-행동의 연결을 풀어내는 핵심은 기록과 재해석입니다. ${toSentenceBlock(JOURNALING_PROMPTS[t], 2)}`
+        )
     };
 
     const evidenceBlock = {
         id: "m1_syn_evidence",
         title: "[행동 프로파일] 관찰된 6가지 핵심 징후",
-        content: BEHAVIORAL_PATTERNS[t].map(p => `- ${p}`).join("\n")
+        content: tripleLayer(
+            `아래 행동 패턴이 반복적으로 관찰됩니다.\n${BEHAVIORAL_PATTERNS[t].map(p => `- ${p}`).join("\n")}`,
+            `이 패턴은 불안을 줄이기 위해 생겨난 생존 전략이었지만, 시간이 지나며 행동을 막는 습관으로 굳었습니다.`,
+            `한 가지 패턴만 골라 30일 동안 조금만 바꿔 보세요. 작은 행동의 반복이 실행력 누수를 줄입니다.`
+        )
     };
 
     const prognosisBlock = {
         id: "m1_syn_prognosis",
         title: "[미래 예후] 시스템 병목 및 리스크",
-        content: GROWTH_IMPACT[t]
+        content: tripleLayer(
+            `현재 구조가 유지될 경우의 리스크는 다음과 같습니다. ${GROWTH_IMPACT[t]}`,
+            `이 리스크는 과거 환경에서 자신을 지키기 위해 선택했던 전략이 굳어진 결과로 이해할 수 있습니다.`,
+            `리스크를 줄이려면 실행 루틴과 회복 루틴을 동시에 설계해야 합니다. 하루 1개의 작은 실행과 1개의 회복을 고정하십시오.`
+        )
     };
 
     const prescriptionBlock = {
         id: "m1_syn_prescription",
         title: "[임상 솔루션] 치유와 성장을 위한 파이널 제언",
-        content: ([
-            `**1. 임상적 실행 가이드**:\n${CLINICAL_RECOMMENDATION[t].map(i => `- ${i}`).join("\n")}`,
-            `\n**2. 재양육 확언**:\n${REPARENTING_AFFIRMATIONS[t].map(i => `> "${i}"`).join("\n")}`,
-            `\n**3. 성찰 질문**:\n${JOURNALING_PROMPTS[t].map((q, i) => `${i + 1}. ${q}`).join("\n")}`
-        ].join("\n"))
+        content: tripleLayer(
+            `실행 가이드는 다음과 같습니다.\n${CLINICAL_RECOMMENDATION[t].map(i => `- ${i}`).join("\n")}`,
+            `확언은 마음을 진정시키는 데 도움 됩니다.\n${REPARENTING_AFFIRMATIONS[t].map(i => `> "${i}"`).join("\n")}`,
+            `성찰 질문으로 행동 전환을 설계하십시오.\n${JOURNALING_PROMPTS[t].map((q, i) => `${i + 1}. ${q}`).join("\n")}`
+        )
     };
 
     const obstacleBlock = {
         id: "m1_syn_obstacle",
         title: "[내·외적 방해 요인] 장애물 질문",
-        content: fullObstacleQuestions.map(q => `- ${q.text}`).join("\n")
+        content: tripleLayer(
+            `실행을 가로막는 장애물을 점검하십시오.\n${fullObstacleQuestions.map(q => `- ${q.text}`).join("\n")}`,
+            `이 질문은 방해 요인이 어디에 있는지 찾기 위한 탐지 도구입니다.`,
+            `각 질문에 대해 “오늘 당장 바꿀 수 있는 행동 1개”를 적으면 방해 요인을 줄일 수 있습니다.`
+        )
     };
 
     return [depthBlock, logicBlock, evidenceBlock, prognosisBlock, prescriptionBlock, obstacleBlock];

@@ -28,10 +28,10 @@ function getM1Teaser(type: string | null): string | null {
 
 function getProgressMessage(completed: number): { main: string; sub: string } {
     switch (completed) {
-        case 0: return { main: "데이터 스캔 대기 중", sub: "1단계 완료 시 시스템 병목 분석 결과 확인" };
+        case 0: return { main: "사유 궤적 스캔 대기 중", sub: "1단계 완료 시 시스템 병목 분석 결과 확인" };
         case 1: return { main: "아키텍처 구성 중", sub: "2단계 완료 시 현재 아키텍처 맵 공개" };
-        case 2: return { main: "데이터 동기화 중", sub: "3단계 완료 시 통합 블루프린트 발행" };
-        default: return { main: "시스템 통합 블루프린트 준비 완료", sub: "생애 최적화 도면에서 종합 결과를 확인하세요" };
+        case 2: return { main: "맥락 동기화 중", sub: "3단계 완료 시 통합 블루프린트 발행" };
+        default: return { main: "시스템 통합 블루프린트 준비 완료", sub: "생애 최적화 지도에서 종합 결과를 확인하세요" };
     }
 }
 
@@ -100,7 +100,7 @@ export default function Home() {
                 if (parsed.ideal && parsed.potential) {
                     const analysis = calculateGapAnalysis(parsed.ideal, parsed.potential);
                     const stratMap: any = { 'Alignment': '일치', 'Expansion': '확장', 'Correction': '보정', 'Pivot': '전환' };
-                    m3Result = `신뢰도 ${analysis.alignmentScore}% [${stratMap[analysis.strategy]}]`;
+                    m3Result = stratMap[analysis.strategy];
                 }
             } catch (e) { console.error("M3 Parse Error", e); }
         }
@@ -122,12 +122,10 @@ export default function Home() {
 
     return (
         <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden relative">
+            <div className="mind-architect-bg-gradient" />
+            <div className="mind-architect-bg-line" />
 
-            {/* Background Effects */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black"></div>
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
-
-            <div className="z-10 text-center max-w-5xl w-full">
+            <div className="z-10 text-center max-w-5xl w-full relative">
                 {/* 온보딩 배너 - 최초 진입 시 표시 */}
                 {showOnboarding && (
                     <div className="mb-8 relative rounded-xl border border-purple-500/30 bg-purple-950/40 p-6 text-left backdrop-blur-sm">
@@ -163,18 +161,18 @@ export default function Home() {
 
                 {/* 전체 진행률 프로그레스 바 */}
                 <div className="mb-10 max-w-md mx-auto">
-                    <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm text-gray-500 font-mono">진행률</span>
-                        <span className="text-sm font-bold text-purple-400">{progressPercent}%</span>
+                    <div className="flex justify-between items-center mb-2 text-sm">
+                        <span className="text-gray-400 font-mono">진행률</span>
+                        <span className="font-bold text-purple-400">{progressPercent}%</span>
                     </div>
                     <div className="h-2 rounded-full bg-gray-800 overflow-hidden">
                         <div
-                            className="h-full bg-gradient-to-r from-purple-600 to-purple-400 transition-all duration-700 ease-out"
+                            className="h-full bg-gradient-to-r from-purple-600 to-purple-400 transition-all duration-500"
                             style={{ width: `${progressPercent}%` }}
                         />
                     </div>
                     <p className="mt-3 text-sm text-gray-400">{progressMsg.main}</p>
-                    {progressMsg.sub && <p className="text-xs text-gray-500 mt-1">{progressMsg.sub}</p>}
+                    {progressMsg.sub && <p className="text-xs text-gray-400 mt-1">{progressMsg.sub}</p>}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
@@ -193,8 +191,8 @@ export default function Home() {
                             <div className={`mb-6 p-4 rounded-full transition-colors ${results.m1 ? "bg-red-500/20" : "bg-gray-800 group-hover:bg-red-900/20"}`}>
                                 <Activity size={32} className={results.m1 ? "text-red-500" : "text-gray-400 group-hover:text-red-500"} />
                             </div>
-                            <h2 className="text-2xl font-bold mb-1">시스템 병목 분석</h2>
-                            <p className="text-xs text-gray-500 mb-2">비효율적 사고 루프·핵심 병목 지점을 데이터로 식별</p>
+                            <h2 className="text-2xl font-bold mb-1">내가 자꾸 실패하는 심리적 원인 찾기</h2>
+                            <p className="text-xs text-gray-400 mb-2">비효율적 사고 루프·핵심 병목 지점을 맥락으로 식별</p>
                             {results.m1 && getM1Teaser(results.m1Type) ? (
                                 <p className="text-sm text-red-400/90 mb-4 font-medium italic">&quot;{getM1Teaser(results.m1Type)}&quot;</p>
                             ) : (
@@ -229,8 +227,8 @@ export default function Home() {
                             <div className={`mb-6 p-4 rounded-full transition-colors ${results.m2 ? "bg-blue-500/20" : "bg-gray-800 group-hover:bg-blue-900/20"}`}>
                                 <Brain size={32} className={results.m2 ? "text-blue-500" : "text-gray-400 group-hover:text-blue-500"} />
                             </div>
-                            <h2 className="text-2xl font-bold mb-1">현재 아키텍처 맵</h2>
-                            <p className="text-xs text-gray-500 mb-2">사회에서 나를 어떻게 인식하는지 객관적으로 볼 수 있어요</p>
+                            <h2 className="text-2xl font-bold mb-1">남들이 보는 나의 모습 분석하기</h2>
+                            <p className="text-xs text-gray-400 mb-2">사회에서 나를 어떻게 인식하는지 객관적으로 볼 수 있어요</p>
                             <p className="text-sm text-gray-400 mb-4">남들이 보는 나의 모습 분석하기</p>
                             <span className={`text-sm px-3 py-1 rounded border font-bold ${results.m2 ? "border-blue-500 text-blue-400 bg-blue-500/5" : "border-gray-700 text-gray-500"}`}>
                                 {results.m2 || "분석 시작"}
@@ -261,8 +259,8 @@ export default function Home() {
                             <div className={`mb-6 p-4 rounded-full transition-colors ${results.m3 ? "bg-purple-500/20" : "bg-gray-800 group-hover:bg-purple-900/20"}`}>
                                 <BarChart3 size={32} className={results.m3 ? "text-purple-500" : "text-gray-400 group-hover:text-purple-500"} />
                             </div>
-                            <h2 className="text-2xl font-bold mb-1">타겟 컨피그레이션</h2>
-                            <p className="text-xs text-gray-500 mb-2">지향하는 최적 상태를 설계 목표치로 정의·격차 전략 도출</p>
+                            <h2 className="text-2xl font-bold mb-1">원하는 미래로 가는 길 찾기</h2>
+                            <p className="text-xs text-gray-400 mb-2">지향하는 최적 상태를 설계 목표치로 정의·격차 전략 도출</p>
                             <p className="text-sm text-gray-400 mb-4">자원을 가장 효율적으로 배분할 목표 설계 수립</p>
                             <span className={`text-sm px-3 py-1 rounded border font-bold ${results.m3 ? "border-purple-500 text-purple-400 bg-purple-500/5" : "border-gray-700 text-gray-500"}`}>
                                 {results.m3 || "분석 시작"}
@@ -279,15 +277,26 @@ export default function Home() {
                     </div>
                 </div>
 
-                <div className="mt-8">
+                <div className="mt-8 flex flex-col items-center gap-4">
                     {(results.m1 && results.m2 && results.m3) ? (
-                        <Link href="/growth-roadmap/report" className="group/btn px-12 py-4 rounded-full font-bold text-lg tracking-widest transition-all duration-300 flex items-center gap-4 mx-auto bg-white text-black hover:bg-gray-200 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] w-fit">
-                            <Sparkles className="w-5 h-5 text-black group-hover/btn:animate-pulse" />
-                            최종 아키텍처 확인 <ArrowRight />
-                        </Link>
+                        <>
+                            <Link href="/growth-roadmap/report" className="group/btn px-12 py-4 rounded-full font-bold text-lg tracking-widest transition-all duration-300 flex items-center gap-4 mx-auto bg-white text-black hover:bg-gray-200 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] w-fit">
+                                <Sparkles className="w-5 h-5 text-black group-hover/btn:animate-pulse" />
+                                최종 아키텍처 확인 <ArrowRight />
+                            </Link>
+                            <div className="flex items-center gap-6 text-sm">
+                                <Link href="/growth-roadmap/run" className="text-gray-400 hover:text-white underline underline-offset-2">
+                                    재검사
+                                </Link>
+                                <span className="text-gray-500">|</span>
+                                <Link href="/growth-roadmap/report" className="text-gray-400 hover:text-white underline underline-offset-2">
+                                    이전 결과
+                                </Link>
+                            </div>
+                        </>
                     ) : (
                         <button
-                            className="px-12 py-4 rounded-full font-bold text-lg tracking-widest transition-all duration-300 flex items-center gap-4 mx-auto bg-gray-900 text-gray-600 border border-gray-800 hover:bg-gray-800 cursor-not-allowed"
+                            className="px-12 py-4 rounded-full font-bold text-lg tracking-widest transition-all duration-300 flex items-center gap-4 mx-auto bg-gray-900 text-gray-500 border border-gray-800 hover:bg-gray-800 cursor-not-allowed"
                             disabled
                         >
                             최종 아키텍처 확인 <Lock className="w-5 h-5" />
@@ -300,7 +309,7 @@ export default function Home() {
                     )}
                 </div>
 
-                <footer className="mt-20 text-gray-700 text-xs font-mono">
+                <footer className="mt-20 text-gray-500 text-xs font-mono">
                     시스템 버전 3.1.0 (통합형) | 마인드 아키텍터 프로젝트
                 </footer>
             </div>

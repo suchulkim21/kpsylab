@@ -1,198 +1,100 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { SCENARIOS } from "@growth-roadmap/data/module2/scenarios";
-import { Scenario, ScenarioOption } from "@growth-roadmap/types/module2";
-import { calculateIntermediateResult } from "@growth-roadmap/lib/module2/analysis";
-import IntermediateResult from "./IntermediateResult";
+import { SCENARIOS_15 } from "@growth-roadmap/data/module2/scenarios";
+import { MODULE2_SCENARIO_TOTAL, MODULE2_SCENARIO_PER_PHASE } from "@growth-roadmap/lib/constants";
+import { ScenarioOption } from "@growth-roadmap/types/module2";
 
-export default function ScenarioTester() {
+type ScenarioTesterProps = { resultPath?: string };
+
+/** 질의 1·3과 동일: 시나리오 15문항 한 번에 진행, 중간 단계 없음 */
+export default function ScenarioTester({ resultPath }: ScenarioTesterProps) {
     const router = useRouter();
-    const [currentPhase, setCurrentPhase] = useState(1);
     const [currentScenarioIdx, setCurrentScenarioIdx] = useState(0);
     const [selections, setSelections] = useState<ScenarioOption[]>([]);
 
-    // Phase 1: 0-8 (9 items)
-    // Phase 2: 9-17 (9 items)
-    // Phase 3: 18-26 (9 items)
-    const [phaseScenarios, setPhaseScenarios] = useState<Scenario[]>([]);
-
-    const [intermediateResult, setIntermediateResult] = useState<any>(null);
-    const [showIntermediate, setShowIntermediate] = useState(false);
-    const [phaseSelections, setPhaseSelections] = useState<{
-        phase1: ScenarioOption[];
-        phase2: ScenarioOption[];
-        phase3: ScenarioOption[];
-    }>({ phase1: [], phase2: [], phase3: [] });
-
-    // Initialize or Update Scenarios based on Phase
-    useEffect(() => {
-        const startIdx = (currentPhase - 1) * 9;
-        const endIdx = startIdx + 9;
-        setPhaseScenarios(SCENARIOS.slice(startIdx, endIdx));
-        setCurrentScenarioIdx(0);
-        setIntermediateResult(null);
-        setShowIntermediate(false);
-        // Phase가 바뀔 때 selections 초기화 (새 Phase 시작)
-        if (currentPhase > 1) {
-            setSelections([]);
-        }
-    }, [currentPhase]);
+    const scenariosPool = SCENARIOS_15;
+    const currentScenario = scenariosPool[currentScenarioIdx];
+    const progress = Math.round(((currentScenarioIdx + 1) / MODULE2_SCENARIO_TOTAL) * 100);
 
     const handleOptionSelect = (option: ScenarioOption) => {
         const newSelections = [...selections, option];
-        setSelections(newSelections);
 
-        if (currentScenarioIdx < phaseScenarios.length - 1) {
-            setCurrentScenarioIdx(prev => prev + 1);
+        if (currentScenarioIdx < MODULE2_SCENARIO_TOTAL - 1) {
+            setSelections(newSelections);
+            setCurrentScenarioIdx((prev) => prev + 1);
         } else {
-            // Phase Complete
-            const result = calculateIntermediateResult(currentPhase, newSelections);
-            setIntermediateResult(result);
-            setShowIntermediate(true);
-            
-            // 현재 Phase의 선택 저장
-            if (currentPhase === 1) {
-                setPhaseSelections(prev => ({ ...prev, phase1: newSelections }));
-            } else if (currentPhase === 2) {
-                setPhaseSelections(prev => ({ ...prev, phase2: newSelections }));
-            } else if (currentPhase === 3) {
-                setPhaseSelections(prev => ({ ...prev, phase3: newSelections }));
-            }
-        }
-    };
+            // 분석에 필요한 문항 수만큼 완료 → 저장 후 결과 페이지로
+            const phase1Selections = newSelections.slice(0, MODULE2_SCENARIO_PER_PHASE);
+            const phase2Selections = newSelections.slice(MODULE2_SCENARIO_PER_PHASE, MODULE2_SCENARIO_PER_PHASE * 2);
+            const phase3Selections = newSelections.slice(MODULE2_SCENARIO_PER_PHASE * 2, MODULE2_SCENARIO_TOTAL);
+            const phaseSelections = { phase1: phase1Selections, phase2: phase2Selections, phase3: phase3Selections };
 
-    const handleNextPhase = () => {
-        if (currentPhase < 3) {
-            // 현재 Phase의 선택을 저장
-            const currentPhaseSelections = selections.slice();
-            if (currentPhase === 1) {
-                setPhaseSelections(prev => ({ ...prev, phase1: currentPhaseSelections }));
-            } else if (currentPhase === 2) {
-                setPhaseSelections(prev => ({ ...prev, phase2: currentPhaseSelections }));
-            }
-            
-            setCurrentPhase(prev => prev + 1);
-        } else {
-            // Phase 3 완료 - 최종 저장
-            const finalPhaseSelections = { ...phaseSelections, phase3: selections };
-            
-            // Phase별 선택 분리
-            const phase1Selections = finalPhaseSelections.phase1;
-            const phase2Selections = finalPhaseSelections.phase2;
-            const phase3Selections = finalPhaseSelections.phase3;
-            
-            // 모든 선택 합치기
-            const allSelections = [...phase1Selections, ...phase2Selections, ...phase3Selections];
-            
-            // 일관성 검증 (비동기)
-            import('@growth-roadmap/lib/module2/consistencyCheck').then(({ checkAnswerConsistency }) => {
-                const consistencyResult = checkAnswerConsistency(allSelections, finalPhaseSelections);
-                
+            import("@growth-roadmap/lib/module2/consistencyCheck").then(({ checkAnswerConsistency }) => {
+                const consistencyResult = checkAnswerConsistency(newSelections, phaseSelections);
                 const totalScores = { proactivity: 0, adaptability: 0, socialDistance: 0 };
-                allSelections.forEach(opt => {
+                newSelections.forEach((opt) => {
                     if (opt.weight.proactivity) totalScores.proactivity += opt.weight.proactivity;
                     if (opt.weight.adaptability) totalScores.adaptability += opt.weight.adaptability;
                     if (opt.weight.socialDistance) totalScores.socialDistance += opt.weight.socialDistance;
                 });
-
                 const resultData = {
                     timestamp: new Date().toISOString(),
                     analysis: totalScores,
                     scores: totalScores,
-                    rawSelections: allSelections,
+                    rawSelections: newSelections,
                     consistency: consistencyResult,
-                    phaseSelections: finalPhaseSelections
+                    phaseSelections,
                 };
-                localStorage.setItem('sg_module2_result', JSON.stringify(resultData));
-                fetch('/api/analytics/service-usage', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ serviceName: 'mind-architect-m2', actionType: 'complete' }),
+                localStorage.setItem("sg_module2_result", JSON.stringify(resultData));
+                fetch("/api/analytics/service-usage", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ serviceName: "mind-architect-m2", actionType: "complete" }),
                 }).catch(() => {});
-                router.push('/growth-roadmap/module2/result');
+                router.push(resultPath ?? "/growth-roadmap/module2/result");
             });
         }
     };
 
-    if (showIntermediate && intermediateResult) {
-        return (
-            <IntermediateResult
-                phase={currentPhase}
-                result={intermediateResult}
-                onNext={handleNextPhase}
-            />
-        );
+    if (!currentScenario) {
+        return <div className="text-gray-400 font-mono p-4">로딩 중...</div>;
     }
 
-    const currentScenario = phaseScenarios[currentScenarioIdx];
-    if (!currentScenario) return <div>로딩 중...</div>;
-
-    // Calculate progress for current phase
-    const progress = Math.round(((currentScenarioIdx + 1) / phaseScenarios.length) * 100);
-
     return (
-        <div style={{ width: '100%', maxWidth: '56rem', margin: '0 auto', padding: '1rem' }} className="animate-fade-in-up">
-            {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', alignItems: 'center' }}>
+        <div className="w-full max-w-2xl mx-auto p-4 z-10 relative animate-fade-in-up">
+            <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h2 style={{ color: 'rgba(255,255,255,0.9)', fontSize: '1.5rem', fontWeight: 'bold' }}>
-                        Phase 0{currentPhase} <span style={{ fontSize: '1rem', fontWeight: 'normal', color: '#6b7280' }}>// 시나리오 분석</span>
-                    </h2>
+                    <h2 className="text-xl font-bold text-gray-100">시나리오 분석</h2>
+                    <p className="text-xs text-gray-400 font-mono mt-1">대인 관계 및 행동</p>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <span style={{ color: '#4ade80', fontSize: '0.875rem' }}>
-                        {currentScenarioIdx + 1} / {phaseScenarios.length}
+                <div className="text-right">
+                    <span className="text-sm text-purple-400 font-mono block">
+                        시나리오 {currentScenarioIdx + 1} / {MODULE2_SCENARIO_TOTAL}
                     </span>
+                    <div className="text-2xl font-bold font-mono text-gray-400 mt-1">{progress}%</div>
                 </div>
             </div>
-
-            {/* Progress Bar */}
-            <div style={{ width: '100%', height: '4px', backgroundColor: '#374151', borderRadius: '2px', marginBottom: '3rem' }}>
-                <div style={{
-                    width: `${progress}%`,
-                    height: '100%',
-                    backgroundColor: '#3b82f6',
-                    borderRadius: '2px',
-                    transition: 'width 0.3s ease'
-                }}></div>
+            <div className="h-2 rounded-full bg-gray-800 overflow-hidden mb-10">
+                <div
+                    className="h-full bg-gradient-to-r from-purple-600 to-purple-400 transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                />
             </div>
 
-            {/* Scenario Card */}
-            <div style={{ backgroundColor: 'rgba(17, 24, 39, 0.7)', border: '1px solid rgba(75, 85, 99, 0.4)', padding: '2.5rem', borderRadius: '1.5rem', marginBottom: '2rem' }}>
-                <p style={{ fontSize: '1.35rem', color: 'white', marginBottom: '2.5rem', lineHeight: '1.6', fontWeight: '500' }}>
+            <div className="glass-panel p-8 md:p-10 rounded-xl mb-8 min-h-[180px]">
+                <p className="text-lg md:text-xl text-white mb-8 leading-relaxed font-medium">
                     {currentScenario.situation}
                 </p>
-
-                <div style={{ display: 'grid', gap: '1rem' }}>
-                    {currentScenario.options?.map((opt, idx) => (
+                <div className="grid gap-4">
+                    {currentScenario.options?.map((opt) => (
                         <button
                             key={opt.id}
                             onClick={() => handleOptionSelect(opt)}
-                            style={{
-                                width: '100%',
-                                padding: '1.25rem',
-                                textAlign: 'left',
-                                backgroundColor: 'rgba(255,255,255,0.03)',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                borderRadius: '1rem',
-                                color: '#e5e7eb',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                                position: 'relative',
-                                overflow: 'hidden'
-                            }}
-                            onMouseOver={(e) => {
-                                e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)';
-                                e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.5)';
-                            }}
-                            onMouseOut={(e) => {
-                                e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)';
-                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
-                            }}
+                            className="w-full p-5 text-left rounded-xl border border-white/10 bg-white/5 text-gray-200 hover:bg-white/10 hover:border-purple-500/40 transition-all cursor-pointer"
                         >
-                            <div style={{ fontSize: '1.1rem' }}>{opt.text}</div>
+                            <span className="text-base">{opt.text}</span>
                         </button>
                     ))}
                 </div>

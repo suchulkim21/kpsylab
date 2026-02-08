@@ -40,8 +40,11 @@ export const analyzeInterference = (shadowData: string[]) => {
 
     let total = 0;
     shadowData.forEach(id => {
-        const type = id.split('_')[1];
-        if (counts[type] !== undefined) {
+        const part = id.split('_')[1];
+        // 지원 형식: "Q01_A" (part=A) 또는 단일 문자 "A" (id 자체가 타입). 반드시 대문자 A/B/C/D로 매핑
+        const raw = part !== undefined ? part : (id && /^[ABCD]$/i.test(String(id)) ? String(id) : undefined);
+        const type = raw ? String(raw).toUpperCase() as keyof typeof counts : undefined;
+        if (type && counts[type] !== undefined) {
             counts[type]++;
             total++;
         }
@@ -55,18 +58,10 @@ export const analyzeInterference = (shadowData: string[]) => {
         D: total > 0 ? (counts.D / total).toFixed(2) : "0"
     };
 
-    // Determine Dominant Interference Factor
-    // Logic: Find max value in vector
-    let maxVal = -1;
-    let dominantType = 'A'; // Default
-
-    Object.entries(vector).forEach(([type, val]) => {
-        const numVal = parseFloat(val);
-        if (numVal > maxVal) {
-            maxVal = numVal;
-            dominantType = type;
-        }
-    });
+    // 동점이면 비율이 가장 높은 것 중 마지막(알파벳 순 D에 가깝게)이 아니라, 첫 번째 최대값 사용
+    const sorted = (["A", "B", "C", "D"] as const).map((t) => ({ type: t, val: parseFloat(vector[t]) })).sort((a, b) => b.val - a.val);
+    const maxVal = sorted[0]?.val ?? 0;
+    const dominantType = maxVal > 0 ? sorted[0]!.type : "A";
 
     return {
         vector, // Normalized scores

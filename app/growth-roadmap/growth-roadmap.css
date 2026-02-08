@@ -61,3 +61,71 @@ body {
 .animate-fade-in-up {
   animation: fadeInUp 0.5s ease-out forwards;
 }
+
+/* ========== 마인드 아키텍터 디자인 통일 ========== */
+/* 페이지 공통 배경 (div로 사용) */
+.mind-architect-bg-gradient {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgb(88 28 135 / 0.2), transparent 55%, #000);
+  pointer-events: none;
+  z-index: 0;
+}
+.mind-architect-bg-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, rgb(168 85 247 / 0.5), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* 모듈 배지 (공통 형태, 색상은 페이지에서 지정) */
+.mind-architect-badge {
+  font-family: var(--font-code), monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  border-width: 1px;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  display: inline-block;
+}
+
+/* 인트로 메인 CTA */
+.mind-architect-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 2.5rem;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  font-size: 1rem;
+  background: #fff;
+  color: #000;
+  transition: all 0.2s;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+.mind-architect-btn-primary:hover {
+  background: rgb(229 231 235);
+}
+
+/* 인트로 보조 버튼 */
+.mind-architect-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 2.5rem;
+  border: 1px solid rgb(75 85 99);
+  border-radius: 0.75rem;
+  font-weight: 500;
+  font-size: 1rem;
+  color: rgb(209 213 219);
+  transition: all 0.2s;
+}
+.mind-architect-btn-secondary:hover {
+  background: rgb(31 41 55);
+  color: #fff;
+}

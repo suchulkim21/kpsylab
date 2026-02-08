@@ -68,7 +68,7 @@ const TYPE_DESCRIPTIONS = {
 function normalize(score: number): number {
     const min = -40;
     const max = 100;
-    let normalized = ((score - min) / (max - min)) * 100;
+    const normalized = ((score - min) / (max - min)) * 100;
     return Math.max(0, Math.min(100, Math.round(normalized)));
 }
 

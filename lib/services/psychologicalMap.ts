@@ -28,11 +28,14 @@ function formatDate(iso: string): string {
   }
 }
 
+/** 모듈 이력 항목 (result는 선택적 — 로그 생성 시 미사용) */
+export type ModuleHistoryEntryLike = Pick<ModuleHistoryEntry, "moduleId" | "timestamp"> & Partial<Pick<ModuleHistoryEntry, "result" | "dominantType">>;
+
 export interface PsychologicalMapInput {
   m1?: { dominantType: string; timestamp: string; isRetest?: boolean; previousType?: string };
   m2?: { typeCode?: string; timestamp: string };
   m3?: { timestamp: string };
-  moduleHistory?: ModuleHistoryEntry[];
+  moduleHistory?: ModuleHistoryEntryLike[];
 }
 
 /**
