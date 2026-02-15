@@ -1,0 +1,921 @@
+/* ============================================
+   KPSY Typing Immersion Module - Style
+   ============================================ */
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;600;700&display=swap');
+
+:root {
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-surface: #1a1a26;
+  --text-primary: #e0e0e8;
+  --text-secondary: #888899;
+  --text-dim: #555566;
+  --accent-cyan: #00ffff;
+  --accent-magenta: #ff00ff;
+  --accent-orange: #ffa500;
+  --accent-red: #ff0000;
+  --border-color: #2a2a3a;
+  --font-main: 'Inter', 'Noto Sans KR', sans-serif;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-main);
+}
+
+.hidden {
+  display: none !important;
+}
+
+#app {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* ============================================ 시작 화면 */
+#start-screen {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+}
+
+#intro-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#start-content {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#start-title {
+  margin-bottom: 8px;
+  user-select: none;
+}
+
+.title-kpsy {
+  font-size: 3.6rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--text-primary);
+  text-shadow: 0 0 40px rgba(0, 255, 255, 0.3);
+}
+
+.title-typing {
+  display: block;
+  font-size: 1.4rem;
+  font-weight: 300;
+  letter-spacing: 0.3em;
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+  margin-top: -4px;
+}
+
+#start-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  margin-bottom: 40px;
+}
+
+#start-levels {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+.start-level-btn {
+  padding: 8px 22px;
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-secondary);
+  font-family: var(--font-main);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  user-select: none;
+}
+
+.start-level-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--text-dim);
+}
+
+.start-level-btn.active {
+  color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+  background: rgba(0, 255, 255, 0.06);
+  box-shadow: 0 0 16px rgba(0, 255, 255, 0.1);
+}
+
+/* 스테이지 선택 */
+#start-stages {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+#start-stages.hidden {
+  display: none !important;
+}
+
+.start-stage-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 18px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-secondary);
+  font-family: var(--font-main);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  user-select: none;
+  min-width: 64px;
+}
+
+.start-stage-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--text-dim);
+}
+
+.start-stage-btn.active {
+  color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+  background: rgba(0, 255, 255, 0.06);
+  box-shadow: 0 0 12px rgba(0, 255, 255, 0.1);
+}
+
+.stage-num {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.stage-desc {
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
+#start-btn {
+  display: inline-block;
+  padding: 14px 52px;
+  border: 1px solid var(--accent-cyan);
+  border-radius: 32px;
+  background: rgba(0, 255, 255, 0.06);
+  color: var(--accent-cyan);
+  font-family: var(--font-main);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+#start-btn:hover {
+  background: rgba(0, 255, 255, 0.12);
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+#start-hint {
+  margin-top: 16px;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+}
+
+/* ============================================ 결과 화면 */
+#results-screen {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+}
+
+#results-content {
+  text-align: center;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+#grade-badge {
+  margin-bottom: 20px;
+}
+
+#grade-icon {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.2rem;
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+#grade-name {
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+#grade-message {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  line-height: 1.6;
+  max-width: 360px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#promotion-action {
+  background: rgba(0, 255, 136, 0.1);
+  border: 1px solid var(--accent-green);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.promo-text {
+  color: var(--accent-green);
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
+#promote-btn {
+  font-size: 1.1rem;
+  padding: 0.8rem 2rem;
+  background: var(--accent-green);
+  color: #000;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+}
+
+#promote-btn:hover {
+  background: #fff;
+  transform: translateY(-2px);
+}
+
+/* 배틀 통계 */
+#battle-stats {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.stat-icon {
+  font-size: 1.3rem;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+#results-stats-desc {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+  max-width: 340px;
+  margin: -8px auto 24px;
+}
+
+#retry-btn {
+  padding: 12px 44px;
+  border: 1px solid var(--accent-cyan);
+  border-radius: 28px;
+  background: rgba(0, 255, 255, 0.06);
+  color: var(--accent-cyan);
+  font-family: var(--font-main);
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+#retry-btn:hover {
+  background: rgba(0, 255, 255, 0.12);
+  box-shadow: 0 0 24px rgba(0, 255, 255, 0.12);
+}
+
+/* 등급 색상 */
+.grade-bronze #grade-icon {
+  background: linear-gradient(135deg, #8B6914, #CD853F);
+  box-shadow: 0 0 30px rgba(205, 133, 63, 0.3);
+}
+
+.grade-bronze #grade-name {
+  color: #CD853F;
+}
+
+.grade-silver #grade-icon {
+  background: linear-gradient(135deg, #708090, #C0C0C0);
+  box-shadow: 0 0 30px rgba(192, 192, 192, 0.3);
+}
+
+.grade-silver #grade-name {
+  color: #C0C0C0;
+}
+
+.grade-gold #grade-icon {
+  background: linear-gradient(135deg, #DAA520, #FFD700);
+  box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+}
+
+.grade-gold #grade-name {
+  color: #FFD700;
+}
+
+.grade-platinum #grade-icon {
+  background: linear-gradient(135deg, #7B68EE, #9370DB);
+  box-shadow: 0 0 40px rgba(147, 112, 219, 0.4);
+}
+
+.grade-platinum #grade-name {
+  color: #9370DB;
+}
+
+.grade-diamond #grade-icon {
+  background: linear-gradient(135deg, #00CED1, #00FFFF, #FFF);
+  box-shadow: 0 0 50px rgba(0, 255, 255, 0.5);
+  animation: badgePulse 1.5s ease-in-out infinite, diamondGlow 3s ease-in-out infinite;
+}
+
+.grade-diamond #grade-name {
+  color: var(--accent-cyan);
+  text-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+}
+
+@keyframes diamondGlow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 50px rgba(0, 255, 255, 0.5);
+  }
+
+  50% {
+    box-shadow: 0 0 70px rgba(0, 255, 255, 0.7), 0 0 100px rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* ============================================ 게임 화면 */
+#game-screen {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 스테이지 토스트 (자동 사라짐) */
+#stage-toast {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 60;
+  padding: 16px 28px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  text-align: center;
+  line-height: 1.5;
+  box-shadow: 0 0 32px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  animation: toast-in 0.25s ease;
+}
+
+#stage-toast.hidden {
+  display: none !important;
+}
+
+#stage-toast.promote {
+  border-color: var(--accent-magenta);
+  color: var(--accent-magenta);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* 네비 바 */
+#navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  height: 48px;
+  flex-shrink: 0;
+  background: rgba(12, 12, 20, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
+  z-index: 200;
+  position: relative;
+}
+
+#nav-timer {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  letter-spacing: 0.05em;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+}
+
+#nav-timer.hidden,
+#nav-levels.hidden {
+  display: none;
+}
+
+#nav-timer.warn {
+  color: var(--accent-orange);
+}
+
+#nav-timer.critical {
+  color: #ff2222;
+  animation: pulse-timer 0.6s ease infinite;
+}
+
+@keyframes pulse-timer {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+}
+
+#tier-indicator {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+  letter-spacing: 0.08em;
+}
+
+#submit-hint {
+  font-size: 0.8rem;
+  color: var(--accent-cyan);
+  margin-top: 8px;
+  animation: fade-blink 1.2s ease infinite;
+}
+
+#submit-hint.hidden {
+  display: none;
+}
+
+@keyframes fade-blink {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* 실시간 타수 */
+#live-cpm {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-top: 6px;
+  transition: color 0.3s;
+}
+
+#live-cpm.hidden {
+  display: none;
+}
+
+#live-cpm.hot {
+  color: var(--accent-orange);
+}
+
+#live-cpm.fire {
+  color: #ff2222;
+  text-shadow: 0 0 8px rgba(255, 34, 34, 0.3);
+}
+
+/* EXCELLENT 플래시 */
+#excellent-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+#excellent-flash.hidden {
+  display: none;
+}
+
+#excellent-text {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #ffd700;
+  text-shadow: 0 0 30px rgba(255, 215, 0, 0.6), 0 0 60px rgba(255, 165, 0, 0.3);
+  animation: excellent-pop 0.8s ease forwards;
+}
+
+@keyframes excellent-pop {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+
+  30% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+
+  70% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1.1);
+    opacity: 0;
+  }
+}
+
+#nav-logo {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  user-select: none;
+}
+
+#nav-logo .logo-sub {
+  font-weight: 300;
+  color: var(--text-secondary);
+  margin-left: 4px;
+}
+
+#nav-levels {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.level-btn {
+  padding: 5px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-main);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  user-select: none;
+}
+
+.level-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--text-dim);
+}
+
+.level-btn.active {
+  color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+  background: rgba(0, 255, 255, 0.06);
+}
+
+/* 배틀 영역 (상단) */
+#battle-section {
+  flex: 3;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-primary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  min-height: 140px;
+}
+
+#battle-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* 이퀄라이저 영역 (하단) */
+#equalizer-section {
+  flex: 2;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-primary);
+  min-height: 80px;
+}
+
+#equalizer-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* 진행 바 */
+#progress-track {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.05);
+  z-index: 5;
+}
+
+#progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--accent-cyan);
+  transition: width 0.5s, background 0.5s;
+  box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+}
+
+/* 타자 입력 영역 */
+#typing-section {
+  position: relative;
+  flex-shrink: 0;
+  padding: 24px 48px 32px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+}
+
+#ambient-border {
+  position: absolute;
+  top: -2px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: transparent;
+  transition: background 0.3s, box-shadow 0.3s;
+  pointer-events: none;
+}
+
+#prompt-area {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+#prompt-text {
+  font-size: 1.4rem;
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  line-height: 1.7;
+  word-break: keep-all;
+  user-select: none;
+}
+
+#prompt-text .char {
+  transition: color 0.15s, opacity 0.15s;
+}
+
+#prompt-text .char.correct {
+  color: var(--text-dim);
+  opacity: 0.5;
+}
+
+/* Seamless Progression Animations */
+@keyframes slideInNext {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-in {
+  animation: slideInNext 0.3s ease-out forwards;
+}
+
+@keyframes ambientFlash {
+  0% {
+    opacity: 0;
+    background: transparent;
+  }
+
+  20% {
+    opacity: 0.8;
+    background: var(--accent-cyan);
+    box-shadow: 0 0 50px var(--accent-cyan);
+  }
+
+  100% {
+    opacity: 0;
+    background: transparent;
+  }
+}
+
+@keyframes promoteFlash {
+  0% {
+    opacity: 0;
+    background: transparent;
+  }
+
+  10% {
+    opacity: 1;
+    background: #fff;
+    box-shadow: 0 0 100px #fff;
+  }
+
+  100% {
+    opacity: 0;
+    background: transparent;
+  }
+}
+
+.flash-normal {
+  animation: ambientFlash 0.5s ease-out;
+}
+
+.flash-promote {
+  animation: promoteFlash 1.2s ease-out;
+}
+
+#prompt-text .char.incorrect {
+  color: var(--accent-red);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+#prompt-text .char.current {
+  color: var(--accent-cyan);
+  position: relative;
+}
+
+#prompt-text .char.current::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--accent-cyan);
+  animation: blink 1s ease-in-out infinite;
+}
+
+@keyframes blink {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.3;
+  }
+}
+
+#input-area {
+  display: flex;
+  justify-content: center;
+}
+
+#typing-input {
+  width: 100%;
+  max-width: 600px;
+  padding: 12px 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  outline: none;
+  caret-color: var(--accent-cyan);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+#typing-input:focus {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 16px rgba(0, 255, 255, 0.08);
+}
+
+#typing-input::placeholder {
+  color: var(--text-dim);
+  font-weight: 300;
+}
+
+@media (max-width: 768px) {
+  .title-kpsy {
+    font-size: 2.4rem;
+  }
+
+  #typing-section {
+    padding: 16px 20px 24px;
+  }
+
+  #prompt-text {
+    font-size: 1.1rem;
+  }
+
+  #typing-input {
+    font-size: 0.95rem;
+    padding: 10px 14px;
+  }
+
+  #navbar {
+    padding: 0 12px;
+    height: 42px;
+  }
+
+  .level-btn {
+    padding: 4px 10px;
+    font-size: 0.72rem;
+  }
+}

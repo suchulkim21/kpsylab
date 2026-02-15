@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Shield } from 'lucide-react';
-import { BLOG_ENABLED, MIND_ARCHITECT_ENABLED, MNPS_ENABLED } from '@/lib/constants/featureFlags';
+import { BLOG_ENABLED, MIND_ARCHITECT_ENABLED, MNPS_ENABLED, TYPING_GAME_ENABLED } from '@/lib/constants/featureFlags';
 
 export default function Navigation() {
   return (
@@ -51,6 +51,14 @@ export default function Navigation() {
             className="text-white hover:text-gray-200 transition-colors text-sm"
           >
             블로그
+          </Link>
+        )}
+        {TYPING_GAME_ENABLED && (
+          <Link
+            href="/game"
+            className="text-emerald-300 hover:text-emerald-200 transition-colors text-sm"
+          >
+            타자 게임
           </Link>
         )}
         <Link

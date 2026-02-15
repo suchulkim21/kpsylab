@@ -67,14 +67,22 @@ export function middleware(request: NextRequest) {
     );
   }
 
+  // 정적 게임 파일은 미들웨어 건너뛰기 (iframe 허용)
+  if (pathname.startsWith('/game/')) {
+    return NextResponse.next();
+  }
+
   // 응답 생성
   const response = NextResponse.next();
+
+  // 게임 페이지는 자체 iframe 허용
+  const isGamePage = pathname === '/game';
 
   // 보안 헤더 설정
   const securityHeaders: Record<string, string> = {
     // XSS 보호
     'X-Content-Type-Options': 'nosniff',
-    'X-Frame-Options': 'DENY',
+    'X-Frame-Options': isGamePage ? 'SAMEORIGIN' : 'DENY',
     'X-XSS-Protection': '1; mode=block',
     
     // Referrer Policy
@@ -84,7 +92,7 @@ export function middleware(request: NextRequest) {
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
     
     // Content Security Policy (CSP)
-    'Content-Security-Policy': process.env.NODE_ENV === 'production' 
+    'Content-Security-Policy': process.env.NODE_ENV === 'production'
       ? [
           "default-src 'self'",
           "script-src 'self' 'unsafe-inline'", // Next.js 필요
@@ -92,7 +100,8 @@ export function middleware(request: NextRequest) {
           "img-src 'self' data: https: images.unsplash.com www.kpsylab.com kpsylab.com",
           "font-src 'self' data: https://fonts.gstatic.com",
           "connect-src 'self' https:",
-          "frame-ancestors 'none'",
+          isGamePage ? "frame-ancestors 'self'" : "frame-ancestors 'none'",
+          "frame-src 'self'",
           "base-uri 'self'",
           "form-action 'self'",
         ].join('; ')
@@ -103,7 +112,8 @@ export function middleware(request: NextRequest) {
           "img-src 'self' data: https:",
           "font-src 'self' data: https://fonts.gstatic.com",
           "connect-src 'self' https: http://localhost:* ws://localhost:*",
-          "frame-ancestors 'none'",
+          isGamePage ? "frame-ancestors 'self'" : "frame-ancestors 'none'",
+          "frame-src 'self'",
         ].join('; '),
   };
 

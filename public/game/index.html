@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="KPSY LAB - 타자 몰입도 측정 모듈. 졸라맨 배틀과 함께 타자 연습!">
+  <title>KPSY | Typing Immersion</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div id="app">
+    <!-- ====== 네비게이션 바 (전역) ====== -->
+    <nav id="navbar">
+      <div id="nav-logo" style="cursor:pointer">KPSY <span class="logo-sub">Typing</span></div>
+      <div id="nav-timer" class="hidden">03:00:00</div>
+      <div id="nav-levels" class="hidden">
+        <button class="level-btn active" data-level="beginner">초급</button>
+        <button class="level-btn" data-level="intermediate">중급</button>
+        <button class="level-btn" data-level="advanced">고급</button>
+      </div>
+    </nav>
+
+    <!-- ====== 시작 화면 ====== -->
+    <div id="start-screen">
+      <canvas id="intro-canvas"></canvas>
+      <div id="start-content">
+        <h1 id="start-title">
+          <span class="title-kpsy">KPSY</span>
+          <span class="title-typing">Typing</span>
+        </h1>
+        <p id="start-subtitle">타자 몰입도 측정</p>
+        <div id="start-levels">
+          <button class="start-level-btn active" data-level="beginner">초급</button>
+          <button class="start-level-btn" data-level="intermediate">중급</button>
+          <button class="start-level-btn" data-level="advanced">고급</button>
+        </div>
+        <div id="start-stages">
+          <button class="start-stage-btn active" data-stage="all">전체</button>
+          <button class="start-stage-btn" data-stage="b1">
+            <span class="stage-num">1</span>
+            <span class="stage-desc">한 글자</span>
+          </button>
+          <button class="start-stage-btn" data-stage="b2">
+            <span class="stage-num">2</span>
+            <span class="stage-desc">단어</span>
+          </button>
+          <button class="start-stage-btn" data-stage="b3">
+            <span class="stage-num">3</span>
+            <span class="stage-desc">짧은 문구</span>
+          </button>
+          <button class="start-stage-btn" data-stage="b4">
+            <span class="stage-num">4</span>
+            <span class="stage-desc">문장</span>
+          </button>
+        </div>
+        <button id="start-btn">시작하기</button>
+        <p id="start-hint">3분 제한 · 스페이스/엔터로 제출 · 등급은 평균 타속(CPM) 기준</p>
+      </div>
+    </div>
+
+    <!-- ====== 결과 화면 ====== -->
+    <div id="results-screen" class="hidden">
+      <div id="results-content">
+        <div id="grade-badge">
+          <div id="grade-icon"></div>
+          <div id="grade-name"></div>
+        </div>
+        <p id="grade-message"></p>
+        <div id="battle-stats">
+          <div class="stat-item">
+            <span class="stat-icon">⚔</span>
+            <span id="result-kills">0</span>
+            <span class="stat-label">처치</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-icon">⚡</span>
+            <span id="result-avg-cpm">0</span>
+            <span class="stat-label">타/분</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-icon">🎯</span>
+            <span id="result-accuracy">0</span>
+            <span class="stat-label">%</span>
+          </div>
+        </div>
+        <p id="results-stats-desc">스테이지별 목표(평균 타/분)를 달성하면 자동으로 다음 스테이지·다음 등급으로 진행됩니다. 처치 = 쓰러뜨린 몬스터 수, 타/분 = 전체 평균 타자
+          속도입니다.</p>
+        <button id="retry-btn">다시 도전</button>
+        <div id="promotion-action" class="hidden">
+          <p class="promo-text">훌륭합니다! 초급 과정을 마스터했습니다.</p>
+          <button id="promote-btn" class="level-btn active">중급 도전하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== 게임 화면 ====== -->
+    <div id="game-screen" class="hidden">
+      <!-- 배틀 캔버스 (상단) -->
+      <section id="battle-section">
+        <canvas id="battle-canvas"></canvas>
+      </section>
+
+      <!-- 이퀄라이저 캔버스 (하단) -->
+      <section id="equalizer-section">
+        <canvas id="equalizer-canvas"></canvas>
+        <div id="progress-track">
+          <div id="progress-fill"></div>
+        </div>
+      </section>
+
+      <!-- 타자 입력 영역 -->
+      <section id="typing-section">
+        <div id="prompt-area">
+          <p id="tier-indicator"></p>
+          <p id="prompt-text"></p>
+          <p id="submit-hint" class="hidden">✓ 스페이스 or 엔터로 제출</p>
+          <p id="live-cpm" class="hidden">0 타/분</p>
+        </div>
+        <div id="input-area">
+          <input type="text" id="typing-input" autocomplete="off" autocorrect="off" autocapitalize="off"
+            spellcheck="false" placeholder="여기에 입력하세요...">
+        </div>
+        <div id="ambient-border"></div>
+      </section>
+
+      <!-- EXCELLENT 플래시 -->
+      <div id="excellent-flash" class="hidden">
+        <span id="excellent-text">⚡ EXCELLENT!</span>
+      </div>
+
+      <!-- 토스트: 목표 미달 / 다음 스테이지 / 승급 안내 (자동 사라짐, 클릭 없음) -->
+      <div id="stage-toast" class="hidden"></div>
+    </div>
+  </div>
+
+  <script src="core.js"></script>
+  <script src="data.js"></script>
+  <script src="battle.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
