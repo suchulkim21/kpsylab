@@ -419,7 +419,10 @@ class App {
     // Beginner: Manual Promotion or Retry
     if (this.currentLevel === 'beginner') {
       // Target Met? (250 CPM)
-      if (this._smoothedCPM >= 250) {
+      const avgCPM = this._allCPMs.length
+        ? Math.round(this._allCPMs.reduce((a, b) => a + b, 0) / this._allCPMs.length)
+        : 0;
+      if (avgCPM >= 250) {
         this._showResults(true); // Show Manual Promotion
       } else {
         // Failed -> show results without promotion (just clear) or retry?
