@@ -237,32 +237,27 @@ class SoundController {
     }
 
     playType() {
-        // Old Typewriter "Clack"
-        // Sharp metallic snap + mechanical thud
-        this._noise(0, 0.03, 3000, 0.8); // High frequency snap (paper hit)
-        this._osc('square', 300, 0, 0.05, 0.2); // Body resonance
-        this._osc('sawtooth', 800, 0, 0.02, 0.3); // Metal typebar sound
+        // Soft mechanical keyboard click
+        this._noise(0, 0.015, 1800, 0.15);
+        this._osc('sine', 600, 0, 0.02, 0.08);
     }
 
     playSpace() {
-        // Typewriter Spacebar (Mechanical "Clunk")
-        this._noise(0, 0.05, 500, 0.6);
-        this._osc('square', 150, 0, 0.1, 0.5);
+        // Soft thud for spacebar
+        this._noise(0, 0.025, 600, 0.12);
+        this._osc('sine', 200, 0, 0.04, 0.1);
     }
 
     playEnter() {
-        // Carriage Return (Zip + Bell-ish)
-        // Mechanical slide
-        this._noise(0, 0.15, 800, 0.5);
-        this._osc('sawtooth', 100, 0, 0.2, 0.4);
-        // Bell ding? Optional
-        this._osc('sine', 1500, 0.1, 0.3, 0.2);
+        // Gentle confirmation tone
+        this._osc('sine', 880, 0, 0.08, 0.15);
+        this._osc('sine', 1100, 0.04, 0.1, 0.1);
     }
 
     playError() {
-        // Low "Buzz" (Distinct from warning)
-        this._osc('sawtooth', 110, 0, 0.15, 0.5);
-        this._osc('square', 80, 0, 0.15, 0.3);
+        // Subtle low bump
+        this._osc('sine', 180, 0, 0.1, 0.2);
+        this._osc('sine', 140, 0.02, 0.08, 0.15);
     }
 
     playWarning() {

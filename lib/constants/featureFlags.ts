@@ -14,3 +14,6 @@ export const MNPS_ENABLED = true;
 
 /** 타자 게임 노출 (true 시 네비에 타자 게임 링크 노출) */
 export const TYPING_GAME_ENABLED = true;
+
+/** 메타인지 분석 서비스 노출 (true 시 네비·홈·서비스 소개에 메타인지 링크 노출) */
+export const METACOGNITION_ENABLED = false;

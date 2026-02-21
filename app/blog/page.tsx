@@ -6,6 +6,8 @@ import { supabase } from '@/lib/db/supabase';
 import { Calendar, ArrowRight, BookOpen, Brain, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import BlogSidebar from '@/components/BlogSidebar';
 
+export const revalidate = 0; // Disable caching
+
 const POSTS_PER_PAGE = 9;
 
 interface BlogPostSummary {
@@ -32,7 +34,7 @@ async function getBlogPosts(): Promise<BlogPostSummary[]> {
 }
 
 interface PageProps {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; tag?: string }>;
 }
 
 export default async function BlogPage({ searchParams }: PageProps) {
@@ -42,7 +44,19 @@ export default async function BlogPage({ searchParams }: PageProps) {
 
   const params = await searchParams;
   const currentPage = Math.max(1, parseInt(params.page || '1', 10));
-  const allPosts = await getBlogPosts();
+  const tagParam = params.tag;
+
+  let allPosts = await getBlogPosts();
+
+  if (tagParam) {
+    allPosts = allPosts.filter(post => {
+      const tags = Array.isArray(post.tags)
+        ? post.tags
+        : (typeof post.tags === 'string' ? post.tags.split(',').map(t => t.replace(/["']/g, '').trim()) : []);
+      return tags.includes(tagParam);
+    });
+  }
+
   const totalPages = Math.ceil(allPosts.length / POSTS_PER_PAGE);
 
   // 현재 페이지의 포스트만 가져오기
@@ -62,8 +76,8 @@ export default async function BlogPage({ searchParams }: PageProps) {
       pages.push(1);
 
       // 중간 페이지들
-      let start = Math.max(2, currentPage - 2);
-      let end = Math.min(totalPages - 1, currentPage + 2);
+      const start = Math.max(2, currentPage - 2);
+      const end = Math.min(totalPages - 1, currentPage + 2);
 
       if (start > 2) pages.push('ellipsis');
       for (let i = start; i <= end; i++) pages.push(i);
@@ -116,14 +130,10 @@ export default async function BlogPage({ searchParams }: PageProps) {
 
       {/* Main Content with Sidebar */}
       <main className="max-w-[1400px] mx-auto px-6 py-12">
-        {/* MNPS Banner */}
-        <Link href="https://www.kpsylab.com" className="block rounded-2xl overflow-hidden hover:opacity-90 transition-all hover:scale-[1.01] mb-12 shadow-2xl shadow-purple-500/10">
-          <Image src="/img/banners/가로.png" alt="KPSY LAB MNPS" width={1200} height={300} className="w-full h-auto" unoptimized />
-        </Link>
 
         <div className="flex gap-8">
           {/* Sidebar */}
-          <BlogSidebar posts={allPosts} />
+          <BlogSidebar posts={allPosts} currentTag={tagParam} />
 
           {/* Content Area */}
           <div className="flex-1 min-w-0">
@@ -215,7 +225,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
                     {/* 이전 페이지 */}
                     {currentPage > 1 ? (
                       <Link
-                        href={`/blog?page=${currentPage - 1}`}
+                        href={`/blog?page=${currentPage - 1}${tagParam ? `&tag=${tagParam}` : ''}`}
                         className="flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-800/50 text-gray-400 hover:bg-gray-700/50 hover:text-white transition-colors"
                       >
                         <ChevronLeft className="w-4 h-4" />
@@ -236,7 +246,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
                         ) : (
                           <Link
                             key={pageNum}
-                            href={`/blog?page=${pageNum}`}
+                            href={`/blog?page=${pageNum}${tagParam ? `&tag=${tagParam}` : ''}`}
                             className={`min-w-[40px] h-10 flex items-center justify-center rounded-lg font-medium transition-all
                           ${pageNum === currentPage
                                 ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/30'
@@ -252,7 +262,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
                     {/* 다음 페이지 */}
                     {currentPage < totalPages ? (
                       <Link
-                        href={`/blog?page=${currentPage + 1}`}
+                        href={`/blog?page=${currentPage + 1}${tagParam ? `&tag=${tagParam}` : ''}`}
                         className="flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-800/50 text-gray-400 hover:bg-gray-700/50 hover:text-white transition-colors"
                       >
                         <span className="hidden sm:inline">다음</span>

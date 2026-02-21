@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Plop!</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
+            background: #1a1a2e; touch-action: none;
+            -webkit-user-select: none; user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        canvas { display: block; width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <canvas id="c"></canvas>
+    <script>
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+        
+        // ============================================================
+        // [MOBILE] HIGH-DPI SCALING & RESIZE
+        // ============================================================
+        let W, H, DPR;
+        let goalCenterX = null;
+        let goalStageIndex = null;
+        function resize() {
+            DPR = window.devicePixelRatio || 1;
+            W = window.innerWidth;
+            const topOffset = canvas.getBoundingClientRect().top || 0;
+            H = Math.max(200, window.innerHeight - topOffset);
+            
+            canvas.width = W * DPR;
+            canvas.height = H * DPR;
+            canvas.style.width = W + 'px';
+            canvas.style.height = H + 'px';
+            
+            if (ctx.resetTransform) ctx.resetTransform();
+            else ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.scale(DPR, DPR);
+            if (goalCenterX !== null) {
+                goalCenterX = clampGoalCenter(goalCenterX);
+            }
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // ============================================================
+        // HELPER
+        // ============================================================
+        function drawRoundRectPath(ctx, x, y, w, h, r) {
+            if (w < 2 * r) r = w / 2;
+            if (h < 2 * r) r = h / 2;
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.arcTo(x + w, y, x + w, y + h, r);
+            ctx.arcTo(x + w, y + h, x, y + h, r);
+            ctx.arcTo(x, y + h, x, y, r);
+            ctx.arcTo(x, y, x + w, y, r);
+            ctx.closePath();
+        }
+
+        // ============================================================
+        // STAGES
+        // ============================================================
+        const STAGES = [
+            //          goal  dur        noScore     goalR  spawn  spec   brMin brMax triR
+            { stage: 1,  goal: 10, dur: 5 * 60000, noScore: 3*60000,  goalR: 0.25, spawn: 1600, specProb: 0.08, brMin: 18, brMax: 28, triR: 45, bg: '#16213e' },
+            { stage: 2,  goal: 10, dur: 5 * 60000, noScore: 3*60000,  goalR: 0.23, spawn: 1500, specProb: 0.10, brMin: 18, brMax: 28, triR: 43, bg: '#1a1a3e' },
+            { stage: 3,  goal: 12, dur: 5 * 60000, noScore: 3*60000,  goalR: 0.21, spawn: 1400, specProb: 0.12, brMin: 17, brMax: 27, triR: 41, bg: '#1e1a3e' },
+            { stage: 4,  goal: 12, dur: 5 * 60000, noScore: 3*60000,  goalR: 0.20, spawn: 1300, specProb: 0.12, brMin: 17, brMax: 27, triR: 39, bg: '#221a3e' },
+            { stage: 5,  goal: 14, dur: 5 * 60000, noScore: 150000,   goalR: 0.19, spawn: 1200, specProb: 0.15, brMin: 16, brMax: 26, triR: 37, bg: '#261a3e' },
+            { stage: 6,  goal: 14, dur: 5 * 60000, noScore: 150000,   goalR: 0.18, spawn: 1200, specProb: 0.15, brMin: 16, brMax: 26, triR: 35, bg: '#2a1a3e' },
+            { stage: 7,  goal: 16, dur: 5 * 60000, noScore: 150000,   goalR: 0.17, spawn: 1100, specProb: 0.18, brMin: 15, brMax: 25, triR: 33, bg: '#2e1a3e' },
+            { stage: 8,  goal: 16, dur: 5 * 60000, noScore: 150000,   goalR: 0.16, spawn: 1100, specProb: 0.18, brMin: 15, brMax: 25, triR: 31, bg: '#321a3e' },
+            { stage: 9,  goal: 18, dur: 5 * 60000, noScore: 120000,   goalR: 0.15, spawn: 1000, specProb: 0.20, brMin: 14, brMax: 24, triR: 29, bg: '#361a3e' },
+            { stage: 10, goal: 18, dur: 5 * 60000, noScore: 120000,   goalR: 0.14, spawn: 1000, specProb: 0.20, brMin: 14, brMax: 24, triR: 28, bg: '#3a1a3e' },
+            { stage: 11, goal: 20, dur: 5 * 60000, noScore: 120000,   goalR: 0.13, spawn: 900,  specProb: 0.22, brMin: 13, brMax: 23, triR: 27, bg: '#3e1a3e' },
+            { stage: 12, goal: 20, dur: 5 * 60000, noScore: 120000,   goalR: 0.13, spawn: 900,  specProb: 0.22, brMin: 13, brMax: 22, triR: 26, bg: '#3e1a38' },
+            { stage: 13, goal: 22, dur: 5 * 60000, noScore: 100000,   goalR: 0.12, spawn: 850,  specProb: 0.25, brMin: 12, brMax: 21, triR: 25, bg: '#3e1a32' },
+            { stage: 14, goal: 22, dur: 5 * 60000, noScore: 100000,   goalR: 0.12, spawn: 850,  specProb: 0.25, brMin: 12, brMax: 21, triR: 24, bg: '#3e1a2c' },
+            { stage: 15, goal: 24, dur: 5 * 60000, noScore: 100000,   goalR: 0.11, spawn: 800,  specProb: 0.28, brMin: 11, brMax: 20, triR: 23, bg: '#3e1a26' },
+            { stage: 16, goal: 24, dur: 5 * 60000, noScore: 100000,   goalR: 0.10, spawn: 800,  specProb: 0.28, brMin: 11, brMax: 19, triR: 22, bg: '#3e1a20' },
+            { stage: 17, goal: 26, dur: 5 * 60000, noScore: 90000,    goalR: 0.09, spawn: 750,  specProb: 0.30, brMin: 10, brMax: 18, triR: 21, bg: '#3e1a1a' },
+            { stage: 18, goal: 26, dur: 5 * 60000, noScore: 90000,    goalR: 0.09, spawn: 750,  specProb: 0.30, brMin: 10, brMax: 18, triR: 20, bg: '#3e201a' },
+            { stage: 19, goal: 28, dur: 5 * 60000, noScore: 90000,    goalR: 0.08, spawn: 700,  specProb: 0.32, brMin: 9,  brMax: 17, triR: 19, bg: '#3e261a' },
+            { stage: 20, goal: 30, dur: 5 * 60000, noScore: 90000,    goalR: 0.07, spawn: 650,  specProb: 0.35, brMin: 9,  brMax: 16, triR: 18, bg: '#3e2c1a' },
+            { stage: 21, goal: 30, dur: 5 * 60000, noScore: 80000,    goalR: 0.07, spawn: 620,  specProb: 0.35, brMin: 9,  brMax: 16, triR: 17, bg: '#3e321a' },
+            { stage: 22, goal: 32, dur: 5 * 60000, noScore: 80000,    goalR: 0.065,spawn: 600,  specProb: 0.38, brMin: 8,  brMax: 15, triR: 17, bg: '#3e381a' },
+            { stage: 23, goal: 32, dur: 5 * 60000, noScore: 80000,    goalR: 0.065,spawn: 580,  specProb: 0.38, brMin: 8,  brMax: 15, triR: 16, bg: '#3e3e1a' },
+            { stage: 24, goal: 34, dur: 5 * 60000, noScore: 70000,    goalR: 0.06, spawn: 560,  specProb: 0.40, brMin: 8,  brMax: 14, triR: 16, bg: '#383e1a' },
+            { stage: 25, goal: 34, dur: 5 * 60000, noScore: 70000,    goalR: 0.06, spawn: 540,  specProb: 0.40, brMin: 7,  brMax: 14, triR: 15, bg: '#323e1a' },
+            { stage: 26, goal: 36, dur: 5 * 60000, noScore: 70000,    goalR: 0.055,spawn: 520,  specProb: 0.42, brMin: 7,  brMax: 13, triR: 15, bg: '#2c3e1a' },
+            { stage: 27, goal: 36, dur: 5 * 60000, noScore: 60000,    goalR: 0.055,spawn: 500,  specProb: 0.42, brMin: 7,  brMax: 13, triR: 14, bg: '#263e1a' },
+            { stage: 28, goal: 38, dur: 5 * 60000, noScore: 60000,    goalR: 0.05, spawn: 480,  specProb: 0.45, brMin: 7,  brMax: 12, triR: 14, bg: '#203e1a' },
+            { stage: 29, goal: 38, dur: 5 * 60000, noScore: 60000,    goalR: 0.05, spawn: 460,  specProb: 0.45, brMin: 6,  brMax: 12, triR: 13, bg: '#1a3e1a' },
+            { stage: 30, goal: 40, dur: 5 * 60000, noScore: 60000,    goalR: 0.045,spawn: 440,  specProb: 0.50, brMin: 6,  brMax: 11, triR: 13, bg: '#1a3e20' },
+        ];
+        
+        function S() { 
+            if(currentStage < 0) currentStage = 0;
+            if(currentStage >= STAGES.length) currentStage = STAGES.length - 1;
+            return STAGES[currentStage]; 
+        }
+
+        const BASE_GRAVITY = 450;
+        const FRICTION = 0.98;
+        const RESTITUTION = 0.08;
+        const WALL_RESTITUTION = 0.85;
+        const BALL_FRICTION = 0.3;
+        const POST_W = 10;
+        const FLOOR_H = 20;
+        const PALETTE = [0, 240, 120, 60, 280]; // 빨, 파, 초, 노, 보
+
+        function getActiveColorCount() {
+            const s = S().stage;
+            if (s < 5) return 2;  
+            if (s < 10) return 3; 
+            if (s < 15) return 4; 
+            return 5;             
+        }
+
+        const TYPES = {
+            NORMAL: { id: '일반', color: null, char: '' },
+            GIANT: { id: '거대', color: '#00ff9d', char: '大' },
+            TINY: { id: '축소', color: '#ff0055', char: '小' },
+            HEAVY: { id: '중력', color: '#aa00ff', char: '重' },
+            SPEED: { id: '가속', color: '#00bfff', char: '速' },
+            GHOST: { id: '유령', color: '#888888', char: '?' },
+            MULTI: { id: '보너스', color: '#ff8c00', char: '★' },
+            FREEZE: { id: '빙결', color: '#80e0ff', char: '冰' },
+            BOMB:   { id: '폭탄',   color: '#ff2200', char: '\ud83d\udca3' },
+        };
+
+        // ============================================================
+        // DEVICE ID & PROGRESS SAVE
+        // ============================================================
+        function getDeviceId() {
+            let id = localStorage.getItem('ballGoalDeviceId');
+            if (!id) {
+                id = 'dev-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+                localStorage.setItem('ballGoalDeviceId', id);
+            }
+            return id;
+        }
+        const DEVICE_ID = getDeviceId();
+
+        function loadProgress() {
+            try {
+                const raw = localStorage.getItem('ballGoalProgress_' + DEVICE_ID);
+                if (raw) return JSON.parse(raw);
+            } catch(e) {}
+            return { cleared: [], bestStage: 0 };
+        }
+        function saveProgress(prog) {
+            localStorage.setItem('ballGoalProgress_' + DEVICE_ID, JSON.stringify(prog));
+            localStorage.setItem('ballGoalBestStage', String(prog.bestStage));
+        }
+        let progress = loadProgress();
+
+        // reset bad migration data (old code saved bestStage on game over too)
+        (function resetBadData() {
+            if (progress.cleared.length > 0 && !localStorage.getItem('ballGoalProgressVerified_' + DEVICE_ID)) {
+                progress = { cleared: [], bestStage: 0 };
+                saveProgress(progress);
+                localStorage.setItem('ballGoalProgressVerified_' + DEVICE_ID, '1');
+            }
+        })();
+
+        function markStageCleared(stageIdx) {
+            if (!progress.cleared.includes(stageIdx)) {
+                progress.cleared.push(stageIdx);
+                progress.cleared.sort((a,b) => a - b);
+            }
+            if (stageIdx + 1 > progress.bestStage) progress.bestStage = stageIdx + 1;
+            saveProgress(progress);
+        }
+
+        // ============================================================
+        // STATE
+        // ============================================================
+        let balls = [], particles = [], floatTexts = [];
+        let score = 0;
+        let bestStage = progress.bestStage;
+        let state = 'start';
+        let isPaused = false;
+        let lastSpawn = 0;
+        let currentStage = 0;
+        let gameStartTime = 0, lastScoreTime = 0, endTime = 0, gameOverReason = '';
+        let effects = { sizeMod: 0, gravMod: 0, speedMod: 0, freezeTimer: 0 };
+        let mx = W / 2, my = H / 2, pmx = mx, pmy = my;
+
+        // ============================================================
+        // TIP SYSTEM
+        // ============================================================
+        const TIPS = [
+            '커서로 공을 빠르게 쳐서 골대에 넣으세요!',
+            '같은 색 공 3개가 붙으면 자동으로 터져요',
+            '바닥에 닿은 공은 고정됩니다',
+            '고정된 공이 천장에 닿으면 게임 오버!',
+            '테두리가 빛나는 공은 특수 공입니다',
+            '특수 공도 같은 색끼리 매칭할 수 있어요',
+            '매칭으로 터진 특수 공은 효과가 발동됩니다',
+            '같은 색 공끼리 서로 살짝 끌어당겨요',
+            '커서 모양이 5초마다 바뀝니다',
+            '후반 스테이지일수록 골대가 좁아져요',
+            '오래 득점하지 않으면 실패! 빠르게 넣으세요',
+            '스테이지가 올라가면 색상이 늘어납니다',
+            '폭탄 공은 시간이 지나면 자동으로 터져요',
+            '폭탄 폭발은 주변 공을 사방으로 날려버립니다',
+            '공 전체가 골대 안에 들어가야 득점됩니다',
+            '공이 많이 쌓이기 전에 매칭으로 정리하세요',
+            'FREEZE 공은 모든 공을 잠시 멈춰요',
+            'GHOST 공은 모든 공의 위치를 섞어버려요',
+            'MULTI 공은 즉시 +3 보너스 점수!',
+        ];
+        let tipIndex = Math.floor(Math.random() * TIPS.length);
+        let tipTimer = 0;
+        let tipAlpha = 0;
+        let tipShowing = true;
+        const TIP_SHOW_TIME = 4;
+        const TIP_FADE_TIME = 0.5;
+        const TIP_HIDE_TIME = 3;
+
+        function clampGoalCenter(center) {
+            const goalW = W * S().goalR;
+            const margin = Math.max(40, POST_W * 2);
+            const min = goalW / 2 + margin;
+            const max = W - goalW / 2 - margin;
+            if (max <= min) return W / 2;
+            return Math.min(max, Math.max(min, center));
+        }
+        function randomizeGoalCenter() {
+            const goalW = W * S().goalR;
+            const margin = Math.max(40, POST_W * 2);
+            const min = goalW / 2 + margin;
+            const max = W - goalW / 2 - margin;
+            goalCenterX = (max <= min) ? W / 2 : (min + Math.random() * (max - min));
+        }
+        function setGoalForStage(stageIdx) {
+            goalStageIndex = stageIdx;
+            randomizeGoalCenter();
+        }
+        function goalLeft() {
+            if (goalCenterX === null) goalCenterX = W / 2;
+            return goalCenterX - (W * S().goalR) / 2;
+        }
+        function goalRight() { return goalLeft() + W * S().goalR; }
+        
+        function applyEffect(type) {
+            if (type === TYPES.NORMAL) return;
+            spawnFloatText(W / 2, H / 2, type.id + " 발동!", type.color);
+            if (type === TYPES.GHOST) {
+                for (const b of balls) {
+                    if (!b.scored && !b.stuck && !b.wallStuck) {
+                        b.x = 50 + Math.random() * (W - 100);
+                        b.y = 50 + Math.random() * (H * 0.4);
+                        b.vx = (Math.random() - 0.5) * 100; b.vy = 0;
+                        spawnParticles(b.x, b.y, 10, '#888888');
+                    }
+                }
+                return;
+            }
+            if (type === TYPES.MULTI) {
+                score += 3; lastScoreTime = performance.now();
+                for (let i = 0; i < 3; i++) spawnParticles(W / 2 + (i - 1) * 40, H - 50, Math.random() * 360, '#ff8c00');
+                spawnFloatText(W / 2, H / 2 - 40, "+3 보너스!", '#ff8c00');
+                return;
+            }
+            if (type === TYPES.GIANT) effects.sizeMod += 15;
+            if (type === TYPES.TINY) effects.sizeMod -= 15;
+            if (type === TYPES.HEAVY) effects.gravMod += 400;
+            if (type === TYPES.SPEED) effects.speedMod += 300;
+            if (type === TYPES.FREEZE) effects.freezeTimer = 3;
+        }
+
+        function updateEffects(dt) {
+            if (effects.sizeMod > 0.1) effects.sizeMod -= 10 * dt;
+            else if (effects.sizeMod < -0.1) effects.sizeMod += 10 * dt;
+            else effects.sizeMod = 0;
+            if (effects.gravMod > 10) effects.gravMod -= 200 * dt; else effects.gravMod = 0;
+            if (effects.speedMod > 10) effects.speedMod -= 150 * dt; else effects.speedMod = 0;
+            if (effects.freezeTimer > 0) effects.freezeTimer -= dt; else effects.freezeTimer = 0;
+        }
+
+        function getCurrentTriR() { return Math.max(10, Math.min(100, S().triR + effects.sizeMod)); }
+        function getCurrentGravity() { return BASE_GRAVITY + effects.gravMod; }
+
+        // ============================================================
+        // CURSOR
+        // ============================================================
+        var CURSOR_SHAPES = ['triangle', 'square', 'diamond', 'circle', 'pentagon'];
+        var cursorShape = 'triangle';
+        var cursorShapeTimer = 0;
+        var CURSOR_CHANGE_INTERVAL = 5;
+
+        function updateCursorShape(dt) {
+            if (state !== 'play') return;
+            cursorShapeTimer += dt;
+            if (cursorShapeTimer >= CURSOR_CHANGE_INTERVAL) {
+                cursorShapeTimer = 0;
+                var next;
+                do { next = CURSOR_SHAPES[Math.floor(Math.random() * CURSOR_SHAPES.length)]; } while (next === cursorShape);
+                cursorShape = next;
+                var shapeNames = {triangle:'삼각형',square:'사각형',diamond:'다이아몬드',circle:'원형',pentagon:'오각형'};
+                spawnFloatText(W / 2, H * 0.15, (shapeNames[cursorShape]||cursorShape) + '!', '#4ecdc4');
+            }
+        }
+
+        function getShapeVerts(cx, cy, r, shape) {
+            var verts = [];
+            if (shape === 'triangle') {
+                var s = Math.sin(Math.PI / 3);
+                verts = [{ x: cx, y: cy - r }, { x: cx - r * s, y: cy + r * 0.5 }, { x: cx + r * s, y: cy + r * 0.5 }];
+            } else if (shape === 'square') {
+                var h = r * 0.8;
+                verts = [{ x: cx - h, y: cy - h }, { x: cx + h, y: cy - h }, { x: cx + h, y: cy + h }, { x: cx - h, y: cy + h }];
+            } else if (shape === 'diamond') {
+                verts = [{ x: cx, y: cy - r }, { x: cx + r * 0.7, y: cy }, { x: cx, y: cy + r }, { x: cx - r * 0.7, y: cy }];
+            } else if (shape === 'pentagon') {
+                for (var i = 0; i < 5; i++) {
+                    var a = -Math.PI / 2 + (2 * Math.PI * i / 5);
+                    verts.push({ x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) });
+                }
+            }
+            return verts;
+        }
+
+        function ptInPoly(px, py, verts) {
+            var inside = false;
+            for (var i = 0, j = verts.length - 1; i < verts.length; j = i++) {
+                var xi = verts[i].x, yi = verts[i].y, xj = verts[j].x, yj = verts[j].y;
+                if ((yi > py) !== (yj > py) && px < (xj - xi) * (py - yi) / (yj - yi) + xi) inside = !inside;
+            }
+            return inside;
+        }
+
+        function polyCircleHit(verts, cx, cy, cr) {
+            function closestOnSeg(px, py, ax, ay, bx, by) {
+                var dx = bx - ax, dy = by - ay;
+                var t = ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy);
+                t = Math.max(0, Math.min(1, t));
+                return { x: ax + t * dx, y: ay + t * dy };
+            }
+            if (ptInPoly(cx, cy, verts)) {
+                var pcx = 0, pcy = 0;
+                for (var i = 0; i < verts.length; i++) { pcx += verts[i].x; pcy += verts[i].y; }
+                pcx /= verts.length; pcy /= verts.length;
+                var dx = cx - pcx, dy = cy - pcy;
+                var d = Math.sqrt(dx * dx + dy * dy) || 1;
+                return { hit: true, nx: dx / d, ny: dy / d, pen: cr };
+            }
+            var best = Infinity, cp = null;
+            for (var i = 0; i < verts.length; i++) {
+                var a = verts[i], b = verts[(i + 1) % verts.length];
+                var p = closestOnSeg(cx, cy, a.x, a.y, b.x, b.y);
+                var dx = cx - p.x, dy = cy - p.y;
+                var dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < best) { best = dist; cp = p; }
+            }
+            if (best < cr) {
+                var dx = cx - cp.x, dy = cy - cp.y;
+                var d = Math.sqrt(dx * dx + dy * dy) || 1;
+                return { hit: true, nx: dx / d, ny: dy / d, pen: cr - best };
+            }
+            return { hit: false };
+        }
+
+        function circleCircleHit(curCx, curCy, curR, bx, by, br) {
+            var dx = bx - curCx, dy = by - curCy;
+            var dist = Math.sqrt(dx * dx + dy * dy);
+            var minDist = curR + br;
+            if (dist >= minDist || dist === 0) return { hit: false };
+            var nx = dx / dist, ny = dy / dist;
+            return { hit: true, nx: nx, ny: ny, pen: minDist - dist };
+        }
+
+        function cursorCollideBalls() {
+            var curR = getCurrentTriR();
+            var cvx = (mx - pmx) * 60, cvy = (my - pmy) * 60;
+            var isCircle = (cursorShape === 'circle');
+            var verts = isCircle ? null : getShapeVerts(mx, my, curR, cursorShape);
+            for (var i = 0; i < balls.length; i++) {
+                var b = balls[i];
+                if (b.scored || b.wallStuck || b.stuck) continue;
+                if (b.safeTime > 0) continue; 
+
+                var h = isCircle ? circleCircleHit(mx, my, curR, b.x, b.y, b.r) : polyCircleHit(verts, b.x, b.y, b.r);
+                if (!h.hit) continue;
+                b.x += h.nx * (h.pen + 1); b.y += h.ny * (h.pen + 1);
+                var spd = Math.sqrt(cvx * cvx + cvy * cvy);
+                var force = 250 + spd * 0.3 + effects.speedMod * 0.3;
+                b.vx = h.nx * force + cvx * 0.2; b.vy = h.ny * force + cvy * 0.2;
+                b.triggerSquash(h.nx, h.ny, force);
+                b.touched = true;
+                if (b.stuck) { b.stuck = false; b.vy = -200; }
+            }
+        }
+
+        function drawCursor() {
+            var curR = getCurrentTriR();
+            var color = '#4ecdc4';
+            if (effects.sizeMod > 10) color = '#00ff9d';
+            if (effects.sizeMod < -10) color = '#ff0055';
+            if (effects.gravMod > 100) color = '#aa00ff';
+            if (effects.speedMod > 50) color = '#00bfff';
+            if (effects.freezeTimer > 0) color = '#80e0ff';
+            ctx.beginPath();
+            if (cursorShape === 'circle') {
+                ctx.arc(mx, my, curR, 0, Math.PI * 2);
+            } else {
+                var v = getShapeVerts(mx, my, curR, cursorShape);
+                ctx.moveTo(v[0].x, v[0].y);
+                for (var i = 1; i < v.length; i++) ctx.lineTo(v[i].x, v[i].y);
+            }
+            ctx.closePath(); ctx.fillStyle = color;
+            ctx.shadowBlur = 15; ctx.shadowColor = color; ctx.fill(); ctx.shadowBlur = 0;
+        }
+
+        // ============================================================
+        // BALL CLASS
+        // ============================================================
+        class Ball {
+            constructor(x, y, r, vx, vy, type) {
+                this.x = x; this.y = y; this.r = r;
+                this.vx = vx; this.vy = vy;
+                this.mass = r * r;
+                
+                let maxColors = getActiveColorCount();
+                this.colorIdx = Math.floor(Math.random() * maxColors);
+                this.hue = PALETTE[this.colorIdx];
+                
+                this.alpha = 1;
+                this.stuck = false; this.wallStuck = false;
+                this.scored = false; this.touched = false;
+                this.type = type;
+                this.safeTime = 0.5;
+                this.scaleX = 1; this.scaleY = 1;
+                this.squashVx = 0; this.squashVy = 0;
+                this.bombTimer = (type === TYPES.BOMB) ? 8.0 : -1;
+            }
+            update(dt) {
+                if(this.safeTime > 0) this.safeTime -= dt;
+
+                if (this.scored) {
+                    this.alpha -= dt * 2;
+                    this.y += 100 * dt;
+                    return;
+                }
+                // bomb countdown
+                if (this.bombTimer > 0) {
+                    this.bombTimer -= dt;
+                    if (this.bombTimer <= 0) { this.bombTimer = 0; this.bombExplode = true; }
+                }
+                if (this.stuck || this.wallStuck) return;
+                
+                if (effects.freezeTimer > 0 && !this.touched) { this.vx = 0; this.vy = 0; return; }
+                
+                this.vy += getCurrentGravity() * dt;
+                this.vx *= FRICTION; this.vy *= FRICTION;
+                this.x += this.vx * dt; this.y += this.vy * dt;
+
+                const gL = goalLeft(), gR = goalRight();
+                const floorY = H - FLOOR_H;
+
+                if (this.y + this.r > floorY) {
+                    // strict goal: entire ball inside posts, moving downward
+                    const inGoal = this.x - this.r > gL && this.x + this.r < gR && this.vy > 0;
+                    if (inGoal) {
+                        // let it fall through
+                    } else {
+                        this.triggerSquash(0, -1, Math.abs(this.vy));
+                        this.y = floorY - this.r;
+                        this.freeze();
+                    }
+                }
+
+                if (this.y - this.r > floorY) {
+                    if (this.touched && this.x - this.r > gL && this.x + this.r < gR) {
+                        this.scored = true;
+                        score++;
+                        lastScoreTime = performance.now();
+                        spawnParticles(this.x, H, this.hue, this.type.color);
+                        applyEffect(this.type);
+                    } else if (this.y > H + this.r) {
+                        this.scored = true;
+                        this.alpha = 0;
+                    }
+                }
+
+                if (this.x - this.r <= 0) {
+                    this.triggerSquash(1, 0, Math.abs(this.vx));
+                    this.x = this.r;
+                    this.vx = Math.abs(this.vx) * WALL_RESTITUTION;
+                }
+                if (this.x + this.r >= W) {
+                    this.triggerSquash(-1, 0, Math.abs(this.vx));
+                    this.x = W - this.r;
+                    this.vx = -Math.abs(this.vx) * WALL_RESTITUTION;
+                }
+                
+                if (this.y - this.r <= 0) { this.y = this.r; this.vy *= -RESTITUTION; }
+
+                // squash & stretch spring recovery
+                const stiffness = 12, damp = 0.7;
+                this.squashVx += (-( this.scaleX - 1 ) * stiffness - this.squashVx * damp) * dt * 60;
+                this.squashVy += (-( this.scaleY - 1 ) * stiffness - this.squashVy * damp) * dt * 60;
+                this.scaleX += this.squashVx * dt;
+                this.scaleY += this.squashVy * dt;
+            }
+
+            freeze() { this.stuck = true; this.vx = 0; this.vy = 0; }
+
+            triggerSquash(nx, ny, intensity) {
+                const amt = Math.min(0.35, intensity * 0.0012);
+                this.scaleX = 1 + amt * Math.abs(ny) - amt * Math.abs(nx);
+                this.scaleY = 1 + amt * Math.abs(nx) - amt * Math.abs(ny);
+                this.squashVx = 0; this.squashVy = 0;
+            }
+
+            draw() {
+                ctx.save();
+                if (this.safeTime > 0) ctx.globalAlpha = 0.6;
+                else ctx.globalAlpha = this.alpha;
+
+                ctx.translate(this.x, this.y);
+                ctx.scale(this.scaleX, this.scaleY);
+
+                // base color fill (all balls use hue-based gradient)
+                ctx.beginPath(); ctx.arc(0, 0, this.r, 0, Math.PI * 2);
+                const g = ctx.createRadialGradient(-this.r * 0.3, -this.r * 0.3, this.r * 0.1, 0, 0, this.r);
+                g.addColorStop(0, `hsl(${this.hue},80%,70%)`); g.addColorStop(1, `hsl(${this.hue},70%,45%)`);
+                ctx.fillStyle = g;
+                ctx.fill();
+
+                // highlight
+                ctx.beginPath(); ctx.arc(-this.r * 0.25, -this.r * 0.25, this.r * 0.35, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fill();
+
+                if (this.type !== TYPES.NORMAL) {
+                    // glow ring for special balls
+                    const glowColor = this.type === TYPES.BOMB && this.bombTimer <= 1 && this.bombTimer > 0
+                        ? (Math.sin(Date.now() / 80) > 0 ? '#ff0000' : '#ff8800') : this.type.color;
+                    ctx.shadowColor = glowColor; ctx.shadowBlur = this.type === TYPES.BOMB ? 18 : 12;
+                    ctx.strokeStyle = glowColor; ctx.lineWidth = this.type === TYPES.BOMB ? 4 : 3;
+                    ctx.beginPath(); ctx.arc(0, 0, this.r + 1, 0, Math.PI * 2); ctx.stroke();
+                    ctx.shadowBlur = 0;
+                    // icon overlay
+                    ctx.fillStyle = '#fff'; ctx.font = `bold ${this.r * 1.1}px sans-serif`;
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    ctx.shadowColor = '#000'; ctx.shadowBlur = 3;
+                    ctx.fillText(this.type.char, 0, 2);
+                    ctx.shadowBlur = 0;
+                    // bomb countdown number
+                    if (this.type === TYPES.BOMB && this.bombTimer > 0) {
+                        ctx.font = `bold ${this.r * 0.65}px sans-serif`;
+                        ctx.fillStyle = this.bombTimer <= 1 ? '#ff0000' : '#fff';
+                        ctx.fillText(Math.ceil(this.bombTimer), 0, -this.r * 0.7);
+                    }
+                }
+
+                if (effects.freezeTimer > 0 && !this.touched && !this.scored) {
+                    ctx.strokeStyle = 'rgba(128,224,255,0.6)'; ctx.lineWidth = 3;
+                    ctx.beginPath(); ctx.arc(0, 0, this.r + 2, 0, Math.PI * 2); ctx.stroke();
+                }
+                if (this.wallStuck || this.stuck) {
+                    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                    ctx.beginPath(); ctx.arc(0, 0, this.r * 0.5, 0, Math.PI * 2); ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+
+        // ============================================================
+        // GAME LOGIC
+        // ============================================================
+        function explodeBomb(bomb) {
+            const BLAST_RADIUS = 500;
+            const BLAST_FORCE = 9000;
+            // big particle burst
+            for (let i = 0; i < 40; i++) {
+                const a = Math.random() * Math.PI * 2, s = 150 + Math.random() * 300;
+                particles.push({
+                    x: bomb.x, y: bomb.y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 80,
+                    life: 1.2, color: '#ff4400', r: 3 + Math.random() * 6
+                });
+            }
+            for (let i = 0; i < 20; i++) {
+                const a = Math.random() * Math.PI * 2, s = 80 + Math.random() * 150;
+                particles.push({
+                    x: bomb.x, y: bomb.y, vx: Math.cos(a) * s, vy: Math.sin(a) * s,
+                    life: 0.8, color: '#ffcc00', r: 2 + Math.random() * 4
+                });
+            }
+            spawnFloatText(bomb.x, bomb.y - 30, '펑!', '#ff4400');
+            // push nearby balls
+            for (const b of balls) {
+                if (b === bomb || b.scored) continue;
+                const dx = b.x - bomb.x, dy = b.y - bomb.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist > BLAST_RADIUS || dist === 0) continue;
+                const nx = dx / dist, ny = dy / dist;
+                const power = BLAST_FORCE * (1 - dist / BLAST_RADIUS);
+                // unstick and fling nearby balls
+                if (b.stuck || b.wallStuck) { b.stuck = false; b.wallStuck = false; }
+                b.vx = nx * power;
+                b.vy = ny * power;
+                b.safeTime = 0.8;
+                b.touched = false;
+                b.triggerSquash(nx, ny, power);
+            }
+            // remove bomb
+            bomb.scored = true; bomb.alpha = 0;
+        }
+
+        function updateBombs() {
+            for (const b of balls) {
+                if (b.bombExplode && !b.scored) {
+                    explodeBomb(b);
+                    b.bombExplode = false;
+                }
+            }
+        }
+
+        function spawnBall() {
+            const s = S();
+            const r = s.brMin + Math.random() * (s.brMax - s.brMin);
+            
+            let x = W / 2;
+            let y = -r; 
+
+            // 2시~4시 또는 8시~10시 방향 (좌우 대각선, 아래 직진 제외)
+            const side = Math.random() < 0.5 ? 1 : -1;
+            const ang = Math.PI * 0.05 + Math.random() * Math.PI * 0.25;
+            const spd = 150 + Math.random() * 150;
+
+            let vx = side * Math.cos(ang) * spd;
+            let vy = Math.sin(ang) * spd;
+
+            let type = TYPES.NORMAL;
+            const rand = Math.random();
+            const sp = s.specProb;
+            const step = sp / 8;
+            if (rand < step) type = TYPES.FREEZE;
+            else if (rand < step * 2) type = TYPES.MULTI;
+            else if (rand < step * 3) type = TYPES.GHOST;
+            else if (rand < step * 4) type = TYPES.SPEED;
+            else if (rand < step * 5) type = TYPES.HEAVY;
+            else if (rand < step * 6) type = TYPES.TINY;
+            else if (rand < step * 7) type = TYPES.GIANT;
+            else if (rand < sp) type = TYPES.BOMB;
+            balls.push(new Ball(x, y, r, vx, vy, type));
+        }
+
+        function spawnParticles(x, y, hue, colorOverride) {
+            for (let i = 0; i < 20; i++) {
+                const a = Math.random() * Math.PI * 2, s = 100 + Math.random() * 200;
+                particles.push({
+                    x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 100,
+                    life: 1, color: colorOverride || `hsl(${hue},80%,60%)`, r: 2 + Math.random() * 4
+                });
+            }
+        }
+        function spawnFloatText(x, y, text, color) { floatTexts.push({ x, y, text, color, life: 1.5, dy: -50 }); }
+
+        function updateAndDrawParticles(dt) {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 200 * dt; p.life -= dt * 1.5;
+                if (p.life <= 0) particles.splice(i, 1);
+                else {
+                    ctx.globalAlpha = p.life; ctx.fillStyle = p.color;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.r * p.life, 0, Math.PI * 2); ctx.fill();
+                }
+            }
+            ctx.globalAlpha = 1; ctx.textAlign = 'center'; ctx.font = 'bold 30px sans-serif';
+            for (let i = floatTexts.length - 1; i >= 0; i--) {
+                const f = floatTexts[i]; f.life -= dt; f.y += f.dy * dt;
+                if (f.life <= 0) floatTexts.splice(i, 1);
+                else {
+                    ctx.save(); ctx.globalAlpha = Math.min(1, f.life); ctx.fillStyle = f.color;
+                    ctx.shadowColor = '#000'; ctx.shadowBlur = 4; ctx.fillText(f.text, f.x, f.y); ctx.restore();
+                }
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        // ============================================================
+        // COLLISION (STRICT STICKY)
+        // ============================================================
+        function settleStuckBall(ball) {
+            const floorY = H - FLOOR_H;
+            for (let iter = 0; iter < 12; iter++) {
+                let moved = false;
+                for (let i = 0; i < balls.length; i++) {
+                    const other = balls[i];
+                    if (other === ball || other.scored) continue;
+                    if (!other.stuck && !other.wallStuck) continue;
+                    const dx = ball.x - other.x, dy = ball.y - other.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const minDist = ball.r + other.r;
+                    if (dist < minDist - 0.1 && dist > 0) {
+                        const nx = dx / dist, ny = dy / dist;
+                        ball.x += nx * (minDist - dist);
+                        ball.y += ny * (minDist - dist);
+                        moved = true;
+                    }
+                }
+                if (ball.x - ball.r < 0) { ball.x = ball.r; moved = true; }
+                if (ball.x + ball.r > W) { ball.x = W - ball.r; moved = true; }
+                if (ball.y + ball.r > floorY) { ball.y = floorY - ball.r; moved = true; }
+                if (ball.y - ball.r < 0) { ball.y = ball.r; moved = true; }
+                if (!moved) break;
+            }
+        }
+
+        function collideBalls(a, b) {
+            const dx = b.x - a.x, dy = b.y - a.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const min = a.r + b.r;
+
+            if (dist >= min || dist === 0) return;
+
+            const nx = dx / dist, ny = dy / dist, overlap = min - dist;
+
+            if ((a.stuck || a.wallStuck) && (b.stuck || b.wallStuck)) return;
+
+            if (a.stuck || a.wallStuck) {
+                const impStr = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+                b.x += nx * overlap; b.y += ny * overlap;
+                b.freeze();
+                b.triggerSquash(nx, ny, impStr);
+                a.triggerSquash(-nx, -ny, impStr * 0.5);
+                settleStuckBall(b);
+                return;
+            }
+
+            if (b.stuck || b.wallStuck) {
+                const impStr = Math.sqrt(a.vx * a.vx + a.vy * a.vy);
+                a.x -= nx * overlap; a.y -= ny * overlap;
+                a.freeze();
+                a.triggerSquash(-nx, -ny, impStr);
+                b.triggerSquash(nx, ny, impStr * 0.5);
+                settleStuckBall(a);
+                return;
+            }
+
+            const total = a.mass + b.mass;
+            a.x -= nx * overlap * (b.mass / total); a.y -= ny * overlap * (b.mass / total);
+            b.x += nx * overlap * (a.mass / total); b.y += ny * overlap * (a.mass / total);
+
+            const dvx = a.vx - b.vx, dvy = a.vy - b.vy;
+            const dvn = dvx * nx + dvy * ny;
+            if (dvn <= 0) return;
+
+            // soft body: very low restitution
+            const imp = ((1 + RESTITUTION) * dvn) / total;
+            a.vx -= imp * b.mass * nx; a.vy -= imp * b.mass * ny;
+            b.vx += imp * a.mass * nx; b.vy += imp * a.mass * ny;
+
+            // tangential friction
+            const tx = -ny, ty = nx;
+            const dvt = dvx * tx + dvy * ty;
+            const frimp = dvt * BALL_FRICTION / total;
+            a.vx -= frimp * b.mass * tx; a.vy -= frimp * b.mass * ty;
+            b.vx += frimp * a.mass * tx; b.vy += frimp * a.mass * ty;
+
+            // squash trigger
+            const impStr = Math.abs(dvn);
+            a.triggerSquash(nx, ny, impStr);
+            b.triggerSquash(-nx, -ny, impStr);
+        }
+
+        function enforceBounds() {
+            for (const b of balls) {
+                if (b.scored) continue;
+                if (b.x - b.r < 0) {
+                    b.x = b.r;
+                    if (!b.stuck) b.vx = Math.abs(b.vx) * WALL_RESTITUTION;
+                }
+                if (b.x + b.r > W) {
+                    b.x = W - b.r;
+                    if (!b.stuck) b.vx = -Math.abs(b.vx) * WALL_RESTITUTION;
+                }
+            }
+        }
+
+        // ============================================================
+        // CLUMPING (same-color attraction)
+        // ============================================================
+        function applyClumpingForce(dt) {
+            const CLUMP_RANGE = 3;
+            const CLUMP_FORCE = 30;
+            for (let i = 0; i < balls.length; i++) {
+                const a = balls[i];
+                if (a.scored || a.stuck || a.wallStuck || a.type !== TYPES.NORMAL) continue;
+                for (let j = i + 1; j < balls.length; j++) {
+                    const b = balls[j];
+                    if (b.scored || b.stuck || b.wallStuck || b.type !== TYPES.NORMAL) continue;
+                    if (a.colorIdx !== b.colorIdx) continue;
+                    const dx = b.x - a.x, dy = b.y - a.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const maxDist = (a.r + b.r) * CLUMP_RANGE;
+                    const minDist = a.r + b.r;
+                    if (dist >= maxDist || dist <= minDist) continue;
+                    const nx = dx / dist, ny = dy / dist;
+                    const strength = CLUMP_FORCE * (1 - (dist - minDist) / (maxDist - minDist));
+                    a.vx += nx * strength * dt;
+                    a.vy += ny * strength * dt;
+                    b.vx -= nx * strength * dt;
+                    b.vy -= ny * strength * dt;
+                }
+            }
+        }
+
+        // ============================================================
+        // LOGIC
+        // ============================================================
+        function removeFloatingBalls() {
+            let anchored = new Set();
+            let queue = [];
+
+            for (let i = 0; i < balls.length; i++) {
+                let b = balls[i];
+                if(b.scored) continue;
+                if (b.wallStuck || (b.stuck && b.y + b.r >= H - FLOOR_H - 2)) {
+                    anchored.add(i);
+                    queue.push(i);
+                }
+            }
+
+            let head = 0;
+            while(head < queue.length){
+                let idx = queue[head++];
+                let b = balls[idx];
+
+                for(let i=0; i<balls.length; i++){
+                    if(anchored.has(i)) continue;
+                    let other = balls[i];
+                    if(!other.stuck && !other.wallStuck) continue; 
+
+                    let dx = b.x - other.x;
+                    let dy = b.y - other.y;
+                    let d2 = dx*dx + dy*dy;
+                    let rSum = b.r + other.r + 2; 
+                    if(d2 < rSum * rSum) {
+                        anchored.add(i);
+                        queue.push(i);
+                    }
+                }
+            }
+
+            for (let i = balls.length - 1; i >= 0; i--) {
+                let b = balls[i];
+                if ((b.stuck || b.wallStuck) && !b.scored && !anchored.has(i)) {
+                    spawnParticles(b.x, b.y, b.hue);
+                    balls.splice(i, 1);
+                }
+            }
+        }
+
+        function checkMatches() {
+            let visited = new Set();
+            let toRemove = new Set();
+
+            for(let i=0; i<balls.length; i++) {
+                let b = balls[i];
+                if((b.stuck || b.wallStuck) && !b.scored && !visited.has(i)) {
+                    let queue = [i];
+                    visited.add(i);
+                    let group = [i];
+                    let color = b.colorIdx;
+
+                    let head = 0;
+                    while(head < queue.length) {
+                        let currIdx = queue[head++];
+                        let currB = balls[currIdx];
+
+                        for(let j=0; j<balls.length; j++) {
+                            if(currIdx === j) continue;
+                            let other = balls[j];
+                            if((other.stuck || other.wallStuck) && !other.scored && !visited.has(j)) {
+                                if(other.colorIdx === color) {
+                                    let dx = other.x - currB.x;
+                                    let dy = other.y - currB.y;
+                                    let d = Math.sqrt(dx*dx + dy*dy);
+                                    if(d < currB.r + other.r + 5) {
+                                        visited.add(j);
+                                        queue.push(j);
+                                        group.push(j);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if(group.length >= 3) {
+                        group.forEach(idx => toRemove.add(idx));
+                    }
+                }
+            }
+
+            if(toRemove.size > 0) {
+                // trigger special effects first, then remove
+                let removeIndices = Array.from(toRemove).sort((a, b) => a - b);
+                for(let idx of removeIndices) {
+                    let b = balls[idx];
+                    if(b.type !== TYPES.NORMAL) {
+                        applyEffect(b.type);
+                    }
+                    spawnParticles(b.x, b.y, b.hue);
+                }
+                let newBalls = [];
+                for(let i=0; i<balls.length; i++) {
+                    if(!toRemove.has(i)) newBalls.push(balls[i]);
+                }
+                balls = newBalls;
+            }
+        }
+
+        function cleanup() {
+            for(const b of balls) {
+                if((b.stuck || b.wallStuck) && !b.scored && b.y - b.r <= 0) {
+                     state = 'over'; 
+                     gameOverReason = '공이 천장에 닿았습니다!'; 
+                     canvas.style.cursor = 'default';
+                     return;
+                }
+            }
+
+            for (let i = balls.length - 1; i >= 0; i--) {
+                if (balls[i].scored && balls[i].alpha <= 0) balls.splice(i, 1);
+                else if(balls[i].y > H + 100) balls.splice(i, 1);
+            }
+
+            const now = performance.now();
+            const s = S();
+            if (score >= s.goal) {
+                endTime = now;
+                markStageCleared(currentStage);
+                bestStage = progress.bestStage;
+                if (currentStage >= STAGES.length - 1) { state = 'allClear'; canvas.style.cursor = 'default'; }
+                else { state = 'stageClear'; canvas.style.cursor = 'default'; }
+                return;
+            }
+            if (now - gameStartTime >= s.dur) {
+                state = 'over'; gameOverReason = '시간 초과!'; canvas.style.cursor = 'default';
+                return;
+            }
+            if (now - lastScoreTime >= s.noScore) {
+                state = 'over'; gameOverReason = '득점 실패!'; canvas.style.cursor = 'default';
+                return;
+            }
+        }
+
+        // ============================================================
+        // DRAW SCREENS & UI
+        // ============================================================
+        function drawBg() {
+            const g = ctx.createLinearGradient(0, 0, 0, H);
+            g.addColorStop(0, '#0f0c29'); g.addColorStop(1, S().bg);
+            ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+        }
+
+        function drawGoal() {
+            const gL = goalLeft(), gR = goalRight();
+            const floorY = H - FLOOR_H;
+            // 바닥과 골대 영역 대비 강화
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, floorY, gL, FLOOR_H);
+            ctx.fillRect(gR, floorY, W - gR, FLOOR_H);
+            ctx.fillStyle = '#2a2a2a';
+            ctx.fillRect(0, floorY, gL, 6);
+            ctx.fillRect(gR, floorY, W - gR, 6);
+            ctx.fillStyle = 'rgba(0, 255, 157, 0.08)';
+            ctx.fillRect(gL, floorY - 8, gR - gL, FLOOR_H + 8);
+            ctx.strokeStyle = 'rgba(0, 255, 157, 0.6)';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(gL, floorY - 8, gR - gL, FLOOR_H + 8);
+            ctx.save();
+            ctx.beginPath(); ctx.rect(gL, floorY, gR - gL, FLOOR_H); ctx.clip();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'; ctx.lineWidth = 2;
+            for(let i=0; i<W; i+=20) { ctx.beginPath(); ctx.moveTo(i, floorY); ctx.lineTo(i - 20, H); ctx.stroke(); }
+            ctx.restore();
+            const postH = 28;
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(gL - POST_W, floorY - postH, POST_W + 2, postH + FLOOR_H);
+            ctx.shadowColor = '#00ff9d'; ctx.shadowBlur = 28;
+            ctx.fillStyle = '#00ff9d';
+            ctx.fillRect(gL - POST_W + 2, floorY - postH + 2, POST_W - 2, postH + FLOOR_H - 4);
+            ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(gR - 2, floorY - postH, POST_W + 2, postH + FLOOR_H);
+            ctx.shadowColor = '#00ff9d'; ctx.shadowBlur = 28;
+            ctx.fillStyle = '#00ff9d';
+            ctx.fillRect(gR + 1, floorY - postH + 2, POST_W - 2, postH + FLOOR_H - 4);
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = 'rgba(255,255,255,0.85)';
+            ctx.font = 'bold 22px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('골', (gL + gR) / 2, H - 10);
+            ctx.fillStyle = 'rgba(0,255,157,0.9)';
+            ctx.font = 'bold 18px sans-serif';
+            ctx.fillText('↓', (gL + gR) / 2, floorY - 14);
+        }
+
+        function formatTime(ms) {
+            const totalSec = Math.max(0, Math.ceil(ms / 1000));
+            const min = Math.floor(totalSec / 60), sec = totalSec % 60;
+            return min + ':' + (sec < 10 ? '0' : '') + sec;
+        }
+
+        function drawHUD() {
+            const now = performance.now(), s = S();
+            const elapsed = now - gameStartTime;
+            const remaining = Math.max(0, s.dur - elapsed);
+            const noScoreRemain = Math.max(0, s.noScore - (now - lastScoreTime));
+
+            ctx.textAlign = 'center'; ctx.font = 'bold 16px sans-serif';
+            ctx.fillStyle = '#4ecdc4';
+            ctx.fillText(s.stage + '단계', W / 2, 55);
+
+            ctx.textAlign = 'right'; ctx.font = 'bold 22px sans-serif';
+            ctx.fillStyle = remaining < 60000 ? '#ff4444' : remaining < 120000 ? '#ffaa00' : '#fff';
+            ctx.fillText('\u23f1 ' + formatTime(remaining), W - 15, 35);
+
+            ctx.textAlign = 'left'; ctx.font = 'bold 24px sans-serif';
+            ctx.fillStyle = score >= s.goal ? '#00ff9d' : '#fff';
+            ctx.fillText('\u26bd ' + score + ' / ' + s.goal, 15, 35);
+
+            if (noScoreRemain < 60000) {
+                ctx.font = 'bold 16px sans-serif';
+                ctx.fillStyle = noScoreRemain < 30000 ? '#ff4444' : '#ffaa00';
+                ctx.textAlign = 'center';
+                ctx.fillText('\u26a0 \ubb34\ub4dd\uc810 ' + formatTime(noScoreRemain), W / 2, 25);
+            }
+
+            const barY = 3, barH = 4;
+            ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fillRect(0, barY, W, barH);
+            const progress = Math.min(1, elapsed / s.dur);
+            ctx.fillStyle = progress > 0.85 ? '#ff4444' : progress > 0.7 ? '#ffaa00' : '#4ecdc4';
+            ctx.fillRect(0, barY, W * progress, barH);
+
+            ctx.font = '14px monospace'; ctx.textAlign = 'left'; var y = 75;
+            if (Math.abs(effects.sizeMod) > 1) {
+                ctx.fillStyle = effects.sizeMod > 0 ? '#00ff9d' : '#ff0055';
+                ctx.fillText('크기: ' + (effects.sizeMod > 0 ? '거대화' : '축소'), 15, y); y += 18;
+            }
+            if (effects.gravMod > 50) { ctx.fillStyle = '#aa00ff'; ctx.fillText('중력: 강화', 15, y); y += 18; }
+            if (effects.speedMod > 50) { ctx.fillStyle = '#00bfff'; ctx.fillText('속도: 가속', 15, y); y += 18; }
+            if (effects.freezeTimer > 0) { ctx.fillStyle = '#80e0ff'; ctx.fillText('빙결: ' + effects.freezeTimer.toFixed(1) + '초', 15, y); y += 18; }
+
+            ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.textAlign = 'right'; ctx.font = '14px sans-serif';
+            ctx.fillText('최고 기록: ' + (bestStage + 1) + '단계', W - 15, 55);
+
+            // rotating random tips
+            const dtHud = 1 / 60;
+            tipTimer += dtHud;
+            if (tipShowing) {
+                tipAlpha = Math.min(1, tipAlpha + dtHud / TIP_FADE_TIME);
+                if (tipTimer >= TIP_SHOW_TIME) {
+                    tipShowing = false; tipTimer = 0;
+                }
+            } else {
+                tipAlpha = Math.max(0, tipAlpha - dtHud / TIP_FADE_TIME);
+                if (tipTimer >= TIP_HIDE_TIME) {
+                    tipShowing = true; tipTimer = 0;
+                    var next;
+                    do { next = Math.floor(Math.random() * TIPS.length); } while (next === tipIndex && TIPS.length > 1);
+                    tipIndex = next;
+                }
+            }
+            if (tipAlpha > 0) {
+                const tipText = TIPS[tipIndex];
+                const tipY = H - FLOOR_H - 35;
+                ctx.save();
+                ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
+                const tw = ctx.measureText(tipText).width || 200;
+                ctx.globalAlpha = tipAlpha * 0.5;
+                ctx.fillStyle = '#000';
+                drawRoundRectPath(ctx, W / 2 - tw / 2 - 16, tipY - 16, tw + 32, 30, 15);
+                ctx.fill();
+                ctx.globalAlpha = tipAlpha * 0.85;
+                ctx.fillStyle = '#fff';
+                ctx.fillText(tipText, W / 2, tipY + 2);
+                ctx.restore();
+            }
+        }
+
+        // ============================================================
+        // SCREENS
+        // ============================================================
+        let btnRect = { x: 0, y: 0, w: 0, h: 0 };
+        let btn2Rect = { x: 0, y: 0, w: 0, h: 0 };
+        let pauseBtnRect = { x: 0, y: 0, w: 40, h: 40 };
+        let stageCells = []; // [{x,y,w,h,idx,selectable}]
+        let selectedStage = -1; // -1 = none selected (use default next)
+
+        function drawButton(text, yRatio, color) {
+            const bw = 220, bh = 50, bx = W / 2 - bw / 2, by = H * yRatio;
+            ctx.globalAlpha = 0.8 + Math.sin(Date.now() / 500) * 0.2;
+            ctx.fillStyle = color || '#4ecdc4';
+            drawRoundRectPath(ctx, bx, by, bw, bh, 25);
+            ctx.fill();
+            ctx.globalAlpha = 1; ctx.fillStyle = '#fff'; ctx.font = 'bold 20px sans-serif';
+            ctx.textAlign = 'center'; ctx.fillText(text, W / 2, by + 33);
+            return { x: bx, y: by, w: bw, h: bh };
+        }
+
+        function drawPauseButton() {
+            const margin = 20;
+            pauseBtnRect.x = W - pauseBtnRect.w - margin;
+            pauseBtnRect.y = margin + 10;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            drawRoundRectPath(ctx, pauseBtnRect.x, pauseBtnRect.y, pauseBtnRect.w, pauseBtnRect.h, 10);
+            ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(pauseBtnRect.x + 12, pauseBtnRect.y + 10, 5, 20);
+            ctx.fillRect(pauseBtnRect.x + 23, pauseBtnRect.y + 10, 5, 20);
+        }
+
+        function isInRect(mx, my, r) { return mx >= r.x && mx <= r.x + r.w && my >= r.y && my <= r.y + r.h; }
+
+        function drawStageMap() {
+            stageCells = [];
+            const total = STAGES.length;
+            const cols = 10, rows = Math.ceil(total / cols);
+            const cellSize = Math.min((W - 60) / cols, 32);
+            const gap = 4;
+            const mapW = cols * (cellSize + gap) - gap;
+            const ox = (W - mapW) / 2;
+            const oy = H * 0.36;
+
+            const cleared = progress.cleared.length;
+            ctx.textAlign = 'center'; ctx.font = 'bold 14px sans-serif';
+            ctx.fillStyle = '#4ecdc4';
+            ctx.fillText('진행도  ' + cleared + ' / ' + total, W / 2, oy - 10);
+
+            const barX = ox, barY2 = oy - 5, barW = mapW, barH2 = 3;
+            ctx.fillStyle = 'rgba(255,255,255,0.1)';
+            drawRoundRectPath(ctx, barX, barY2, barW, barH2, 1.5);
+            ctx.fill();
+            ctx.fillStyle = '#4ecdc4';
+            drawRoundRectPath(ctx, barX, barY2, barW * (cleared / total), barH2, 1.5);
+            ctx.fill();
+
+            // "탭하여 스테이지 선택" hint
+            if (cleared > 0) {
+                ctx.font = '11px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.35)';
+                ctx.fillText('\u25b6 \ud074\ub9ac\uc5b4\ud55c \uc2a4\ud14c\uc774\uc9c0\ub97c \ud0ed\ud558\uc5ec \uc7ac\ub3c4\uc804', W / 2, oy + 2);
+            }
+
+            for (let i = 0; i < total; i++) {
+                const col = i % cols, row = Math.floor(i / cols);
+                const cellX = ox + col * (cellSize + gap);
+                const cellY = oy + 8 + row * (cellSize + gap);
+                const cx = cellX + cellSize / 2;
+                const cy = cellY + cellSize / 2;
+                const isCleared = progress.cleared.includes(i);
+                const isCurrent = (i === cleared);
+                const selectable = isCleared || isCurrent;
+
+                stageCells.push({ x: cellX, y: cellY, w: cellSize, h: cellSize, idx: i, selectable: selectable });
+
+                ctx.beginPath();
+                drawRoundRectPath(ctx, cellX, cellY, cellSize, cellSize, 6);
+                if (isCleared) {
+                    ctx.fillStyle = '#00ff9d';
+                } else if (isCurrent) {
+                    ctx.fillStyle = '#4ecdc4';
+                } else {
+                    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                }
+                ctx.fill();
+
+                ctx.font = 'bold ' + (cellSize * 0.45) + 'px sans-serif';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                if (isCleared) {
+                    ctx.fillStyle = '#000';
+                } else if (isCurrent) {
+                    ctx.fillStyle = '#fff';
+                } else {
+                    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                }
+                ctx.fillText(String(i + 1), cx, cy + 1);
+
+                if (isCleared) {
+                    ctx.font = 'bold ' + (cellSize * 0.3) + 'px sans-serif';
+                    ctx.fillStyle = '#000';
+                    ctx.fillText('\u2713', cx + cellSize * 0.28, cy - cellSize * 0.25);
+                }
+
+                if (isCurrent && selectedStage === -1) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.3 + Math.sin(Date.now() / 400) * 0.2;
+                    ctx.strokeStyle = '#4ecdc4'; ctx.lineWidth = 2;
+                    drawRoundRectPath(ctx, cellX - 2, cellY - 2, cellSize + 4, cellSize + 4, 8);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+                // selected highlight
+                if (selectedStage === i) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.6 + Math.sin(Date.now() / 300) * 0.3;
+                    ctx.strokeStyle = '#fff'; ctx.lineWidth = 3;
+                    drawRoundRectPath(ctx, cellX - 3, cellY - 3, cellSize + 6, cellSize + 6, 8);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+            ctx.textBaseline = 'alphabetic';
+        }
+
+        function drawStartScreen() {
+            drawBg(); // 시작 화면에서는 골대를 숨김
+            ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = 'bold 40px sans-serif';
+            ctx.fillText('Plop!', W / 2, H * 0.12);
+            ctx.font = '16px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            ctx.fillText('3\uac1c \ub9de\ucdb0 \ud130\ub728\ub9ac\uace0, \ucc9c\uc7a5\uc744 \uc870\uc2ec\ud558\uc138\uc694!', W / 2, H * 0.19);
+            ctx.font = '14px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            ctx.fillText('\ubcfc\uc744 \uace8\ub300\uc5d0 \ub123\uc73c\uc138\uc694. \uacf5\uc774 \uc313\uc5ec \ucc9c\uc7a5\uc5d0 \ub2ff\uc73c\uba74 \uc2e4\ud328\ud569\ub2c8\ub2e4.', W / 2, H * 0.23);
+            // device id (subtle)
+            ctx.font = '10px monospace'; ctx.fillStyle = 'rgba(255,255,255,0.15)';
+            ctx.fillText(DEVICE_ID, W / 2, H * 0.27);
+
+            drawStageMap();
+
+            var targetStage = selectedStage >= 0 ? selectedStage : Math.min(progress.cleared.length, STAGES.length - 1);
+            var label, btnColor;
+            if (progress.cleared.length >= STAGES.length && selectedStage < 0) {
+                label = 'ALL CLEAR - RESTART'; btnColor = '#ffd700';
+            } else {
+                label = 'STAGE ' + (targetStage + 1) + ' START'; btnColor = '#4ecdc4';
+            }
+            btnRect = drawButton(label, 0.72, btnColor);
+        }
+
+        function drawStageClearScreen() {
+            drawBg(); drawGoal();
+            for (var i = 0; i < balls.length; i++) balls[i].draw();
+            ctx.fillStyle = 'rgba(0,0,0,0.75)'; ctx.fillRect(0, 0, W, H);
+            ctx.fillStyle = '#00ff9d'; ctx.textAlign = 'center'; ctx.font = 'bold 40px sans-serif';
+            ctx.fillText('Stage Clear!', W / 2, H * 0.22);
+            ctx.fillStyle = '#fff'; ctx.font = 'bold 48px sans-serif';
+            ctx.fillText(score + ' 골', W / 2, H * 0.32);
+            btnRect = drawButton('NEXT STAGE', 0.48, '#00ff9d');
+            btn2Rect = drawButton('HOME', 0.60, '#888');
+        }
+
+        function drawAllClearScreen() {
+            drawBg(); drawGoal();
+            ctx.fillStyle = 'rgba(0,0,0,0.75)'; ctx.fillRect(0, 0, W, H);
+            ctx.fillStyle = '#ffd700'; ctx.textAlign = 'center'; ctx.font = 'bold 42px sans-serif';
+            ctx.fillText('ALL CLEAR!', W / 2, H * 0.25);
+            btnRect = drawButton('RESTART', 0.48, '#ffd700');
+            btn2Rect = drawButton('HOME', 0.60, '#888');
+        }
+
+        function drawGameOverScreen() {
+            drawBg(); drawGoal();
+            for (var i = 0; i < balls.length; i++) balls[i].draw();
+            ctx.fillStyle = 'rgba(0,0,0,0.75)'; ctx.fillRect(0, 0, W, H);
+            ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = 'bold 36px sans-serif';
+            ctx.fillText('Game Over', W / 2, H * 0.22);
+            ctx.fillStyle = '#ff4444'; ctx.font = 'bold 20px sans-serif';
+            ctx.fillText(gameOverReason, W / 2, H * 0.30);
+            ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = '16px sans-serif';
+            ctx.fillText('Stage ' + S().stage + '  |  ' + score + ' 골', W / 2, H * 0.37);
+            btnRect = drawButton('RETRY', 0.48, '#ff4444');
+            btn2Rect = drawButton('HOME', 0.60, '#888');
+        }
+
+        function drawPauseScreen() {
+            drawBg(); drawGoal();
+            for (let i = 0; i < balls.length; i++) balls[i].draw();
+            ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(0,0,W,H);
+            ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = 'bold 40px sans-serif';
+            ctx.fillText('PAUSED', W/2, H/2 - 20);
+            btnRect = drawButton('RESUME', 0.48, '#4ecdc4');
+            btn2Rect = drawButton('HOME', 0.60, '#888');
+        }
+
+        // ============================================================
+        // GAME INIT & INPUT
+        // ============================================================
+        function startStage(stageIdx) {
+            canvas.style.cursor = 'none';
+            if (stageIdx < 0) stageIdx = 0;
+            if (stageIdx >= STAGES.length) stageIdx = STAGES.length - 1;
+            currentStage = stageIdx;
+            setGoalForStage(currentStage);
+            state = 'play';
+            isPaused = false;
+            balls = []; particles = []; floatTexts = [];
+            score = 0; effects = { sizeMod: 0, gravMod: 0, speedMod: 0, freezeTimer: 0 };
+            gameOverReason = '';
+            tipIndex = Math.floor(Math.random() * TIPS.length); tipTimer = 0; tipAlpha = 0; tipShowing = true;
+            cursorShapeTimer = 0;
+            cursorShape = CURSOR_SHAPES[Math.floor(Math.random() * CURSOR_SHAPES.length)];
+            var now = performance.now();
+            gameStartTime = now; lastScoreTime = now; lastSpawn = now;
+            spawnBall();
+        }
+
+        function onInput(x, y, isClick) {
+            mx = x; my = y;
+            if (!isClick) return;
+
+            if (state === 'play' && isInRect(x, y, pauseBtnRect)) {
+                isPaused = true; state = 'pause'; canvas.style.cursor = 'default'; return;
+            }
+            if (state === 'start') {
+                // stage cell tap = select
+                for (let i = 0; i < stageCells.length; i++) {
+                    const c = stageCells[i];
+                    if (c.selectable && isInRect(x, y, c)) {
+                        selectedStage = (selectedStage === c.idx) ? -1 : c.idx;
+                        return;
+                    }
+                }
+            }
+            if (state === 'start' && isInRect(x, y, btnRect)) {
+                var target = selectedStage >= 0 ? selectedStage : Math.min(progress.cleared.length, STAGES.length - 1);
+                selectedStage = -1;
+                startStage(target);
+            }
+            else if (state === 'stageClear' && isInRect(x, y, btnRect)) { startStage(currentStage + 1); }
+            else if (state === 'stageClear' && isInRect(x, y, btn2Rect)) { currentStage = 0; state = 'start'; selectedStage = -1; progress = loadProgress(); }
+            else if (state === 'over' && isInRect(x, y, btnRect)) { startStage(currentStage); }
+            else if (state === 'over' && isInRect(x, y, btn2Rect)) { currentStage = 0; state = 'start'; selectedStage = -1; progress = loadProgress(); }
+            else if (state === 'allClear' && isInRect(x, y, btnRect)) { currentStage = 0; state = 'start'; selectedStage = -1; progress = loadProgress(); }
+            else if (state === 'allClear' && isInRect(x, y, btn2Rect)) { currentStage = 0; state = 'start'; selectedStage = -1; progress = loadProgress(); }
+            else if (state === 'pause' && isInRect(x, y, btnRect)) { isPaused = false; state = 'play'; canvas.style.cursor = 'none'; }
+            else if (state === 'pause' && isInRect(x, y, btn2Rect)) { currentStage = 0; state = 'start'; selectedStage = -1; canvas.style.cursor = 'default'; progress = loadProgress(); }
+        }
+
+        function getCanvasPoint(clientX, clientY) {
+            const rect = canvas.getBoundingClientRect();
+            return { x: clientX - rect.left, y: clientY - rect.top };
+        }
+        canvas.addEventListener('mousemove', function (e) {
+            const p = getCanvasPoint(e.clientX, e.clientY);
+            onInput(p.x, p.y, false);
+        });
+        canvas.addEventListener('mousedown', function (e) {
+            const p = getCanvasPoint(e.clientX, e.clientY);
+            onInput(p.x, p.y, true);
+        });
+        canvas.addEventListener('touchmove', function (e) {
+            e.preventDefault();
+            const t = e.touches[0];
+            const p = getCanvasPoint(t.clientX, t.clientY);
+            onInput(p.x, p.y, false);
+        }, { passive: false });
+        canvas.addEventListener('touchstart', function (e) {
+            e.preventDefault();
+            const t = e.touches[0];
+            const p = getCanvasPoint(t.clientX, t.clientY);
+            onInput(p.x, p.y, true);
+        }, { passive: false });
+
+        // ============================================================
+        // MAIN LOOP
+        // ============================================================
+        var lastT = performance.now();
+        function loop(now) {
+            var dt = Math.min((now - lastT) / 1000, 0.033);
+            lastT = now;
+            
+            if (state === 'pause') { drawPauseScreen(); requestAnimationFrame(loop); return; }
+            if (state === 'start') { drawStartScreen(); requestAnimationFrame(loop); return; }
+            if (state === 'stageClear') { drawStageClearScreen(); requestAnimationFrame(loop); return; }
+            if (state === 'allClear') { drawAllClearScreen(); requestAnimationFrame(loop); return; }
+            if (state === 'over') { drawGameOverScreen(); requestAnimationFrame(loop); return; }
+            
+            if (state === 'play') {
+                if (now - lastSpawn > S().spawn) { spawnBall(); lastSpawn = now; }
+                updateEffects(dt);
+                updateCursorShape(dt);
+                for (var i = 0; i < balls.length; i++) balls[i].update(dt);
+                updateBombs();
+                applyClumpingForce(dt);
+                cursorCollideBalls();
+                pmx = mx; pmy = my;
+                for (var pass = 0; pass < 3; pass++) {
+                    for (var i = 0; i < balls.length; i++)
+                        for (var j = i + 1; j < balls.length; j++) {
+                            if (balls[i].scored || balls[j].scored) continue;
+                            collideBalls(balls[i], balls[j]);
+                        }
+                }
+                enforceBounds();
+                checkMatches();
+                removeFloatingBalls(); 
+                cleanup();
+                drawBg(); drawGoal();
+                for (var i = 0; i < balls.length; i++) balls[i].draw();
+                updateAndDrawParticles(dt); 
+                drawHUD(); 
+                drawPauseButton(); 
+                drawCursor();
+            }
+            requestAnimationFrame(loop);
+        }
+        requestAnimationFrame(loop);
+    </script>
+</body>
+</html>

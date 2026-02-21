@@ -39,12 +39,73 @@ class App {
     this._timeRemaining = 180;
     this._gameActive = false;
     this._lastFrameTime = 0;
+
+    // 식별번호 + 기록 시스템
+    this._userId = this._getOrCreateUserId();
+    this._records = this._loadRecords();
+    document.getElementById('user-id-display').textContent = `ID: ${this._userId}`;
+
     this._bindStartScreen();
+    this._renderStartRecords();
+  }
+
+  _getOrCreateUserId() {
+    let id = localStorage.getItem('kpsy_typing_user_id');
+    if (!id) {
+      id = 'KT-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 5).toUpperCase();
+      localStorage.setItem('kpsy_typing_user_id', id);
+    }
+    return id;
+  }
+
+  _loadRecords() {
+    try {
+      return JSON.parse(localStorage.getItem('kpsy_typing_records') || '{}');
+    } catch { return {}; }
+  }
+
+  _saveStageRecord(stageKey, avgCPM, accuracy) {
+    const prev = this._records[stageKey];
+    const now = new Date().toLocaleDateString('ko-KR');
+    const rec = {
+      bestCPM: prev ? Math.max(prev.bestCPM, avgCPM) : avgCPM,
+      lastCPM: avgCPM,
+      bestAcc: prev ? Math.max(prev.bestAcc, accuracy) : accuracy,
+      lastAcc: accuracy,
+      attempts: (prev ? prev.attempts : 0) + 1,
+      date: now
+    };
+    this._records[stageKey] = rec;
+    localStorage.setItem('kpsy_typing_records', JSON.stringify(this._records));
+    return rec;
+  }
+
+  _renderStartRecords() {
+    const el = document.getElementById('start-records');
+    const stages = ['b1', 'b2', 'b3', 'b4', 'm1', 'm2', 'adv'];
+    const labels = { b1: '초급 1', b2: '초급 2', b3: '초급 3', b4: '초급 4', m1: '중급 1', m2: '중급 2', adv: '고급' };
+    const hasAny = stages.some(k => this._records[k]);
+    if (!hasAny) { el.classList.add('hidden'); return; }
+
+    el.classList.remove('hidden');
+    let html = '<p class="records-title">이전 기록</p><div class="records-grid">';
+    for (const k of stages) {
+      const r = this._records[k];
+      if (!r) continue;
+      html += `<div class="record-card">
+        <span class="record-stage">${labels[k]}</span>
+        <span class="record-best">${r.bestCPM} <small>타/분</small></span>
+        <span class="record-acc">${r.bestAcc}%</span>
+        <span class="record-tries">${r.attempts}회</span>
+      </div>`;
+    }
+    html += '</div>';
+    el.innerHTML = html;
   }
 
   /** 레벨별 구간당 문장 수 */
   getSessionSize() {
-    return this.currentLevel === 'beginner' ? 15 : 10;
+    return this.currentLevel === 'beginner' ? 50 : 30;
   }
 
   _showScreen(n) {
@@ -96,6 +157,7 @@ class App {
     this.liveCpmEl.classList.add('hidden');
     this.timerEl.classList.add('hidden');
     this.navLevels.classList.add('hidden');
+    this._renderStartRecords();
     this._showScreen('start');
     this.introRenderer.start();
   }
@@ -113,6 +175,7 @@ class App {
     this._matched = false;
     this._totalKeystrokes = 0;
     this._correctKeystrokes = 0;
+    this._sentenceInputCount = 0;
     this._loadTier();
     this._smoothedCPM = 0;
     this._showScreen('game');
@@ -121,7 +184,7 @@ class App {
     this.levelBtns.forEach(b => b.classList.toggle('active', b.dataset.level === this.currentLevel));
 
     // Timer Start
-    this._timeRemaining = 180;
+    this._timeRemaining = this._timeLimit;
     this._gameActive = true;
     this._lastFrameTime = performance.now();
     this._updateTimerDisplay();
@@ -152,13 +215,14 @@ class App {
     if (this._timeRemaining > 0) {
       const prevTime = this._timeRemaining;
       this._timeRemaining -= dt;
+
       if (this._timeRemaining <= 0) {
         this._timeRemaining = 0;
-        this._finishGame('timeout');
+        this._onStageComplete();
+        return;
       } else {
-        // Warning Sounds at 2:00 (120s) and 1:00 (60s)
-        if (prevTime > 120 && this._timeRemaining <= 120) this.sound.playWarning();
         if (prevTime > 60 && this._timeRemaining <= 60) this.sound.playWarning();
+        if (prevTime > 10 && this._timeRemaining <= 10) this.sound.playWarning();
       }
       this._updateTimerDisplay();
     }
@@ -174,7 +238,7 @@ class App {
     this.timerEl.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}:${String(ms).padStart(2, '0')}`;
     this.timerEl.classList.remove('warn', 'critical');
     if (t <= 10) this.timerEl.classList.add('critical');
-    else if (t <= 60) this.timerEl.classList.add('warn');
+    else if (t <= 30) this.timerEl.classList.add('warn');
   }
 
   _finishGame(reason) {
@@ -266,38 +330,8 @@ class App {
       return;
     }
 
-    // Removed length clamp to allow free typing (user feedback)
-    // if (v.length > prompt.length) ...
-
-    // 오타 추적: 마지막 글자가 맞는지 확인
-    if (v.length > 0) {
-      this._totalKeystrokes++;
-      // Check last char input
-      const lastChar = v[v.length - 1];
-      const targetChar = prompt[v.length - 1];
-
-      let isMismatch = false;
-      if (lastChar !== targetChar) {
-        // Handle Hangul Jamo Composition
-        if (/[가-힣]/.test(targetChar) || /[ㄱ-ㅎㅏ-ㅣ]/.test(lastChar)) {
-          const dTarget = targetChar.normalize('NFD');
-          const dInput = lastChar.normalize('NFD');
-          // If input is a prefix of target (e.g. 'ㅇ' of '안'), it's not an error yet
-          if (!dTarget.startsWith(dInput)) {
-            isMismatch = true;
-          }
-        } else {
-          isMismatch = true;
-        }
-      }
-
-      if (isMismatch) {
-        // Error Sound for mismatch
-        this.sound.playError();
-      } else if (lastChar === targetChar) {
-        this._correctKeystrokes++;
-      }
-    }
+    // 입력 이벤트 카운트 (제출 시 정확도 계산에 사용)
+    this._sentenceInputCount++;
 
     const r = this.engine.processInput(v);
     this.visualizer.updateCPM(r.cpm);
@@ -351,11 +385,20 @@ class App {
     this.liveCpmEl.className = rounded >= 400 ? 'fire' : rounded >= 300 ? 'hot' : '';
   }
 
-  /** 문장 제출 — CPM 확정 + 공격 + 다음 문장 로딩 */
+  /** 문장 제출 — CPM 확정 + 정확도 + 공격 + 다음 문장 로딩 */
   _submitSentence() {
+    const prompt = this.engine.currentPrompt;
+    // 정확도: 제출된 텍스트와 프롬프트 비교 (글자 단위)
+    const input = this.inputEl.value;
+    for (let i = 0; i < prompt.length; i++) {
+      this._totalKeystrokes++;
+      if (input[i] === prompt[i]) this._correctKeystrokes++;
+    }
+
     const result = this.engine.confirmComplete();
     this.visualizer.addBar(result.cpm);
-    this.battle.attack();
+    // CPM 기반 데미지로 공격
+    this.battle.attackWithDamage(result.cpm);
     this._allCPMs.push(result.cpm);
     this._tierCPMs.push(result.cpm);
     this._matched = false;
@@ -372,88 +415,67 @@ class App {
       this._animatePrompt();
       this._updateProgress();
     } else {
+      // 프롬프트 완료 → 스테이지 완료
       this._onStageComplete();
     }
   }
 
-  /** 스테이지 클리어 시 평균 CPM으로 목표 달성 여부 판정 → 자동 다음 스테이지 / 재도전 / 다음 등급 */
+
+  /** 스테이지 클리어 → 기록 저장 + 피드백 표시 후 다음 스테이지 진행 */
   _onStageComplete() {
     const prevKey = this._sequence[this._seqIdx];
+    const tierLabel = TIER_LABELS[prevKey] || prevKey;
     const tierAvg = this._tierCPMs.length
       ? Math.round(this._tierCPMs.reduce((a, b) => a + b, 0) / this._tierCPMs.length)
       : 0;
+    const total = this._totalKeystrokes || 1;
+    const acc = Math.floor((this._correctKeystrokes / total) * 100);
     const goal = TIER_TARGETS[prevKey] != null ? TIER_TARGETS[prevKey] : null;
 
-    // Retry Case (Failure) - Still doing toast/delay for failure to give pause? 
-    // User emphasized "Stage Clear" not blocking. Failure might need a moment to reflect.
-    // Keeping retry logic as is for now, or making it faster?
-    // User said "Seamless Progression". If I fail, it breaks progression anyway.
-    if (goal != null && tierAvg < goal) {
-      this._showToast(`목표 미달 (평균 ${tierAvg} 타/분, 목표 ${goal} 타/분). 재도전!`, 2000, () => {
-        this._loadTier();
-        this._updateProgress();
-        this._updateTierIndicator();
-        this._renderPrompt('');
-        this._animatePrompt();
-        this.inputEl.value = '';
-        this.inputEl.focus();
-      });
-      return;
+    // 기록 저장
+    const rec = this._saveStageRecord(prevKey, tierAvg, acc);
+
+    // 타수별 피드백 메시지
+    let feedback;
+    if (tierAvg >= 400) feedback = '놀라운 속도!';
+    else if (tierAvg >= 300) feedback = '훌륭해요!';
+    else if (tierAvg >= 200) feedback = '좋은 실력!';
+    else if (tierAvg >= 100) feedback = '괜찮아요!';
+    else feedback = '조금만 더 힘내요!';
+
+    // 이전 기록 + 피드백 토스트
+    let toastMsg = `${tierLabel} 완료 — ${tierAvg} 타/분`;
+    if (goal != null) {
+      toastMsg += tierAvg >= goal ? ' ✓' : ` (목표 ${goal})`;
     }
+    toastMsg += `\n${feedback}`;
+    if (rec.attempts > 1) {
+      toastMsg += `\n최고 ${rec.bestCPM} 타/분 · ${rec.attempts}회차`;
+    }
+    this._showToast(toastMsg, 2500);
 
     this._seqIdx++;
-    if (this._seqIdx < this._totalTiers) {
-      // Seamless Next Stage
-      this.sound.playSuccess();
-      this._triggerStageFlash('normal');
-      this._loadTier();
-      this._updateProgress();
-      this._updateTierIndicator();
-      this._renderPrompt('');
-      this._animatePrompt();
-      this.inputEl.value = '';
-      this.inputEl.focus();
+    this._tierCPMs = [];
+    if (this._seqIdx >= this._totalTiers) {
+      // 모든 스테이지 완료 → 결과 화면
+      this._finishGame('clear');
       return;
     }
 
-    // Beginner: Manual Promotion or Retry
-    if (this.currentLevel === 'beginner') {
-      // Target Met? (250 CPM)
-      const avgCPM = this._allCPMs.length
-        ? Math.round(this._allCPMs.reduce((a, b) => a + b, 0) / this._allCPMs.length)
-        : 0;
-      if (avgCPM >= 250) {
-        this._showResults(true); // Show Manual Promotion
-      } else {
-        // Failed -> show results without promotion (just clear) or retry?
-        // User didn't specify, but "retry" or "clear" is safe.
-        // Let's show results so they can retry.
-        this._finishGame('clear');
-      }
-      return;
-    }
-
-    if (this.currentLevel === 'intermediate') {
-      this.currentLevel = 'advanced';
-      this._sequence = [...LEVEL_SEQUENCES.advanced];
-      this._seqIdx = 0;
-      this._totalTiers = this._sequence.length;
-      this.levelBtns.forEach(b => b.classList.toggle('active', b.dataset.level === 'advanced'));
-
-      // Seamless Promotion
-      this.sound.playSuccess();
-      this._triggerStageFlash('promote');
-      this._loadTier();
-      this._updateProgress();
-      this._updateTierIndicator();
-      this._renderPrompt('');
-      this._animatePrompt();
-      this.inputEl.value = '';
-      this.inputEl.focus();
-      return;
-    }
-    // All clear? Just show results
-    this._finishGame('clear');
+    // 다음 스테이지로 자동 진행 — 타이머 3분 리셋
+    this._timeRemaining = this._timeLimit;
+    this._lastFrameTime = performance.now();
+    this.sound.playSuccess();
+    this._triggerStageFlash('normal');
+    this._loadTier();
+    this._updateProgress();
+    this._updateTierIndicator();
+    this._updateTimerDisplay();
+    this._renderPrompt('');
+    this._animatePrompt();
+    this.inputEl.value = '';
+    this.inputEl.focus();
+    requestAnimationFrame(() => this._gameLoop());
   }
 
   // ---- EXCELLENT 이벤트 ----
@@ -472,15 +494,13 @@ class App {
 
   // ---- 진행/결과 ----
   _updateProgress() {
-    const sessionSize = this.getSessionSize();
-    const done = this._seqIdx * sessionSize + this.engine.currentPromptIndex;
-    const total = this._totalTiers * sessionSize;
-    const pct = Math.min((done / total) * 100, 100);
+    const stagePct = (this._timeLimit - this._timeRemaining) / this._timeLimit;
+    const pct = Math.min(((this._seqIdx + stagePct) / this._totalTiers) * 100, 100);
     this.progressFill.style.width = pct + '%';
     this.progressFill.style.background = pct < 33 ? 'var(--accent-cyan)' : pct < 66 ? 'var(--accent-magenta)' : 'var(--accent-orange)';
   }
 
-  _showResults(canPromote = false) {
+  _showResults() {
     this._gameActive = false;
     this.visualizer.stop();
     this.battle.stop();
@@ -499,6 +519,11 @@ class App {
       : 0;
     const kills = this.battle ? this.battle.kills : 0;
 
+    // 승급 판정: 평균 CPM 충족 시
+    const canPromote = (this.currentLevel === 'beginner' && avgCPM >= 250)
+      || (this.currentLevel === 'intermediate' && avgCPM >= 320);
+    const hasNextLevel = this.currentLevel !== 'advanced';
+
     // Grade
     const grade = GradeSystem.getGrade(avgCPM);
     const content = document.getElementById('results-content');
@@ -506,36 +531,43 @@ class App {
 
     document.getElementById('grade-icon').textContent = grade.icon;
     document.getElementById('grade-name').textContent = grade.name;
-    document.getElementById('grade-message').textContent = canPromote
+    document.getElementById('grade-message').textContent = (canPromote && hasNextLevel)
       ? '축하합니다! 모든 과정을 완벽하게 수료했습니다.'
       : grade.message;
 
     // Battle Stats
     document.getElementById('result-kills').textContent = kills;
     document.getElementById('result-avg-cpm').textContent = avgCPM;
-    document.getElementById('result-accuracy').textContent = acc;
+    document.getElementById('result-accuracy').textContent = acc + '%';
 
     // Promotion UI
     const promoAction = document.getElementById('promotion-action');
     const retryBtn = document.getElementById('retry-btn');
 
-    if (canPromote) {
+    // 처음으로 버튼
+    document.getElementById('home-btn').onclick = () => {
+      this._renderStartRecords();
+      this._showScreen('start');
+      this.introRenderer.start();
+    };
+
+    if (canPromote && hasNextLevel) {
       const nextLevel = this.currentLevel === 'beginner' ? 'intermediate' : 'advanced';
       const nextLabel = nextLevel === 'intermediate' ? '중급' : '고급';
       promoAction.classList.remove('hidden');
       promoAction.querySelector('.promo-text').textContent = `훌륭합니다! ${nextLabel} 도전 자격을 획득했습니다.`;
       document.getElementById('promote-btn').textContent = `${nextLabel} 도전하기`;
-      retryBtn.classList.add('hidden');
 
       document.getElementById('promote-btn').onclick = () => {
         this.currentLevel = nextLevel;
         this.levelBtns.forEach(b => b.classList.toggle('active', b.dataset.level === nextLevel));
+        this.introRenderer.stop();
         this._startGame();
       };
     } else {
       promoAction.classList.add('hidden');
-      retryBtn.classList.remove('hidden');
     }
+    retryBtn.classList.remove('hidden');
   }
   _renderPrompt(v) {
     this.promptEl.textContent = '';
@@ -599,6 +631,7 @@ class App {
     this._matched = false;
     this._totalKeystrokes = 0;
     this._correctKeystrokes = 0;
+    this._sentenceInputCount = 0;
     this._loadTier();
     this.visualizer.start(); this.battle.start();
     this.inputEl.value = '';

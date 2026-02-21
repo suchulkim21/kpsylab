@@ -7,6 +7,8 @@ import { Calendar, User, ArrowLeft, Tag } from 'lucide-react';
 import { supabase } from '@/lib/db/supabase';
 import { marked } from 'marked';
 
+export const revalidate = 0; // Disable caching
+
 // 본문 중간에 삽입할 배너 - 가로 배너만 사용 (읽기 경험 방해 방지)
 const INLINE_BANNER = { src: '/img/banners/가로.png', alt: 'KPSY LAB', aspect: 'wide' };
 
@@ -255,14 +257,18 @@ export default async function BlogPostPage({ params }: { params: Promise<{ id: s
                 />
                 {secondPart && (
                   <>
-                    <div className="my-10 flex justify-center">
-                      <Link href="https://www.kpsylab.com" className="block rounded-xl overflow-hidden hover:opacity-90 transition-opacity max-w-2xl w-full shadow-lg">
+                    <div className="my-8 flex justify-center">
+                      <Link
+                        href="/mnps/test"
+                        className="block rounded-lg overflow-hidden hover:opacity-90 transition-opacity max-w-xl w-full"
+                        aria-label="MNPS 테스트 바로가기"
+                      >
                         <Image
                           src={INLINE_BANNER.src}
                           alt={INLINE_BANNER.alt}
                           width={800}
                           height={200}
-                          className="w-full h-auto"
+                          className="w-full h-auto max-h-48 object-contain bg-black/40"
                           unoptimized
                         />
                       </Link>

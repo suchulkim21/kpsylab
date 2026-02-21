@@ -229,6 +229,74 @@ body {
   letter-spacing: 0.08em;
 }
 
+#user-id-display {
+  margin-top: 8px;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  font-family: 'Inter', monospace;
+  opacity: 0.5;
+}
+
+/* 이전 기록 */
+#start-records {
+  margin-top: 20px;
+  width: 100%;
+  max-width: 480px;
+}
+
+.records-title {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 10px;
+}
+
+.records-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
+}
+
+.record-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.record-stage {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.record-best {
+  font-size: 1rem;
+  color: var(--accent-cyan);
+  font-weight: 700;
+}
+
+.record-best small {
+  font-size: 0.6rem;
+  font-weight: 400;
+  opacity: 0.7;
+}
+
+.record-acc {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.record-tries {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+}
+
 /* ============================================ 결과 화면 */
 #results-screen {
   flex: 1;
@@ -349,7 +417,14 @@ body {
   margin: -8px auto 24px;
 }
 
-#retry-btn {
+#result-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+#retry-btn, #home-btn {
   padding: 12px 44px;
   border: 1px solid var(--accent-cyan);
   border-radius: 28px;
@@ -363,9 +438,21 @@ body {
   transition: all 0.3s;
 }
 
+#home-btn {
+  border-color: var(--text-secondary);
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.04);
+}
+
 #retry-btn:hover {
   background: rgba(0, 255, 255, 0.12);
   box-shadow: 0 0 24px rgba(0, 255, 255, 0.12);
+}
+
+#home-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  border-color: var(--text-primary);
 }
 
 /* 등급 색상 */
@@ -452,7 +539,8 @@ body {
   font-size: 0.95rem;
   color: var(--text-primary);
   text-align: center;
-  line-height: 1.5;
+  line-height: 1.6;
+  white-space: pre-line;
   box-shadow: 0 0 32px rgba(0, 0, 0, 0.4);
   pointer-events: none;
   animation: toast-in 0.25s ease;

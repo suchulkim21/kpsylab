@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Shield } from 'lucide-react';
-import { BLOG_ENABLED, MIND_ARCHITECT_ENABLED, MNPS_ENABLED, TYPING_GAME_ENABLED } from '@/lib/constants/featureFlags';
+import { BLOG_ENABLED, MIND_ARCHITECT_ENABLED, MNPS_ENABLED, TYPING_GAME_ENABLED, METACOGNITION_ENABLED } from '@/lib/constants/featureFlags';
 
 export default function Navigation() {
   return (
@@ -17,7 +17,7 @@ export default function Navigation() {
       >
         www.kpsylab.com
       </Link>
-      
+
       <nav
         className="flex items-center gap-4 flex-wrap"
         role="navigation"
@@ -54,11 +54,32 @@ export default function Navigation() {
           </Link>
         )}
         {TYPING_GAME_ENABLED && (
+          <details className="relative group">
+            <summary className="list-none cursor-pointer text-emerald-300 hover:text-emerald-200 transition-colors text-sm [&::-webkit-details-marker]:hidden">
+              게임
+            </summary>
+            <div className="absolute right-0 mt-2 min-w-[160px] rounded-lg border border-emerald-500/20 bg-gray-900/95 shadow-lg backdrop-blur-md hidden group-open:block group-hover:block">
+              <Link
+                href="/games/kybord"
+                className="block px-4 py-2 text-sm text-emerald-200 hover:text-white hover:bg-emerald-500/10 transition-colors"
+              >
+                타자 게임
+              </Link>
+              <Link
+                href="/games/ball-goal"
+                className="block px-4 py-2 text-sm text-emerald-200 hover:text-white hover:bg-emerald-500/10 transition-colors"
+              >
+                볼 골
+              </Link>
+            </div>
+          </details>
+        )}
+        {METACOGNITION_ENABLED && (
           <Link
-            href="/game"
-            className="text-emerald-300 hover:text-emerald-200 transition-colors text-sm"
+            href="/metacognition"
+            className="text-rose-300 hover:text-rose-200 transition-colors text-sm"
           >
-            타자 게임
+            메타인지
           </Link>
         )}
         <Link
